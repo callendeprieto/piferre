@@ -345,24 +345,31 @@ def write_spe_fits(pixel, path=None):
   x = loadtxt(root+'.wav')
 
   m=glob.glob(root+".mdl")
-  n=glob.glob(root+".nrd")   
+  e=glob.glob(root+".err")
+  n=glob.glob(root+".nrd")
+
   fmp=glob.glob(root+".fmp.fits")  
   mdata=loadtxt(m[0])
+  edata=loadtxt(e[0])
   if (len(n) > 0): 
     odata=loadtxt(n[0])
+    f=glob.glob(root+".frd")
+    fdata=loadtxt(f[0])
+    edata=edata/fdata*odata
   else:
     odata=loadtxt(root+".frd")  
 
   
   col01 = fits.Column(name='lambda',format='e8', array=array(x))
 
-  col02 = fits.Column(name='spe',format=str(len(x))+'e8', dim='('+str(len(x))+')', array=array(odata))
-  col03 = fits.Column(name='fit',format=str(len(x))+'e8', dim='('+str(len(x))+')', array=array(mdata))  
+  col02 = fits.Column(name='obs',format=str(len(x))+'e8', dim='('+str(len(x))+')', array=array(odata))
+  col03 = fits.Column(name='err',format=str(len(x))+'e8', dim='('+str(len(x))+')', array=array(edata))
+  col04 = fits.Column(name='fit',format=str(len(x))+'e8', dim='('+str(len(x))+')', array=array(mdata))  
   
   coldefs = fits.ColDefs([col01])
   hdu2=fits.BinTableHDU.from_columns(coldefs)
   hdu2.header['EXTNAME']='LAMBDA'
-  coldefs = fits.ColDefs([col02,col03])
+  coldefs = fits.ColDefs([col02,col03,col04])
   #hdu0=fits.PrimaryHDU(dummy)
   hdu3=fits.BinTableHDU.from_columns(coldefs)
   hdu3.header['EXTNAME']='SPECTRA'
