@@ -50,6 +50,7 @@ def lambda_synth(synthfile):
 def writeslurm(pixel,nthreads=1,path=None,ngrids=None):
     ferre=os.environ['HOME']+"/ferre/src/a.out"
     python_path=os.environ['HOME']+"/python"
+    pwd=os.path.abspath(os.curdir)
     try: 
       host=os.environ['HOST']
     except:
@@ -79,6 +80,7 @@ def writeslurm(pixel,nthreads=1,path=None,ngrids=None):
       f.write("#SBATCH  -D "+os.path.abspath(path)+" \n")
     f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
     f.write("export OMP_NUM_THREADS="+str(nthreads)+"\n")
+    f.write("cd "+pwd+"\n")
     for i in range(ngrids):
       f.write("cp input.nml_"+str(i)+" input.nml \n")
       f.write("time "+ferre+" \n")
