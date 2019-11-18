@@ -358,7 +358,6 @@ def write_spe_fits(pixel, path=None):
     edata=edata/fdata*odata
   else:
     odata=loadtxt(root+".frd")  
-
   
   col01 = fits.Column(name='lambda',format='e8', array=array(x))
 
