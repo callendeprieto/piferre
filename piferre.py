@@ -49,7 +49,7 @@ def lambda_synth(synthfile):
 #create a slurm script for a given pixel
 def writeslurm(pixel,nthreads=1,path=None,ngrids=None):
     ferre=os.environ['HOME']+"/ferre/src/a.out"
-    python_path=os.environ['HOME']+"/python"
+    python_path=os.environ['HOME']+"/piferre"
     try: 
       host=os.environ['HOST']
     except:
