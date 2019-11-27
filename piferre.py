@@ -627,7 +627,6 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
 
       plate=pheader['PLATEID']
       mjd=pheader['MJD']
-      pixel=pixel+"-"+str(mjd)
       #fibermap=hdu['PLUGMAP'].data
       fibermap=hdu[5].data
       fiberid=fibermap['fiberid']
