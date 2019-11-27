@@ -765,7 +765,7 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
         synthfiles.append(gridfile)
 
       #prepare ferre control file
-      nml=mknml(synthfiles,pixel,k,maxorder[k],nthreads=nthreads)
+      nml=mknml(synthfiles,pixel+suffix,k,maxorder[k],nthreads=nthreads)
       writenml(nml,nmlfile='input.nml'+suffix+'_'+str(k),path=os.path.join(sdir,pixel))
       writenml(nml,path=os.path.join(sdir,pixel))
 
