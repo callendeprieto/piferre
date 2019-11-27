@@ -651,9 +651,9 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
       #set the set of grids to be used
       #SDSS/BOSS
       grids=[]
-      for item in range(9): grids.append('n_rboss'+str(item))
+      for item in range(9): grids.append('n_rboss'+str(item+1))
       print(grids)
-      maxorder=[3,3,3,3,2,1,3,3,3,3] #max. order that can be used for interpolations
+      maxorder=[3,3,3,2,1,3,3,3,3] #max. order that can be used for interpolations
       bands=['']
       
       #LAMOST
