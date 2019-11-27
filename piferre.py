@@ -47,7 +47,7 @@ def lambda_synth(synthfile):
     return x
 
 #create a slurm script for a given pixel
-def writeslurm(pixel,nthreads=1,path=None,ngrids=None):
+def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix=''):
     ferre=os.environ['HOME']+"/ferre/src/a.out"
     python_path=os.environ['HOME']+"/piferre"
     try: 
@@ -60,7 +60,7 @@ def writeslurm(pixel,nthreads=1,path=None,ngrids=None):
     if path is None: path='.'
     if ngrids is None: ngrids=1
 
-    f=open(os.path.join(path,pixel+'.slurm'),'w')
+    f=open(os.path.join(path,pixel+suffix+'.slurm'),'w')
     f.write("#!/bin/bash \n")
     f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
     f.write("#This script was written by piferre.py on "+now+" \n") 
@@ -86,11 +86,11 @@ def writeslurm(pixel,nthreads=1,path=None,ngrids=None):
     if ngrids > 1:
       f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
               "'); from piferre import opfmerge, write_par_fits, write_spe_fits; opfmerge(\'"+\
-              str(pixel)+"\'); write_par_fits(\'"+\
-              str(pixel)+"\'); write_spe_fits(\'"+\
-              str(pixel)+"\')\"\n")
+              str(pixel)+suffix+"\'); write_par_fits(\'"+\
+              str(pixel)+suffix+"\'); write_spe_fits(\'"+\
+              str(pixel)+suffix+"\')\"\n")
     f.close()
-    os.chmod(os.path.join(path,pixel+'.slurm'),0o755)
+    os.chmod(os.path.join(path,pixel+suffix+'.slurm'),0o755)
 
     return None
 
@@ -399,14 +399,14 @@ def write_spe_fits(pixel, path=None):
   return None
 
 #write ferre files
-def write_ferre_input(root,ids,par,y,ey,path=None):
+def write_ferre_input(root,ids,par,y,ey,path=None,suffix=''):
 
   if path is None: path="./"
 
   #open ferre input files
-  vrd=open(os.path.join(path,root)+'.vrd','w')
-  frd=open(os.path.join(path,root)+'.frd','w')
-  err=open(os.path.join(path,root)+'.err','w')
+  vrd=open(os.path.join(path,root,suffix)+'.vrd','w')
+  frd=open(os.path.join(path,root,suffix)+'.frd','w')
+  err=open(os.path.join(path,root,suffix)+'.err','w')
 
   nspec, freq = y.shape
 
@@ -589,6 +589,7 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
 
     if 'FIBERMAP' in enames: #DESI data
       fibermap=hdu['FIBERMAP'].data
+      suffix=''
       mws_target=fibermap['MWS_TARGET']
       targetid=fibermap['TARGETID']
       if 'RA_TARGET' in fibermap.names: 
@@ -627,6 +628,7 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
 
       plate=pheader['PLATEID']
       mjd=pheader['MJD']
+      suffix="-"+str(mjd)
       #fibermap=hdu['PLUGMAP'].data
       fibermap=hdu[5].data
       fiberid=fibermap['fiberid']
@@ -732,21 +734,21 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
         yy=concatenate((yy,y2),axis=1)
         eyy=concatenate((eyy,ey2),axis=1)
 
-      savetxt(os.path.join(sdir,pixel,pixel)+'-'+bands[j]+'.wav',x1,fmt='%14.5e')
+      savetxt(os.path.join(sdir,pixel,pixel)+suffix+'-'+bands[j]+'.wav',x1,fmt='%14.5e')
 
-    savetxt(os.path.join(sdir,pixel,pixel)+'.wav',xx,fmt='%14.5e')
+    savetxt(os.path.join(sdir,pixel,pixel)+suffix+'.wav',xx,fmt='%14.5e')
     hdu0 = fits.BinTableHDU.from_columns(fibermap)
-    hdu0.writeto(os.path.join(sdir,pixel,pixel)+'.fmp.fits')
+    hdu0.writeto(os.path.join(sdir,pixel,pixel)+suffix+'.fmp.fits')
     print (yy.shape)
     print (eyy.shape)
 
 
     print(yy[0,0],eyy[0,0])
-    write_ferre_input(pixel,ids,par,yy,eyy,path=os.path.join(sdir,pixel))
+    write_ferre_input(pixel,ids,par,yy,eyy,path=os.path.join(sdir,pixel),suffix=suffix)
 
     #write slurm script
-    writeslurm(pixel,path=os.path.join(sdir,pixel),
-            ngrids=len(grids),nthreads=nthreads)
+    write_slurm(pixel,path=os.path.join(sdir,pixel),
+            ngrids=len(grids),nthreads=nthreads,suffix='')
 
 
     #loop over all grids
@@ -764,7 +766,7 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
 
       #prepare ferre control file
       nml=mknml(synthfiles,pixel,k,maxorder[k],nthreads=nthreads)
-      writenml(nml,nmlfile='input.nml_'+str(k),path=os.path.join(sdir,pixel))
+      writenml(nml,nmlfile='input.nml'+suffix+'_'+str(k),path=os.path.join(sdir,pixel))
       writenml(nml,path=os.path.join(sdir,pixel))
 
       print(k)
