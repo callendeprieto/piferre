@@ -404,9 +404,9 @@ def write_ferre_input(root,ids,par,y,ey,path=None,suffix=''):
   if path is None: path="./"
 
   #open ferre input files
-  vrd=open(os.path.join(path,root,suffix)+'.vrd','w')
-  frd=open(os.path.join(path,root,suffix)+'.frd','w')
-  err=open(os.path.join(path,root,suffix)+'.err','w')
+  vrd=open(os.path.join(path,root)+suffix+'.vrd','w')
+  frd=open(os.path.join(path,root)+suffix+'.frd','w')
+  err=open(os.path.join(path,root)+suffix+'.err','w')
 
   nspec, freq = y.shape
 
