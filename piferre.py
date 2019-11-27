@@ -748,7 +748,7 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
 
     #write slurm script
     write_slurm(pixel,path=os.path.join(sdir,pixel),
-            ngrids=len(grids),nthreads=nthreads,suffix='')
+            ngrids=len(grids),nthreads=nthreads,suffix=suffix)
 
 
     #loop over all grids
