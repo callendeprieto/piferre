@@ -81,8 +81,8 @@ def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix=''):
     f.write("export OMP_NUM_THREADS="+str(nthreads)+"\n")
     f.write("cd "+os.path.abspath(path)+"\n")
     for i in range(ngrids):
-      f.write("cp input.nml_"+str(i)+" input.nml \n")
-      f.write("time "+ferre+" \n")
+      #f.write("cp input.nml"+suffix+"_"+str(i)+" input.nml \n")
+      f.write("time "+ferre+" input.nml"+suffix+"_"+str(i)+" \n")
     if ngrids > 1:
       f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
               "'); from piferre import opfmerge, write_par_fits, write_spe_fits; opfmerge(\'"+\
