@@ -313,7 +313,7 @@ def write_par_fits(pixel, path=None):
   col09 = fits.Column(name='elem_err',format='2e4',dim='(2)',array=array(elem_err))
   col10 = fits.Column(name='chisq_tot',format='e4',array=array(chisq_tot))
   col11 = fits.Column(name='snr_med',format='e4',array=array(snr_med))
-  col12 = fits.Column(name='tmpid',format='a4',array=array(tmpid))  
+  col12 = fits.Column(name='tmpid',format='a30',array=array(tmpid))  
   
   coldefs = fits.ColDefs([col01,col02,col03,col04,col05,col06,col07,col08,col09,col10,col11,col12])
   hdu2=fits.BinTableHDU.from_columns(coldefs)
