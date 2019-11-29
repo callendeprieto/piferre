@@ -264,6 +264,8 @@ def write_par_fits(pixel, path=None):
   of=open(o[0],'r')
   for line in of:
     cells=line.split()
+    print('cell0=',cells[0])
+    stop
     if (len(cells) == 19):
       #Kurucz grids with 3 dimensions: id, 3 par, 3 err, 0., med_snr, lchi, 9 cov, 
       if (float(cells[9]) < 1. and float(cells[8]) > 5.): 
