@@ -250,6 +250,7 @@ def write_par_fits(pixel, path=None):
   fmp=glob.glob(root+".fmp.fits")
   
   success=[]
+  tmpid=[]
   teff=[]
   logg=[]
   feh=[]
@@ -268,6 +269,7 @@ def write_par_fits(pixel, path=None):
       if (float(cells[9]) < 1. and float(cells[8]) > 5.): 
         success.append(1) 
       else: success.append(0)
+      tmpid.append(cells[0])
       feh.append(float(cells[1]))
       teff.append(float(cells[2]))
       logg.append(float(cells[3]))
@@ -284,6 +286,7 @@ def write_par_fits(pixel, path=None):
       if (float(cells[7]) < 1. and float(cells[6]) > 5.): 
         success.append(1) 
       else: success.append(0)
+      tmpid.append(cells[0])
       feh.append(-10.)
       teff.append(float(cells[1]))
       logg.append(float(cells[2]))
@@ -310,8 +313,9 @@ def write_par_fits(pixel, path=None):
   col09 = fits.Column(name='elem_err',format='2e4',dim='(2)',array=array(elem_err))
   col10 = fits.Column(name='chisq_tot',format='e4',array=array(chisq_tot))
   col11 = fits.Column(name='snr_med',format='e4',array=array(snr_med))
+  col12 = fits.Column(name='tmpid',format='s',array=array(tmpid))  
   
-  coldefs = fits.ColDefs([col01,col02,col03,col04,col05,col06,col07,col08,col09,col10,col11])
+  coldefs = fits.ColDefs([col01,col02,col03,col04,col05,col06,col07,col08,col09,col10,col11,col12])
   hdu2=fits.BinTableHDU.from_columns(coldefs)
   hdu2.header['EXTNAME']='FPARAMS'
   #hdu.header=header
