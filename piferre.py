@@ -566,9 +566,11 @@ def packfits(input="*.fits",output="output.fits"):
 
   f = glob.glob(input)
 
+  print('reading ... ',f[0],"\n")
   hdul1 = fits.open(f[0])
   hdu0 = hdul1[0]
   for entry in f[1:]:       
+    print('reading ... ',entry,"\n")
     hdul2 = fits.open(entry)
     for i in arange(len(hdul1)-1)+1:
       nrows1 = hdul1[i].data.shape[0]
