@@ -560,6 +560,37 @@ def finddatafiles(path,pixel,sdir=''):
 
   return (datafiles,zbestfiles)
 
+#pack a collection of fits files with binary tables in multiple HDUs into a single one
+def packfits(input="*.fits",output="output.fits"):
+
+
+  f = glob.glob(input)
+
+  hdul1 = fits.open(f[0])
+  hdu0 = hdul1[0]
+  for entry in f[1:]:       
+    hdul2 = fits.open(entry)
+    for i in arange(len(hdul1)-1)+1:
+      nrows1 = hdul1[i].data.shape[0]
+      nrows2 = hdul2[i].data.shape[0]
+      nrows = nrows1 + nrows2
+      hdu = fits.BinTableHDU.from_columns(hdul1[i].columns, nrows=nrows)
+      hdu.header['EXTNAME'] = hdul1[i].header['EXTNAME']
+      for colname in hdul1[i].columns.names:
+        hdu.data[colname][nrows1:] = hdul2[i].data[colname] 
+
+      if i == 1: 
+        hdu1 = hdu 
+      else: 
+        hdu2 = hdu 
+
+    hdul1 = fits.HDUList([hdu0,hdu1,hdu2])
+
+  hdul1.writeto(output)
+
+  return(None)
+
+
 #process a single pixel
 def do(path,pixel,sdir='',truth=None,nthreads=1):
   
