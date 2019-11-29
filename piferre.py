@@ -566,7 +566,7 @@ def packfits(input="*.fits",output="output.fits"):
 
   f = glob.glob(input)
 
-  print('reading ... ',f[0],"\n")
+  print('reading ... ',f[0])
   hdul1 = fits.open(f[0])
   hdu0 = hdul1[0]
   for entry in f[1:]:       
