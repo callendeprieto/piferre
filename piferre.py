@@ -776,9 +776,9 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
 
     savetxt(os.path.join(sdir,pixel,pixel)+suffix+'.wav',xx,fmt='%14.5e')
     print(fibermap.shape)
-    fibermap = fibermap [mws_target.nonzero()[0]]
+    fibermap2 = fibermap [mws_target.nonzero()[0]]
     print(fibermap.shape)
-    hdu0 = fits.BinTableHDU.from_columns(fibermap)
+    hdu0 = fits.BinTableHDU.from_columns(fibermap2)
     hdu0.writeto(os.path.join(sdir,pixel,pixel)+suffix+'.fmp.fits')
     print (yy.shape)
     print (eyy.shape)
