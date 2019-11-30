@@ -250,7 +250,7 @@ def write_par_fits(pixel, path=None):
   fmp=glob.glob(root+".fmp.fits")
   
   success=[]
-  tmpid=[]
+  fid=[]
   teff=[]
   logg=[]
   feh=[]
@@ -269,7 +269,7 @@ def write_par_fits(pixel, path=None):
       if (float(cells[9]) < 1. and float(cells[8]) > 5.): 
         success.append(1) 
       else: success.append(0)
-      tmpid.append(cells[0])
+      fid.append(cells[0])
       feh.append(float(cells[1]))
       teff.append(float(cells[2]))
       logg.append(float(cells[3]))
@@ -286,7 +286,7 @@ def write_par_fits(pixel, path=None):
       if (float(cells[7]) < 1. and float(cells[6]) > 5.): 
         success.append(1) 
       else: success.append(0)
-      tmpid.append(cells[0])
+      fid.append(cells[0])
       feh.append(-10.)
       teff.append(float(cells[1]))
       logg.append(float(cells[2]))
@@ -303,17 +303,18 @@ def write_par_fits(pixel, path=None):
   
     
   col01 = fits.Column(name='success',format='u1', array=array(success))
-  col02 = fits.Column(name='teff',format='e4',array=array(teff))
-  col03 = fits.Column(name='logg',format='e4',array=array(logg))
-  col04 = fits.Column(name='feh',format='e4',array=array(feh))
-  col05 = fits.Column(name='alphafe',format='e4',array=array(alphafe))
-  col06 = fits.Column(name='micro',format='e4',array=array(micro))
-  col07 = fits.Column(name='covar',format='9e4',dim='(3, 3)',array=array(covar).reshape(len(success),3,3))
-  col08 = fits.Column(name='elem',format='2e4',dim='(2)',array=array(elem))
-  col09 = fits.Column(name='elem_err',format='2e4',dim='(2)',array=array(elem_err))
-  col10 = fits.Column(name='chisq_tot',format='e4',array=array(chisq_tot))
-  col11 = fits.Column(name='snr_med',format='e4',array=array(snr_med))
-  col12 = fits.Column(name='tmpid',format='30a',array=array(tmpid))  
+  col02 = fits.Column(name='fid',format='30a',array=array(fid))  
+  col03 = fits.Column(name='teff',format='e4',array=array(teff))
+  col04 = fits.Column(name='logg',format='e4',array=array(logg))
+  col05 = fits.Column(name='feh',format='e4',array=array(feh))
+  col06 = fits.Column(name='alphafe',format='e4',array=array(alphafe))
+  col07 = fits.Column(name='micro',format='e4',array=array(micro))
+  col08 = fits.Column(name='covar',format='9e4',dim='(3, 3)',array=array(covar).reshape(len(success),3,3))
+  col09 = fits.Column(name='elem',format='2e4',dim='(2)',array=array(elem))
+  col10 = fits.Column(name='elem_err',format='2e4',dim='(2)',array=array(elem_err))
+  col11 = fits.Column(name='chisq_tot',format='e4',array=array(chisq_tot))
+  col12 = fits.Column(name='snr_med',format='e4',array=array(snr_med))
+
   
   coldefs = fits.ColDefs([col01,col02,col03,col04,col05,col06,col07,col08,col09,col10,col11,col12])
   hdu2=fits.BinTableHDU.from_columns(coldefs)
@@ -774,6 +775,7 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
       savetxt(os.path.join(sdir,pixel,pixel)+suffix+'-'+bands[j]+'.wav',x1,fmt='%14.5e')
 
     savetxt(os.path.join(sdir,pixel,pixel)+suffix+'.wav',xx,fmt='%14.5e')
+    fibermap = fibermap [(mws_target == 1)]
     hdu0 = fits.BinTableHDU.from_columns(fibermap)
     hdu0.writeto(os.path.join(sdir,pixel,pixel)+suffix+'.fmp.fits')
     print (yy.shape)
