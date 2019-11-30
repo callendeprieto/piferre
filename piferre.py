@@ -775,11 +775,10 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
       savetxt(os.path.join(sdir,pixel,pixel)+suffix+'-'+bands[j]+'.wav',x1,fmt='%14.5e')
 
     savetxt(os.path.join(sdir,pixel,pixel)+suffix+'.wav',xx,fmt='%14.5e')
+    # not working --> fibermap = fibermap [(mws_target > 0)]
+    # fibermap = fibermap [(mws_target > 0)]
     hdu0 = fits.BinTableHDU.from_columns(fibermap)
     hdu0.writeto(os.path.join(sdir,pixel,pixel)+suffix+'.fmp.fits')
-    fibermap = fibermap [array(mws_target) > 0]
-    hdu0 = fits.BinTableHDU.from_columns(fibermap)
-    hdu0.writeto(os.path.join(sdir,pixel,pixel)+suffix+'.fmp2.fits')
     print (yy.shape)
     print (eyy.shape)
 
