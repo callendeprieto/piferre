@@ -329,7 +329,7 @@ def write_par_fits(pixel, path=None):
 
   if len(fmp) > 0:
     ff=fits.open(fmp[0])
-    fibermap=ff[1].data
+    fibermap=ff[1]
     ff.close()
     hdu1=fits.BinTableHDU.from_columns(fibermap)
     hdu1.header['EXTNAME']='FIBERMAP'
@@ -390,7 +390,7 @@ def write_spe_fits(pixel, path=None):
 
   if len(fmp) > 0:
     ff=fits.open(fmp[0])
-    fibermap=ff[1].data
+    fibermap=ff[1]
     hdu1=fits.BinTableHDU.from_columns(fibermap)
     hdu1.header['EXTNAME']='FIBERMAP'
     hdul=fits.HDUList([hdu0,hdu2,hdu3,hdu1])
@@ -626,26 +626,26 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
     print('datafile='+datafile)
 
     if 'FIBERMAP' in enames: #DESI data
-      fibermap=hdu['FIBERMAP'].data
+      fibermap=hdu['FIBERMAP']
       suffix=''
-      mws_target=fibermap['MWS_TARGET']
-      targetid=fibermap['TARGETID']
-      if 'RA_TARGET' in fibermap.names: 
-        ra=fibermap['RA_TARGET']
+      mws_target=fibermap.data['MWS_TARGET']
+      targetid=fibermap.data['TARGETID']
+      if 'RA_TARGET' in fibermap.data.names: 
+        ra=fibermap.data['RA_TARGET']
       else:
-        if 'TARGET_RA' in fibermap.names:
-          ra=fibermap['TARGET_RA']
+        if 'TARGET_RA' in fibermap.data.names:
+          ra=fibermap.data['TARGET_RA']
         else:
           ra=-9999.*ones(len(mws_target))
-      if 'DEC_TARGET' in fibermap.names:
-        dec=fibermap['DEC_TARGET']
+      if 'DEC_TARGET' in fibermap.data.names:
+        dec=fibermap.data['DEC_TARGET']
       else:
-        if 'TARGET_DEC' in fibermap.names:
-          dec=fibermap['TARGET_DEC']
+        if 'TARGET_DEC' in fibermap.data.names:
+          dec=fibermap.data['TARGET_DEC']
         else:
           dec=-9999.*ones(len(mws_target))
-      if 'MAG' in fibermap.names: 
-        mag=fibermap['MAG']
+      if 'MAG' in fibermap.data.names: 
+        mag=fibermap.data['MAG']
       else:
           mag=[-9999.*ones(5)]
           for kk in range(len(mws_target)-1): mag.append(-9999.*ones(5))
@@ -667,13 +667,13 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
       plate=pheader['PLATEID']
       mjd=pheader['MJD']
       suffix="-"+str(mjd)
-      #fibermap=hdu['PLUGMAP'].data
-      fibermap=hdu[5].data
-      fiberid=fibermap['fiberid']
-      ra=fibermap['RA']
-      dec=fibermap['DEC']
-      #mag=zeros((ra.size,5)) # used zeros for LAMOST fibermap['MAG']
-      mag=fibermap['MAG']
+      #fibermap=hdu['PLUGMAP']
+      fibermap=hdu[5]
+      fiberid=fibermap.data['fiberid']
+      ra=fibermap.data['RA']
+      dec=fibermap.data['DEC']
+      #mag=zeros((ra.size,5)) # used zeros for LAMOST fibermap.data['MAG']
+      mag=fibermap.data['MAG']
       nspec=ra.size
       mws_target=zeros(nspec)
       targetid=[]
@@ -775,8 +775,8 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
       savetxt(os.path.join(sdir,pixel,pixel)+suffix+'-'+bands[j]+'.wav',x1,fmt='%14.5e')
 
     savetxt(os.path.join(sdir,pixel,pixel)+suffix+'.wav',xx,fmt='%14.5e')
-    # not working --> fibermap = fibermap [(mws_target > 0)]
-    # fibermap = fibermap [(mws_target > 0)]
+    mask = mws_target > 0
+    fibermap = fibermap [mask]
     hdu0 = fits.BinTableHDU.from_columns(fibermap)
     hdu0.writeto(os.path.join(sdir,pixel,pixel)+suffix+'.fmp.fits')
     print (yy.shape)
