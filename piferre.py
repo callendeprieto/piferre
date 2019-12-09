@@ -13,7 +13,7 @@ import pdb
 import sys
 import os
 import glob
-from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide
+from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean
 from astropy.io import fits
 import matplotlib.pyplot as plt
 import subprocess
@@ -186,7 +186,8 @@ def readk(filename):
   clight=299792.458 #km/s
   hdu=fits.open(filename)
   k=hdu[1].data
-  targetid=k['target_id']
+  #targetid=k['targetid']
+  targetid=k['fiber']
   #teff=k['teff']
   #logg=k['loog']
   #vsini=k['vsini']
@@ -214,7 +215,7 @@ def readspec(filename,band=None):
 
   hdu=fits.open(filename)
 
-  if filename.find('spectra-64') > -1: #DESI
+  if filename.find('spectra-64') > -1 or filename.find('exp_') > -1: #DESI
     wavelength=hdu[band+'_WAVELENGTH'].data #wavelength array
     flux=hdu[band+'_FLUX'].data       #flux array (multiple spectra)
     ivar=hdu[band+'_IVAR'].data       #inverse variance (multiple spectra)
@@ -404,7 +405,7 @@ def write_spe_fits(pixel, path=None):
   return None
 
 #write ferre files
-def write_ferre_input(root,ids,par,y,ey,path=None,suffix=''):
+def write_ferre_input(root,ids,par,y,ey,path=None,suffix='',snr=5.0):
 
   if path is None: path="./"
 
@@ -420,6 +421,15 @@ def write_ferre_input(root,ids,par,y,ey,path=None,suffix=''):
   while (i < nspec):
 
     print(str(i)+' ')
+
+    #skip low snr data when snr is not None
+    if snr is not None:
+      if mean(y[i,:]/ey[i,:]) < snr: 
+        #print(i,mean(y[i,:]/ey[i,:]))
+        i+=1
+        continue
+      else:
+        print(i,mean(y[i,:]/ey[i,:]))
 
 
     #vrd.write("target_"+str(i+1)+" 0.0 0.0 0.0")
@@ -542,14 +552,22 @@ def finddatafiles(path,pixel,sdir=''):
   infiles.sort()
 
   for filename in infiles:
+# DESI sims/data
     if (filename.find('spectra-64') > -1 and filename.find('.fits') > -1):
       datafiles.append(os.path.join(path,sdir,pixel,filename))
     elif (filename.find('zbest-64') > -1 and filename.find('.fits') > -1):
       zbestfiles.append(os.path.join(path,sdir,pixel,filename))
+# BOSS data
     elif (filename.find('spPlate') > -1 and filename.find('.fits') > -1):
       datafiles.append(os.path.join(path,sdir,pixel,filename))
     elif (filename.find('spZbest') > -1 and filename.find('.fits') > -1):
       zbestfiles.append(os.path.join(path,sdir,pixel,filename))
+#  DESI commissioning data
+    elif (filename.find('exp_') > -1 and filename.find('outtabouttab') == -1 and filename.find('.fits') > -1):
+      datafiles.append(os.path.join(path,sdir,pixel,filename))
+    elif (filename.find('outtabouttab') > -1 and filename.find('.fits') > -1):
+      zbestfiles.append(os.path.join(path,sdir,pixel,filename))
+
 
   #analyze the situation wrt input files
   ndatafiles=len(datafiles)
@@ -612,10 +630,11 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
     zbestfile=zbestfiles[i]
 
     #get redshifts
-    z=readzbest(zbestfile)
-
-    #get redshifts from the Koposov pipeline
-    #kz=readk(kzfile)
+    if zbestfile.find('best') > -1:
+      z=readzbest(zbestfile)
+    else:
+      #Koposov pipeline
+      z=readk(zbestfile)
   
     #read primary header and  
     #find out if there is FIBERMAP extension
@@ -624,12 +643,17 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
     enames=extnames(hdu)
     pheader=hdu['PRIMARY'].header
     print('datafile='+datafile)
+    print('extensions=',enames)
 
     if 'FIBERMAP' in enames: #DESI data
       fibermap=hdu['FIBERMAP']
       suffix=''
-      mws_target=fibermap.data['MWS_TARGET']
-      targetid=fibermap.data['TARGETID']
+      print('***temporarily processing all spectra, not just MWS targets, for comm tests ... ***')
+      #mws_target=fibermap.data['MWS_TARGET']
+      #targetid=fibermap.data['TARGETID']
+      targetid=fibermap.data['FIBER']
+      mws_target=ones(len(targetid),dtype=int)
+      #mws_target[0] = 1
       if 'RA_TARGET' in fibermap.data.names: 
         ra=fibermap.data['RA_TARGET']
       else:
@@ -657,7 +681,7 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
       grids=[]
       for item in range(9): grids.append('n_rdesi'+str(item+1))    
       #for item in range(10): grids.append('n_rdesi'+str(item+1))
-      print(grids)
+      print('grids=',grids)
       maxorder=[3,3,3,2,1,3,3,3,3] #max. order that can be used for interpolations
       #bands=['b']
       bands=['b','r','z']
@@ -675,7 +699,7 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
       #mag=zeros((ra.size,5)) # used zeros for LAMOST fibermap.data['MAG']
       mag=fibermap.data['MAG']
       nspec=ra.size
-      mws_target=zeros(nspec)
+      mws_target=zeros(nspec,dtype=int)
       targetid=[]
       for i in range(nspec): 
         targetid.append(str(plate)+'-'+str(mjd)+'-'+str(fiberid[i]))
@@ -698,7 +722,6 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
       #grids=['n_crump3hL']
       #maxorder=[3]
       #bands=['']
-
 
     #set ids array (with targetids) and par dictionary for vrd/ipf file
     ids=[]
@@ -725,6 +748,8 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
           npass=npass+1
           id=str(targetid[k])
           ids.append(id)
+          #we patch the redshift here to handle missing redshifts for comm. data from Sergey
+          z[targetid[k]]=0.0
           par[id]=[0.0,0.0,0.0,mag[k][2],0.0,z[targetid[k]],ra[k],dec[k]]
           #stop        
 
@@ -776,8 +801,7 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
 
     savetxt(os.path.join(sdir,pixel,pixel)+suffix+'.wav',xx,fmt='%14.5e')
     mask = mws_target.nonzero()[0]
-    print(mask.shape)
-    fibermap = fibermap [mask]
+    fibermap.data = fibermap.data[mask]
     hdu0 = fits.BinTableHDU.from_columns(fibermap)
     hdu0.writeto(os.path.join(sdir,pixel,pixel)+suffix+'.fmp.fits')
     print (yy.shape)
