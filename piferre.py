@@ -331,7 +331,6 @@ def write_par_fits(pixel, path=None):
   if len(fmp) > 0:
     ff=fits.open(fmp[0])
     fibermap=ff[1]
-    ff.close()
     hdu1=fits.BinTableHDU.from_columns(fibermap)
     hdu1.header['EXTNAME']='FIBERMAP'
     hdul=fits.HDUList([hdu0,hdu2,hdu1])
