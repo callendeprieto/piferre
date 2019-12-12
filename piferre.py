@@ -399,13 +399,13 @@ def write_mod_fits(pixel, path=None):
     hdulist.append(hdu)
     
     if odata.ndim == 2: tdata = odata[:,j1:j2]
-    else: tdata = odata[j1:j2]
+    else: tdata = odata[j1:j2][None,:]
     col01 = fits.Column(name='obs',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=tdata)
     if edata.ndim == 2: tdata = edata[:,j1:j2]
-    else: tdata = edata[j1:j2]
+    else: tdata = edata[j1:j2][None,:]
     col02 = fits.Column(name='err',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=tdata)
     if mdata.ndim == 2: tdata = mdata[:,j1:j2]
-    else: tdata = mdata[j1:j2]
+    else: tdata = mdata[j1:j2][None,:]
     col03 = fits.Column(name='fit',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=tdata)    
     coldefs = fits.ColDefs([col01,col02,col03])
     hdu=fits.BinTableHDU.from_columns(coldefs)
