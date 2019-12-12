@@ -911,7 +911,7 @@ if __name__ == "__main__":
     sdir=''
     if head.find('spectra-64') > -1: 
       sdir=pixel[:-2]
-    if head.find('rv_output') > -1:
+    if head.find('sp_input') > -1:
       head, sdir = os.path.split(head)
       if not os.path.exists(sdir): os.mkdir(sdir)
     if sdir != '': 
