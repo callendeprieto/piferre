@@ -396,10 +396,16 @@ def write_mod_fits(pixel, path=None):
     hdu = fits.ImageHDU(name=entry+'_WAVELENGTH', data=x[j1:j2])
     hdu.header['EXTNAME']=entry+'_WAVELENGTH'
     hdulist.append(hdu)
-
-    col01 = fits.Column(name='obs',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=odata[:,j1:j2])
-    col02 = fits.Column(name='err',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=edata[:,j1:j2])
-    col03 = fits.Column(name='fit',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=mdata[:,j1:j2])    
+    
+    if odata.ndim == 2: tdata = odata[:,j1:j2]
+    else: tdata = odata[j1:j2]
+    col01 = fits.Column(name='obs',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=tdata)
+    if edata.ndim == 2: tdata = edata[:,j1:j2]
+    else: tdata = edata[j1:j2]
+    col02 = fits.Column(name='err',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=tdata)
+    if mdata.ndim == 2: tdata = mdata[:,j1:j2]
+    else: tdata = mdata[j1:j2]
+    col03 = fits.Column(name='fit',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=tdata)    
     coldefs = fits.ColDefs([col01,col02,col03])
     hdu=fits.BinTableHDU.from_columns(coldefs)
     #hdu = fits.ImageHDU(name=entry+'_MODEL', data=stack([odata[:,j1:j2],edata[:,j1:j2],mdata[:,j1:j2]]) ) 
