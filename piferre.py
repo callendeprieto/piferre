@@ -13,7 +13,8 @@ import pdb
 import sys
 import os
 import glob
-from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean
+import re
+from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack
 from astropy.io import fits
 import matplotlib.pyplot as plt
 import subprocess
@@ -85,9 +86,9 @@ def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix=''):
       f.write("time "+ferre+" input.nml"+suffix+"_"+str(i)+" \n")
     if ngrids > 1:
       f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
-              "'); from piferre import opfmerge, write_par_fits, write_spe_fits; opfmerge(\'"+\
-              str(pixel)+suffix+"\'); write_par_fits(\'"+\
-              str(pixel)+suffix+"\'); write_spe_fits(\'"+\
+              "'); from piferre import opfmerge, write_tab_fits, write_mod_fits; opfmerge(\'"+\
+              str(pixel)+suffix+"\'); write_tab_fits(\'"+\
+              str(pixel)+suffix+"\'); write_mod_fits(\'"+\
               str(pixel)+suffix+"\')\"\n")
     f.close()
     os.chmod(os.path.join(path,pixel+suffix+'.slurm'),0o755)
@@ -241,9 +242,9 @@ def readspec(filename,band=None):
   return((wavelength,flux,ivar,res))
 
 #write piferre param. output
-def write_par_fits(pixel, path=None):
+def write_tab_fits(pixel, path=None):
   
-  if path is None: path="./"
+  if path is None: path=""
   root=os.path.join(path,pixel)
   o=glob.glob(root+".opf")
   m=glob.glob(root+".mdl")
@@ -301,7 +302,13 @@ def write_par_fits(pixel, path=None):
       cov[1:,1:] = reshape(array(cells[8:],dtype=float),(2,2))
       #cov = reshape(array(cells[8:],dtype=float),(2,2))
       covar.append(cov)    
-  
+
+  hdu0=fits.PrimaryHDU()
+  now = datetime.datetime.fromtimestamp(time.time())
+  nowstr = now.isoformat() 
+  nowstr = nowstr[:nowstr.rfind('.')]
+  hdu0.header['DATE'] = nowstr
+  hdulist = [hdu0]
     
   col01 = fits.Column(name='success',format='u1', array=array(success))
   col02 = fits.Column(name='fid',format='30a',array=array(fid))  
@@ -318,37 +325,42 @@ def write_par_fits(pixel, path=None):
 
   
   coldefs = fits.ColDefs([col01,col02,col03,col04,col05,col06,col07,col08,col09,col10,col11,col12])
-  hdu2=fits.BinTableHDU.from_columns(coldefs)
-  hdu2.header['EXTNAME']='FPARAMS'
+  hdu=fits.BinTableHDU.from_columns(coldefs)
+  hdu.header['EXTNAME']='SPTAB'
   #hdu.header=header
+  hdulist.append(hdu)
 
-  hdu0=fits.PrimaryHDU()
-  now = datetime.datetime.fromtimestamp(time.time())
-  nowstr = now.isoformat() 
-  nowstr = nowstr[:nowstr.rfind('.')]
-  hdu0.header['DATE'] = nowstr
 
   if len(fmp) > 0:
     ff=fits.open(fmp[0])
     fibermap=ff[1]
-    hdu1=fits.BinTableHDU.from_columns(fibermap)
-    hdu1.header['EXTNAME']='FIBERMAP'
-    hdul=fits.HDUList([hdu0,hdu2,hdu1])
-    hdul.writeto(root+'.par.fits')
-  else:
-    hdul=fits.HDUList([hdu0,hdu2])
-    hdul.writeto(root+'.par.fits')
-  
+    hdu=fits.BinTableHDU.from_columns(fibermap)
+    hdu.header['EXTNAME']='FIBERMAP'
+    hdulist.append(hdu)
+
+  hdul=fits.HDUList(hdulist)
+  hdul.writeto('sptab-64-'+root+'.fits')
   
   return None
   
 #write piferre spec. output  
-def write_spe_fits(pixel, path=None):  
+def write_mod_fits(pixel, path=None):  
   
-  if path is None: path="./"
+  if path is None: path=""
   root=os.path.join(path,pixel)
   
+  xbandfiles = sorted(glob.glob(root+'-*.wav'))
+  band = []
+  npix = []
+  for entry in xbandfiles:
+    match = re.search('-[\w]*.wav',entry)
+    tag = match.group()[1:-4]
+    if match: band.append(tag.upper())
+    x = loadtxt(root+'-'+tag+'.wav')
+    npix.append(len(x))
+    
   x = loadtxt(root+'.wav')
+  if len(npix) == 0: npix.append(len(x))
 
   m=glob.glob(root+".mdl")
   e=glob.glob(root+".err")
@@ -364,47 +376,52 @@ def write_spe_fits(pixel, path=None):
     edata=edata/fdata*odata
   else:
     odata=loadtxt(root+".frd")  
-  
-  col01 = fits.Column(name='lambda',format='e8', array=array(x))
-
-  col02 = fits.Column(name='obs',format=str(len(x))+'e8', dim='('+str(len(x))+')', array=array(odata))
-  col03 = fits.Column(name='err',format=str(len(x))+'e8', dim='('+str(len(x))+')', array=array(edata))
-  col04 = fits.Column(name='fit',format=str(len(x))+'e8', dim='('+str(len(x))+')', array=array(mdata))  
-  
-  coldefs = fits.ColDefs([col01])
-  hdu2=fits.BinTableHDU.from_columns(coldefs)
-  hdu2.header['EXTNAME']='LAMBDA'
-  coldefs = fits.ColDefs([col02,col03,col04])
-  #hdu0=fits.PrimaryHDU(dummy)
-  hdu3=fits.BinTableHDU.from_columns(coldefs)
-  hdu3.header['EXTNAME']='SPECTRA'
-  #hdu.header=header
-  #hdul=fits.HDUList([hdu0])
 
   hdu0=fits.PrimaryHDU()
   now = datetime.datetime.fromtimestamp(time.time())
   nowstr = now.isoformat() 
   nowstr = nowstr[:nowstr.rfind('.')]
   hdu0.header['DATE'] = nowstr
+  hdulist = [hdu0]
 
+  i = 0
+  j1 = 0
+
+  for entry in band:
+    j2 = j1 + npix[i] 
+    print(entry,i,npix[i],j1,j2)
+    #colx = fits.Column(name='wavelength',format='e8', array=array(x[j1:j2]))
+    #coldefs = fits.ColDefs([colx])
+    #hdu = fits.BinTableHDU.from_columns(coldefs)
+    hdu = fits.ImageHDU(name=entry+'_WAVELENGTH', data=x[j1:j2])
+    hdu.header['EXTNAME']=entry+'_WAVELENGTH'
+    hdulist.append(hdu)
+
+    col01 = fits.Column(name='obs',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=odata[:,j1:j2])
+    col02 = fits.Column(name='err',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=edata[:,j1:j2])
+    col03 = fits.Column(name='fit',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=mdata[:,j1:j2])    
+    coldefs = fits.ColDefs([col01,col02,col03])
+    hdu=fits.BinTableHDU.from_columns(coldefs)
+    #hdu = fits.ImageHDU(name=entry+'_MODEL', data=stack([odata[:,j1:j2],edata[:,j1:j2],mdata[:,j1:j2]]) ) 
+    hdu.header['EXTNAME']=entry+'_MODEL'
+    hdulist.append(hdu)
+    i += 1
+    j1 = j2
 
   if len(fmp) > 0:
     ff=fits.open(fmp[0])
     fibermap=ff[1]
-    hdu1=fits.BinTableHDU.from_columns(fibermap)
-    hdu1.header['EXTNAME']='FIBERMAP'
-    hdul=fits.HDUList([hdu0,hdu2,hdu3,hdu1])
-    hdul.writeto(root+'.spe.fits')
-  else:
-    ff=fits.open(fmp[0])
-    hdul=fits.HDUList([hdu0,hdu2,hdu3])
-    hdul.writeto(root+'.spe.fits')
+    hdu=fits.BinTableHDU.from_columns(fibermap)
+    hdu.header['EXTNAME']='FIBERMAP'
+    hdulist.append(hdu)
 
+  hdul=fits.HDUList(hdulist)
+  hdul.writeto('spmod-64-'+root+'.fits')
   
   return None
 
 #write ferre files
-def write_ferre_input(root,ids,par,y,ey,path=None,suffix='',snr=5.0):
+def write_ferre_input(root,ids,par,y,ey,path=None,suffix=''):
 
   if path is None: path="./"
 
@@ -420,16 +437,6 @@ def write_ferre_input(root,ids,par,y,ey,path=None,suffix='',snr=5.0):
   while (i < nspec):
 
     print(str(i)+' ')
-
-    #skip low snr data when snr is not None
-    if snr is not None:
-      if mean(y[i,:]/ey[i,:]) < snr: 
-        #print(i,mean(y[i,:]/ey[i,:]))
-        i+=1
-        continue
-      else:
-        print(i,mean(y[i,:]/ey[i,:]))
-
 
     #vrd.write("target_"+str(i+1)+" 0.0 0.0 0.0")
     ppar=[ids[i]]
@@ -562,9 +569,7 @@ def finddatafiles(path,pixel,sdir=''):
     elif (filename.find('spZbest') > -1 and filename.find('.fits') > -1):
       zbestfiles.append(os.path.join(path,sdir,pixel,filename))
 #  DESI commissioning data
-    elif (filename.find('exp_') > -1 and filename.find('outtabouttab') == -1 and filename.find('.fits') > -1):
-      datafiles.append(os.path.join(path,sdir,pixel,filename))
-    elif (filename.find('outtabouttab') > -1 and filename.find('.fits') > -1):
+    elif (filename.find('rvtab') > -1 and filename.find('.fits') > -1):
       zbestfiles.append(os.path.join(path,sdir,pixel,filename))
 
 
@@ -647,34 +652,27 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
     if 'FIBERMAP' in enames: #DESI data
       fibermap=hdu['FIBERMAP']
       suffix=''
-      print('***temporarily processing all spectra, not just MWS targets, for comm tests ... ***')
-      #mws_target=fibermap.data['MWS_TARGET']
-      #targetid=fibermap.data['TARGETID']
-      targetid=fibermap.data['FIBER']
-      mws_target=ones(len(targetid),dtype=int)
-      #mws_target[0] = 1
+      targetid=fibermap.data['TARGETID']
       if 'RA_TARGET' in fibermap.data.names: 
         ra=fibermap.data['RA_TARGET']
       else:
         if 'TARGET_RA' in fibermap.data.names:
           ra=fibermap.data['TARGET_RA']
         else:
-          ra=-9999.*ones(len(mws_target))
+          ra=-9999.*ones(len(targetid))
       if 'DEC_TARGET' in fibermap.data.names:
         dec=fibermap.data['DEC_TARGET']
       else:
         if 'TARGET_DEC' in fibermap.data.names:
           dec=fibermap.data['TARGET_DEC']
         else:
-          dec=-9999.*ones(len(mws_target))
+          dec=-9999.*ones(len(targetid))
       if 'MAG' in fibermap.data.names: 
         mag=fibermap.data['MAG']
       else:
           mag=[-9999.*ones(5)]
-          for kk in range(len(mws_target)-1): mag.append(-9999.*ones(5))
+          for kk in range(len(targetid)-1): mag.append(-9999.*ones(5))
       nspec=ra.size
-      #skip the rest of the code if there are no MWS targets
-      if (mws_target.nonzero()[0].size == 0): return None
       
       #set the set of grids to be used
       grids=[]
@@ -698,16 +696,12 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
       #mag=zeros((ra.size,5)) # used zeros for LAMOST fibermap.data['MAG']
       mag=fibermap.data['MAG']
       nspec=ra.size
-      mws_target=zeros(nspec,dtype=int)
       targetid=[]
       for i in range(nspec): 
         targetid.append(str(plate)+'-'+str(mjd)+'-'+str(fiberid[i]))
 
       targetid=array(targetid)
-      
-      #identify stars as as targets with |z|<0.01
-      for i in range(nspec):    
-        if abs(z[targetid[i]]) < 0.01: mws_target[i]=1
+
 
       #set the set of grids to be used
       #SDSS/BOSS
@@ -722,17 +716,29 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
       #maxorder=[3]
       #bands=['']
 
+
+    #identify targets to process based on redshift: 0.00<|z|<0.01
+    process_target = zeros(nspec, dtype=bool)
+    for i in range(nspec):
+      if z.get(targetid[i],-1) != -1:
+        if (abs(z[targetid[i]]) < 0.01) & (abs(z[targetid[i]]) > 0.): process_target[i]= True
+
+    
+    #skip the rest of the code if there are no targets
+    if (process_target.nonzero()[0].size == 0): return None
+
+
     #set ids array (with targetids) and par dictionary for vrd/ipf file
     ids=[]
     par={}
 
     #truth (optional, for simulations)
     #if (len(sys.argv) == 3):
-    npass=0 #count targets that pass the filter (mws_target and perhaps |z|<something)
+    npass=0 #count targets that pass the filter (process_target)
     if truth is not None:
       (true_feh,true_teff,true_logg,true_rmag,true_z)=truth
       for k in range(nspec):
-        if (mws_target[k] > 0):
+        if process_target[k]:
           npass=npass+1
           id=str(targetid[k])
           ids.append(id)
@@ -743,12 +749,12 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
           #stop
     else:
       for k in range(nspec):
-        if (mws_target[k] > 0):
+        if process_target[k]:
           npass=npass+1
           id=str(targetid[k])
           ids.append(id)
           #we patch the redshift here to handle missing redshifts for comm. data from Sergey
-          z[targetid[k]]=0.0
+          #z[targetid[k]]=0.0
           par[id]=[0.0,0.0,0.0,mag[k][2],0.0,z[targetid[k]],ra[k],dec[k]]
           #stop        
 
@@ -776,13 +782,13 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
 
       nspec, freq = y.shape
       print('nspec=',nspec)    
-      print('n(mws_target>0)=',mws_target.nonzero()[0].size)
+      print('n(process_target)=',process_target.nonzero()[0].size)
       y2=zeros((npass,len(x1)))
       ey2=zeros((npass,len(x1)))
       k2=0
       print('nspec,len(z),npass,len(x1)=',nspec,len(z),npass,len(x1))
       for k in range(nspec):
-        if (mws_target[k] > 0):
+        if process_target[k]:
           y2[k2,:]=interp(x1,x*(1.-z[targetid[k]]),y[k,:])
           ey2[k2,:]=interp(x1,x*(1-z[targetid[k]]),ey[k,:])
           k2=k2+1
@@ -799,9 +805,8 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
       savetxt(os.path.join(sdir,pixel,pixel)+suffix+'-'+bands[j]+'.wav',x1,fmt='%14.5e')
 
     savetxt(os.path.join(sdir,pixel,pixel)+suffix+'.wav',xx,fmt='%14.5e')
-    mask = mws_target.nonzero()[0]
-    fibermap.data = fibermap.data[mask]
-    hdu0 = fits.BinTableHDU.from_columns(fibermap)
+    fmp = fibermap.data [process_target]
+    hdu0 = fits.BinTableHDU.from_columns(fmp)
     hdu0.writeto(os.path.join(sdir,pixel,pixel)+suffix+'.fmp.fits')
     print (yy.shape)
     print (eyy.shape)
@@ -812,7 +817,7 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
 
     #write slurm script
     write_slurm(pixel,path=os.path.join(sdir,pixel),
-            ngrids=len(grids),nthreads=nthreads,suffix=suffix)
+            ngrids=len(grids),nthreads=nthreads, suffix=suffix)
 
 
     #loop over all grids
@@ -852,13 +857,14 @@ def getpixels(root):
   for x in d1:
     d2=os.listdir(os.path.join(root,x))
     #d.append(os.path.join(root,x))
+    res=[i for i in d2 if '.fits' in i] 
     for y in d2: 
       #d.append(os.path.join(root,x))
-      if len(y) <6: 
+      if len(res) == 0: # there are no fits files in the 1st directory, so 2 layer (e.g. DESI)
         d.append(os.path.join(root,x,y))
       else: 
         entry=os.path.join(root,x)
-        if entry not in d: d.append(entry) #keep only the first layer (SDSS/BOSS)
+        if entry not in d: d.append(entry)  #keep only the first layer (SDSS/BOSS)
 
   print(d)
   print(len(d))
@@ -887,6 +893,7 @@ def run(pixel,path=None):
 if __name__ == "__main__":
 
   nthreads=4
+
   path=sys.argv[1]
   #path is the path to the spectra-64 directory
   pixels=getpixels(path)
@@ -900,11 +907,16 @@ if __name__ == "__main__":
 
   for entry in pixels:
     head, pixel = os.path.split(entry)
+    print('head/pixel=',head,pixel)
     sdir=''
     if head.find('spectra-64') > -1: 
       sdir=pixel[:-2]
+    if head.find('rv_output') > -1:
+      head, sdir = os.path.split(head)
       if not os.path.exists(sdir): os.mkdir(sdir)
-    os.mkdir(os.path.join(sdir,pixel))
+    if sdir != '': 
+      if not os.path.exists(sdir):os.mkdir(sdir)
+    if not os.path.exists(os.path.join(sdir,pixel)):os.mkdir(os.path.join(sdir,pixel))
     do(path,pixel,sdir=sdir,truth=truthtuple,nthreads=nthreads)
     #run(pixel,path=os.path.join(sdir,pixel))
 
