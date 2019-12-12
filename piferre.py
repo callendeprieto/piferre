@@ -16,6 +16,7 @@ import glob
 import re
 from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack
 from astropy.io import fits
+import astropy.table
 import matplotlib.pyplot as plt
 import subprocess
 import datetime, time
@@ -811,14 +812,10 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
       savetxt(os.path.join(sdir,pixel,pixel)+suffix+'-'+bands[j]+'.wav',x1,fmt='%14.5e')
 
     savetxt(os.path.join(sdir,pixel,pixel)+suffix+'.wav',xx,fmt='%14.5e')
-    fmp = fibermap.data [process_target]
-    hdu0 = fits.BinTableHDU.from_columns(fmp)
+    fmp = astropy.table.Table(fibermap.data) [process_target]
+    hdu0 = fits.BinTableHDU(fmp)
     hdu0.writeto(os.path.join(sdir,pixel,pixel)+suffix+'.fmp.fits')
-    print (yy.shape)
-    print (eyy.shape)
 
-
-    print(yy[0,0],eyy[0,0])
     write_ferre_input(pixel,ids,par,yy,eyy,path=os.path.join(sdir,pixel),suffix=suffix)
 
     #write slurm script
