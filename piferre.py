@@ -67,7 +67,7 @@ def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix=''):
     f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
     f.write("#This script was written by piferre.py on "+now+" \n") 
     if host[:4] == 'cori':
-      f.write("#SBATCH --qos=debug" + "\n")
+      f.write("#SBATCH --qos=regular" + "\n")
       f.write("#SBATCH --constraint=haswell" + "\n")
       f.write("#SBATCH --time=4"+"\n") #minutes
       f.write("#SBATCH --ntasks=1" + "\n")
