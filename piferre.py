@@ -16,7 +16,8 @@ import glob
 import re
 from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack
 from astropy.io import fits
-import astropy.table
+import astropy.table as tbl
+import astropy.units as units
 import matplotlib.pyplot as plt
 import subprocess
 import datetime, time
@@ -315,33 +316,71 @@ def write_tab_fits(pixel, path=None):
   nowstr = nowstr[:nowstr.rfind('.')]
   hdu0.header['DATE'] = nowstr
   hdulist = [hdu0]
-    
-  col01 = fits.Column(name='success',format='u1', array=array(success))
-  col02 = fits.Column(name='fid',format='30a',array=array(fid))  
-  col03 = fits.Column(name='teff',format='e4',array=array(teff))
-  col04 = fits.Column(name='logg',format='e4',array=array(logg))
-  col05 = fits.Column(name='feh',format='e4',array=array(feh))
-  col06 = fits.Column(name='alphafe',format='e4',array=array(alphafe))
-  col07 = fits.Column(name='micro',format='e4',array=array(micro))
-  col08 = fits.Column(name='covar',format='9e4',dim='(3, 3)',array=array(covar).reshape(len(success),3,3))
-  col09 = fits.Column(name='elem',format='2e4',dim='(2)',array=array(elem))
-  col10 = fits.Column(name='elem_err',format='2e4',dim='(2)',array=array(elem_err))
-  col11 = fits.Column(name='chisq_tot',format='e4',array=array(chisq_tot))
-  col12 = fits.Column(name='snr_med',format='e4',array=array(snr_med))
+
+  #col01 = fits.Column(name='success',format='u1', array=array(success), unit='')
+  #col02 = fits.Column(name='fid',format='30a',array=array(fid))  
+  #col03 = fits.Column(name='teff',format='e4',array=array(teff))
+  #col04 = fits.Column(name='logg',format='e4',array=array(logg))
+  #col05 = fits.Column(name='feh',format='e4',array=array(feh))
+  #col06 = fits.Column(name='alphafe',format='e4',array=array(alphafe))
+  #col07 = fits.Column(name='micro',format='e4',array=array(micro))
+  #col08 = fits.Column(name='covar',format='9e4',dim='(3, 3)',array=array(covar).reshape(len(success),3,3))
+  #col09 = fits.Column(name='elem',format='2e4',dim='(2)',array=array(elem))
+  #col10 = fits.Column(name='elem_err',format='2e4',dim='(2)',array=array(elem_err))
+  #col11 = fits.Column(name='chisq_tot',format='e4',array=array(chisq_tot))
+  #col12 = fits.Column(name='snr_med',format='e4',array=array(snr_med))
+
+  #coldefs = fits.ColDefs([col01,col02,col03,col04,col05,col06,col07,col08,col09,col10,col11,col12])
+  #hdu=fits.BinTableHDU.from_columns(coldefs)
+  #hdu.header=header
+  #hdulist.append(hdu)
+
+  cols = {}
+  cols['success'] = success
+  cols['fid'] = fid
+  cols['teff'] = array(teff)*units.K
+  cols['logg'] = array(logg)
+  cols['feh'] = array(feh)
+  cols['alphafe'] = array(alphafe) 
+  cols['micro'] = array(micro)*units.km/units.s
+  cols['covar'] = array(covar).reshape(len(success),3,3)
+  cols['elem'] = array(elem)
+  cols['elem_err'] = array(elem_err)
+  cols['chisq_tot'] = array(chisq_tot)
+  cols['snr_med'] = array(snr_med)
+
+  colcomm = {
+  'success': 'Bit indicating whether the code has likely produced useful results',
+  'fid': 'Identifier used in FERRE to associate input/output files',
+  'teff': 'Effective temperature',
+  'logg': 'Surface gravity (g in cm/s**2)',
+  'feh': 'Metallicity [Fe/H] = log10(N(Fe)/N(H)) - log10(N(Fe)/N(H))sun' ,
+  'alphafe': 'Alpha-to-iron ratio [alpha/Fe]',
+  'micro': 'Microturbulence',
+  'covar': 'Covariance matrix for (Teff,logg,[Fe/H])',
+  'elem': 'Elemental abundance ratios to iron [elem/Fe]',
+  'elem_err': 'Uncertainties in the elemental abundance ratios to iron',
+  'chisq_tot': 'Total chi**2',
+  'snr_med': 'Median signal-to-ratio'
+  }      
 
   
-  coldefs = fits.ColDefs([col01,col02,col03,col04,col05,col06,col07,col08,col09,col10,col11,col12])
-  hdu=fits.BinTableHDU.from_columns(coldefs)
-  hdu.header['EXTNAME']='SPTAB'
-  #hdu.header=header
+  table = tbl.Table(cols)
+  hdu=fits.BinTableHDU(table,name = 'SPTAB')
+  #hdu.header['EXTNAME']= ('SPTAB', 'Stellar Parameter Table')
+  i = 0
+  for entry in colcomm.keys():
+    print(entry) 
+    hdu.header['TCOMM'+str(i+1)] = colcomm[entry]
+    i+=1
   hdulist.append(hdu)
 
 
   if len(fmp) > 0:
     ff=fits.open(fmp[0])
     fibermap=ff[1]
-    hdu=fits.BinTableHDU.from_columns(fibermap)
-    hdu.header['EXTNAME']='FIBERMAP'
+    hdu=fits.BinTableHDU.from_columns(fibermap, name='FIBERMAP')
+    #hdu.header['EXTNAME']='FIBERMAP'
     hdulist.append(hdu)
 
   hdul=fits.HDUList(hdulist)
@@ -400,7 +439,7 @@ def write_mod_fits(pixel, path=None):
     #coldefs = fits.ColDefs([colx])
     #hdu = fits.BinTableHDU.from_columns(coldefs)
     hdu = fits.ImageHDU(name=entry+'_WAVELENGTH', data=x[j1:j2])
-    hdu.header['EXTNAME']=entry+'_WAVELENGTH'
+    #hdu.header['EXTNAME']=entry+'_WAVELENGTH'
     hdulist.append(hdu)
     
     if odata.ndim == 2: tdata = odata[:,j1:j2]
@@ -413,9 +452,9 @@ def write_mod_fits(pixel, path=None):
     else: tdata = mdata[j1:j2][None,:]
     col03 = fits.Column(name='fit',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=tdata)    
     coldefs = fits.ColDefs([col01,col02,col03])
-    hdu=fits.BinTableHDU.from_columns(coldefs)
+    hdu=fits.BinTableHDU.from_columns(coldefs, name=entry+'_MODEL')
     #hdu = fits.ImageHDU(name=entry+'_MODEL', data=stack([odata[:,j1:j2],edata[:,j1:j2],mdata[:,j1:j2]]) ) 
-    hdu.header['EXTNAME']=entry+'_MODEL'
+    #hdu.header['EXTNAME']=entry+'_MODEL'
     hdulist.append(hdu)
     i += 1
     j1 = j2
@@ -423,8 +462,8 @@ def write_mod_fits(pixel, path=None):
   if len(fmp) > 0:
     ff=fits.open(fmp[0])
     fibermap=ff[1]
-    hdu=fits.BinTableHDU.from_columns(fibermap)
-    hdu.header['EXTNAME']='FIBERMAP'
+    hdu=fits.BinTableHDU.from_columns(fibermap, name='FIBERMAP')
+    #hdu.header['EXTNAME']='FIBERMAP'
     hdulist.append(hdu)
 
   hdul=fits.HDUList(hdulist)
