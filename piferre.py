@@ -67,9 +67,10 @@ def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix=''):
     f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
     f.write("#This script was written by piferre.py on "+now+" \n") 
     if host[:4] == 'cori':
-      f.write("#SBATCH --qos=shared" + "\n")
+      f.write("#SBATCH --qos=regular" + "\n")
       f.write("#SBATCH --constraint=haswell" + "\n")
       f.write("#SBATCH --time=4"+"\n") #minutes
+      f.write("#SBATCH --ntasks=1" + "\n")
       f.write("#SBATCH --cpus-per-task="+str(nthreads*2)+"\n")
     else:
       f.write("#SBATCH  -J "+str(pixel)+" \n")
@@ -84,7 +85,11 @@ def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix=''):
     f.write("cd "+os.path.abspath(path)+"\n")
     for i in range(ngrids):
       #f.write("cp input.nml"+suffix+"_"+str(i)+" input.nml \n")
-      f.write("time "+ferre+" input.nml"+suffix+"_"+str(i)+" \n")
+      f.write("time "+ferre+" input.nml"+suffix+"_"+str(i))
+      if (i == 4) or (i > 6): 
+        f.write( "  \n")
+      else:
+        f.write( " & \n")
     if ngrids > 1:
       f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
               "'); from piferre import opfmerge, write_tab_fits, write_mod_fits; opfmerge(\'"+\
