@@ -856,7 +856,7 @@ def do(path,pixel,sdir='',truth=None,nthreads=1):
       savetxt(os.path.join(sdir,pixel,pixel)+suffix+'-'+bands[j]+'.wav',x1,fmt='%14.5e')
 
     savetxt(os.path.join(sdir,pixel,pixel)+suffix+'.wav',xx,fmt='%14.5e')
-    fmp = astropy.table.Table(fibermap.data) [process_target]
+    fmp = tbl.Table(fibermap.data) [process_target]
     hdu0 = fits.BinTableHDU(fmp)
     hdu0.writeto(os.path.join(sdir,pixel,pixel)+suffix+'.fmp.fits')
 
