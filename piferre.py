@@ -595,7 +595,9 @@ def extnames(hdu):
   return(names)
 
 #identify input data files and associated zbest files 
-def finddatafiles(path,pixel,sdir=''):
+def finddatafiles(path,pixel,sdir='',rvpath=None):
+
+  if rvpath is None: rvpath = path
 
   infiles=os.listdir(os.path.join(path,sdir,pixel))  
   datafiles=[]
@@ -606,22 +608,33 @@ def finddatafiles(path,pixel,sdir=''):
       for ff2 in extrafiles: 
         infiles.append(os.path.join(ff,ff2))
 
+  if rvpath != path:
+    infiles2=os.listdir(os.path.join(rvpath,sdir,pixel))
+    for ff in infiles2: #add subdirs, which may contain zbest files for SDSS/BOSS
+      infiles.append(ff)
+      if os.path.isdir(os.path.join(rvpath,sdir,pixel,ff)): 
+        extrafiles2=os.listdir(os.path.join(rvpath,sdir,pixel,ff))
+        for ff2 in extrafiles2: 
+          infiles.append(os.path.join(ff,ff2))
+
+
   infiles.sort()
+  print('infiles=',infiles)
 
   for filename in infiles:
 # DESI sims/data
     if (filename.find('spectra-64') > -1 and filename.find('.fits') > -1):
       datafiles.append(os.path.join(path,sdir,pixel,filename))
     elif (filename.find('zbest-64') > -1 and filename.find('.fits') > -1):
-      zbestfiles.append(os.path.join(path,sdir,pixel,filename))
+      zbestfiles.append(os.path.join(rvpath,sdir,pixel,filename))
 # BOSS data
     elif (filename.find('spPlate') > -1 and filename.find('.fits') > -1):
       datafiles.append(os.path.join(path,sdir,pixel,filename))
     elif (filename.find('spZbest') > -1 and filename.find('.fits') > -1):
-      zbestfiles.append(os.path.join(path,sdir,pixel,filename))
+      zbestfiles.append(os.path.join(rvpath,sdir,pixel,filename))
 #  DESI commissioning data
     elif (filename.find('rvtab') > -1 and filename.find('.fits') > -1):
-      zbestfiles.append(os.path.join(path,sdir,pixel,filename))
+      zbestfiles.append(os.path.join(rvpath,sdir,pixel,filename))
 
 
   #analyze the situation wrt input files
@@ -637,6 +650,7 @@ def finddatafiles(path,pixel,sdir=''):
     return (None,None)
 
   return (datafiles,zbestfiles)
+
 
 #pack a collection of fits files with binary tables in multiple HDUs into a single one
 def packfits(input="*.fits",output="output.fits"):
@@ -672,10 +686,10 @@ def packfits(input="*.fits",output="output.fits"):
 
 
 #process a single pixel
-def do(path,pixel,sdir='',truth=None,nthreads=1):
+def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None):
   
   #get input data files
-  datafiles,zbestfiles  = finddatafiles(path,pixel,sdir)
+  datafiles,zbestfiles  = finddatafiles(path,pixel,sdir,rvpath=rvpath) 
   if (datafiles == None or zbestfiles == None): return None
 
   #loop over possible multiple data files in the same pixel
@@ -942,6 +956,7 @@ if __name__ == "__main__":
   nthreads=4
 
   path=sys.argv[1]
+  rvpath=path
   #path is the path to the spectra-64 directory
   pixels=getpixels(path)
   print(pixels)
@@ -958,13 +973,14 @@ if __name__ == "__main__":
     sdir=''
     if head.find('spectra-64') > -1: 
       sdir=pixel[:-2]
-    if head.find('sp_input') > -1:
+    if head.find('spectra_fake_64') > -1:
       head, sdir = os.path.split(head)
+      rvpath = os.path.join(path,"../rv_output")
       if not os.path.exists(sdir): os.mkdir(sdir)
     if sdir != '': 
       if not os.path.exists(sdir):os.mkdir(sdir)
     if not os.path.exists(os.path.join(sdir,pixel)):os.mkdir(os.path.join(sdir,pixel))
-    do(path,pixel,sdir=sdir,truth=truthtuple,nthreads=nthreads)
+    do(path,pixel,sdir=sdir,truth=truthtuple,nthreads=nthreads, rvpath=rvpath)
     #run(pixel,path=os.path.join(sdir,pixel))
 
 
