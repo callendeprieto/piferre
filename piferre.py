@@ -616,13 +616,14 @@ def finddatafiles(path,pixel,sdir='',rvpath=None):
         infiles.append(os.path.join(ff,ff2))
 
   if rvpath != path:
-    infiles2=os.listdir(os.path.join(rvpath,sdir,pixel))
-    for ff in infiles2: #add subdirs, which may contain zbest files for SDSS/BOSS
-      infiles.append(ff)
-      if os.path.isdir(os.path.join(rvpath,sdir,pixel,ff)): 
-        extrafiles2=os.listdir(os.path.join(rvpath,sdir,pixel,ff))
-        for ff2 in extrafiles2: 
-          infiles.append(os.path.join(ff,ff2))
+    if os.path.isdir(os.path.join(rvpath,sdir,pixel)):
+      infiles2=os.listdir(os.path.join(rvpath,sdir,pixel))
+      for ff in infiles2: #add subdirs, which may contain zbest files for SDSS/BOSS
+        infiles.append(ff)
+        if os.path.isdir(os.path.join(rvpath,sdir,pixel,ff)): 
+          extrafiles2=os.listdir(os.path.join(rvpath,sdir,pixel,ff))
+          for ff2 in extrafiles2: 
+            infiles.append(os.path.join(ff,ff2))
 
 
   infiles.sort()
