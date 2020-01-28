@@ -169,40 +169,47 @@ def ferrerun(path=None):
 #read redshift derived by the DESI pipeline
 def readzbest(filename):
   hdu=fits.open(filename)
-  enames=extnames(hdu)
-  print(enames)
-  if 'ZBEST' in enames:
-    zbest=hdu['zbest'].data
-    targetid=zbest['targetid'] #array of long integers
-  else:
-    zbest=hdu[1].data
-    plate=zbest['plate']
-    mjd=zbest['mjd']
-    fiberid=zbest['fiberid']
-    targetid=[]
-    for i in range(len(plate)): 
-      targetid.append(str(plate[i])+'-'+str(mjd[i])+'-'+str(fiberid[i]))
-    targetid=array(targetid)  #array of strings
+  if len(hdu) > 1:
+    enames=extnames(hdu)
+    print(enames)
+    if 'ZBEST' in enames:
+      zbest=hdu['zbest'].data
+      targetid=zbest['targetid'] #array of long integers
+    else:
+      zbest=hdu[1].data
+      plate=zbest['plate']
+      mjd=zbest['mjd']
+      fiberid=zbest['fiberid']
+      targetid=[]
+      for i in range(len(plate)): 
+        targetid.append(str(plate[i])+'-'+str(mjd[i])+'-'+str(fiberid[i]))
+      targetid=array(targetid)  #array of strings
 
-  print(type(targetid),type(zbest['z']),type(targetid[0]))
-  print(targetid.shape,zbest['z'].shape)
-  z=dict(zip(targetid, zbest['z']))
+    print(type(targetid),type(zbest['z']),type(targetid[0]))
+    print(targetid.shape,zbest['z'].shape)
+    z=dict(zip(targetid, zbest['z']))
+  else:
+    z=dict()
+
   return(z)
 
 #read redshift derived by the Koposov pipeline
 def readk(filename):
   clight=299792.458 #km/s
   hdu=fits.open(filename)
-  k=hdu[1].data
-  #targetid=k['targetid']
-  targetid=k['fiber']
-  #teff=k['teff']
-  #logg=k['loog']
-  #vsini=k['vsini']
-  #feh=k['feh']
-  #z=k['vrad']/clight
-  z=dict(zip(targetid, k['vrad']/clight))  
-  #z_err=dict(zip(k['target_id'], k['vrad_err']/clight))  
+  if len(hdu) > 1:
+    k=hdu[1].data
+    #targetid=k['targetid']
+    targetid=k['fiber']
+    #teff=k['teff']
+    #logg=k['loog']
+    #vsini=k['vsini']
+    #feh=k['feh']
+    #z=k['vrad']/clight
+    z=dict(zip(targetid, k['vrad']/clight))  
+    #z_err=dict(zip(k['target_id'], k['vrad_err']/clight))  
+  else:
+    z=dict() 
   return(z)
 
 #read truth tables (for simulations)
