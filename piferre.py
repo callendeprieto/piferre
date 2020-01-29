@@ -529,7 +529,7 @@ def opfmerge(pixel,path=None,wait_on_sorted=False):
   if wait_on_sorted:
     o=sorted(glob.glob(root+".opf*_sorted"))  
     while (len(o) > 0):
-      time.sleep(2)
+      time.sleep(5)
       o=sorted(glob.glob(root+".opf*_sorted"))
       
 
