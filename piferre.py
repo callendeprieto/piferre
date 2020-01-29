@@ -87,11 +87,11 @@ def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix=''):
     for i in range(ngrids):
       #f.write("cp input.nml"+suffix+"_"+str(i)+" input.nml \n")
       f.write("time "+ferre+" input.nml"+suffix+"_"+str(i))
-      #if (i == 4) or (i > 6): 
-      #  f.write( "  \n")
-      #else:
-      #  f.write( " & \n")
-      f.write( " & \n")
+      if (i == 8): 
+        f.write( "  \n")
+      else:
+        f.write( " & \n")
+      #f.write( " & \n")
     if ngrids > 1:
       f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
               "'); from piferre import opfmerge, write_tab_fits, write_mod_fits; opfmerge(\'"+\
