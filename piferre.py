@@ -86,7 +86,7 @@ def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix=''):
     f.write("cd "+os.path.abspath(path)+"\n")
     for i in range(ngrids):
       #f.write("cp input.nml"+suffix+"_"+str(i)+" input.nml \n")
-      f.write("time "+ferre+" input.nml"+suffix+"_"+str(i))
+      f.write("time "+ferre+" input.nml"+suffix+"_"+str(i)+" >& log_"+str(i))
       if (i == 8): 
         f.write( "  \n")
       else:
