@@ -200,8 +200,8 @@ def readk(filename):
   hdu=fits.open(filename)
   if len(hdu) > 1:
     k=hdu[1].data
-    #targetid=k['targetid']
-    targetid=k['fiber']
+    targetid=k['targetid']
+    #targetid=k['fiber']
     #teff=k['teff']
     #logg=k['loog']
     #vsini=k['vsini']
@@ -799,11 +799,11 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None):
       #bands=['']
 
 
-    #identify targets to process based on redshift: 0.00<|z|<0.01
+    #identify targets to process based on redshift: 0.00<=|z|<0.01
     process_target = zeros(nspec, dtype=bool)
     for i in range(nspec):
       if z.get(targetid[i],-1) != -1:
-        if (abs(z[targetid[i]]) < 0.01) & (abs(z[targetid[i]]) > 0.): process_target[i]= True
+        if (abs(z[targetid[i]]) < 0.01) & (abs(z[targetid[i]]) >= 0.): process_target[i]= True
 
     
     #skip the rest of the code if there are no targets
