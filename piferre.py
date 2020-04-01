@@ -343,7 +343,7 @@ def write_tab_fits(pixel, path=None, pre='n'):
    
 
 
-    if (chisq_tot[-1]) < 1. and snr_med[-1] > 5.): # chi**2<10 and S/N>5
+    if (chisq_tot[-1] < 1. and snr_med[-1] > 5.): # chi**2<10 and S/N>5
       success.append(1) 
     else: success.append(0)
     fid.append(cells[0])
