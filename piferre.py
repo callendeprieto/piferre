@@ -580,7 +580,8 @@ def opfmerge(pixel,path=None,wait_on_sorted=False,pre='n'):
     of.append(open(o[i],'r'))
     mf.append(open(m[i],'r'))
     if len(n) > 0: nf.append(open(n[i],'r'))
-
+  print(o)
+  print(of)
   #open output files
   oo=open(root+'.opf','w')
   mo=open(root+'.mdl','w')
