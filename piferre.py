@@ -384,7 +384,10 @@ def write_tab_fits(pixel, path=None, pre='n'):
   cols['feh'] = array(feh)
   cols['alphafe'] = array(alphafe) 
   cols['micro'] = array(micro)*units.km/units.s
-  cols['covar'] = array(covar).reshape(len(success),5,5)
+  if (pre == 'n'):
+    cols['covar'] = array(covar).reshape(len(success),3,3)
+  else:
+    cols['covar'] = array(covar).reshape(len(success),5,5)
   cols['elem'] = array(elem)
   cols['elem_err'] = array(elem_err)
   cols['chisq_tot'] = array(chisq_tot)
