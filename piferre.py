@@ -258,7 +258,7 @@ def readspec(filename,band=None):
   return((wavelength,flux,ivar,res))
 
 #write piferre param. output
-def write_tab_fits(pixel, path=None):
+def write_tab_fits(pixel, path=None, pre='n'):
   
   if path is None: path=""
   root=os.path.join(path,pixel)
@@ -296,6 +296,14 @@ def write_tab_fits(pixel, path=None):
       logg.append(float(cells[3]))
       alphafe.append(nan)
       micro.append(nan)
+      chisq_tot.append(10.**float(cells[9]))
+      snr_med.append(float(cells[8]))
+      if (pre == 'n'):
+        cov = reshape(array(cells[10:],dtype=float),(3,3))
+        covar.append(cov)
+      else:
+        print('Error: a 3 parameter grid was unexpectedly included among the *m* grids)
+        sys.exit()
 
     elif (m == 39):
       #Kurucz grids with 5 dimensions: id, 5 par, 5 err, 0., 5x5 cov, med_snr, lchi
@@ -305,7 +313,14 @@ def write_tab_fits(pixel, path=None):
       logg.append(float(cells[5]))
       alphafe.append(float(cells[2]))
       micro.append(float(cells[3]))
-
+      chisq_tot.append(10.**float(cells[13]))
+      snr_med.append(float(cells[12]))
+      if (pre == 'm'):
+        cov = reshape(array(cells[14:],dtype=float),(5,5))
+        covar.append(cov)
+      else:
+        print('Error: a 5 parameter grid was unexpectedly included among the *n* grids)
+        sys.exit()
 
     elif (m == 12):
       #white dwarfs 2 dimensions: id, 2 par, 2err, 0.,2x2 cov, med_snr, lchi
@@ -314,23 +329,26 @@ def write_tab_fits(pixel, path=None):
       logg.append(float(cells[2]))
       alphafe.append(nan)
       micro.append(nan)
-      elem.append([nan,nan])
-      elem_err.append([nan,nan])
       chisq_tot.append(10.**float(cells[7]))
       snr_med.append(float(cells[6]))
+      if (pre == 'n'):
+        cov = zeros((3,3))
+        cov[1:,1:] = reshape(array(cells[8:],dtype=float),(2,2))
+        #cov = reshape(array(cells[8:],dtype=float),(2,2))
+        covar.append(cov)    
+      else:
+        cov = zeros((5,5))
+        cov[3:,3:] = reshape(array(cells[8:],dtype=float),(2,2))
+        covar.append(cov)    
+   
 
 
-    if (float(cells[m-1]) < 1. and float(cells[m-2]) > 5.): # chi**2<10 and S/N>5
+    if (chisq_tot[-1]) < 1. and snr_med[-1] > 5.): # chi**2<10 and S/N>5
       success.append(1) 
     else: success.append(0)
     fid.append(cells[0])
     elem.append([nan,nan])
     elem_err.append([nan,nan])
-    chisq_tot.append(10.**float(cells[m-1]))
-    snr_med.append(float(cells[m-2]))
-    cov = zeros((5,5))
-    cov[0:ndim,0:ndim] = reshape(array(cells[2*(ndim+1):2*(ndim+1)+ndim**2],dtype=float),(ndim,ndim))
-    covar.append(cov)
 
 
   hdu0=fits.PrimaryHDU()
