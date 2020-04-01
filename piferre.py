@@ -302,7 +302,7 @@ def write_tab_fits(pixel, path=None, pre='n'):
         cov = reshape(array(cells[10:],dtype=float),(3,3))
         covar.append(cov)
       else:
-        print('Error: a 3 parameter grid was unexpectedly included among the *m* grids)
+        print('Error: a 3 parameter grid was unexpectedly included among the *m* grids')
         sys.exit()
 
     elif (m == 39):
@@ -319,7 +319,7 @@ def write_tab_fits(pixel, path=None, pre='n'):
         cov = reshape(array(cells[14:],dtype=float),(5,5))
         covar.append(cov)
       else:
-        print('Error: a 5 parameter grid was unexpectedly included among the *n* grids)
+        print('Error: a 5 parameter grid was unexpectedly included among the *n* grids')
         sys.exit()
 
     elif (m == 12):
