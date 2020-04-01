@@ -601,7 +601,8 @@ def opfmerge(pixel,path=None,wait_on_sorted=False,pre='n'):
       array=oline.split()
       print(len(array))
       print(array)
-      print(i,float(array[ilchi[i]]))
+      print(i,ilchi[i+1],len(array))
+      print(i,float(array[ilchi[i+1]]))
       if float(array[ilchi[i+1]]) < min_chi and float(array[iteff[i+1]]) > llimit[i+1]*1.01: 
         min_chi=float(array[ilchi[i+1]])
         min_oline=oline
