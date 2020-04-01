@@ -554,11 +554,11 @@ def opfmerge(pixel,path=None,wait_on_sorted=False,pre='n'):
   
   llimit = [3500.,5500.,7000.,10000.,20000.,6000.,10000.,10000.,15000.]
   if (pre == 'n'):
-    iteff = [2,     2,     2,    2,     2,      2,    2,     2,     2   ]
-    ilchi = [18,    18,    18,   18,    18,     11,   11,    11,    11   ]
+    iteff = [2,     2,     2,    2,     2,      1,    1,     1,     1   ]
+    ilchi = [9,     9,     9,    9,     9,      7,    7,     7,     7   ]
   elif (pre == 'm'):
-    iteff = [4,     4,     4,    4,     4,      2,    2,     2,     2   ]
-    ilchi = [38,    38,    38,   38,    38,     11,   11,    11,    11   ]
+    iteff = [4,     4,     4,    4,     4,      1,    1,     1,     1   ]
+    ilchi = [13,    13,    13,   13,    13,     7,    7,     7,     7   ]
   else:
     print('Error: pre is neither n or m -- unknown grid family')
     sys.exit()
