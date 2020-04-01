@@ -50,7 +50,7 @@ def lambda_synth(synthfile):
     return x
 
 #create a slurm script for a given pixel
-def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix=''):
+def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix='', pre='n'):
     ferre=os.environ['HOME']+"/ferre/src/a.out"
     python_path=os.environ['HOME']+"/piferre"
     try: 
@@ -96,7 +96,7 @@ def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix=''):
       f.write("wait \n")
       f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
               "'); from piferre import opfmerge, write_tab_fits, write_mod_fits; opfmerge(\'"+\
-              str(pixel)+suffix+"\'); write_tab_fits(\'"+\
+              str(pixel)+suffix+"\',pre='"+pre+"\'); write_tab_fits(\'"+\
               str(pixel)+suffix+"\'); write_mod_fits(\'"+\
               str(pixel)+suffix+"\')\"\n")
     f.close()
@@ -134,7 +134,7 @@ def mknml(synthfiles,root,k,order,path=None,nthreads=1):
     #nml['INDINI']=''
     #for i in range(ndim): nml['INDINI']=nml['INDINI']+' 2 '
     nml['NTHREADS']=nthreads
-    nml['F_FORMAT']=0
+    nml['F_FORMAT']=1
     nml['F_ACCESS']=0
     #nml['CONT']=1
     #nml['NCONT']=0
@@ -282,29 +282,33 @@ def write_tab_fits(pixel, path=None):
   of=open(o[0],'r')
   for line in of:
     cells=line.split()
-    if (len(cells) == 19):
-      #Kurucz grids with 3 dimensions: id, 3 par, 3 err, 0., med_snr, lchi, 9 cov, 
-      if (float(cells[9]) < 1. and float(cells[8]) > 5.): 
-        success.append(1) 
-      else: success.append(0)
-      fid.append(cells[0])
+    #for N dim (since COVPRINT=1 in FERRE), there are m= 4 + N*(2+N) cells
+    #and likewise we can calculate N = sqrt(m-3)-1
+    m=len(cells)
+    assert (m > 6), 'Error, the file '+o[0]+' has less than 7 columns, which would correspond to ndim=2'
+    ndim=int(sqrt(m-3)-1)
+
+    if (m == 19):
+      #Kurucz grids with 3 dimensions: id, 3 par, 3 err, 0., 3x3 cov, med_snr, lchi
+      #see Allende Prieto et al. (2018, A&A)
       feh.append(float(cells[1]))
       teff.append(float(cells[2]))
       logg.append(float(cells[3]))
       alphafe.append(nan)
       micro.append(nan)
-      elem.append([nan,nan])
-      elem_err.append([nan,nan])
-      chisq_tot.append(10.**float(cells[9]))
-      snr_med.append(float(cells[8]))
-      cov = reshape(array(cells[10:],dtype=float),(3,3))
-      covar.append(cov)
-    else:
-      #white dwarfs 2 dimensions: id, 2 par, 2err, 0.,med_snr, lchi, 4 cov
-      if (float(cells[7]) < 1. and float(cells[6]) > 5.): 
-        success.append(1) 
-      else: success.append(0)
-      fid.append(cells[0])
+
+    elif (m == 39):
+      #Kurucz grids with 5 dimensions: id, 5 par, 5 err, 0., 5x5 cov, med_snr, lchi
+      #see Allende Prieto et al. (2018, A&A)
+      feh.append(float(cells[1]))
+      teff.append(float(cells[4]))
+      logg.append(float(cells[5]))
+      alphafe.append(float(cells[2]))
+      micro.append(float(cells[3]))
+
+
+    elif (m == 12):
+      #white dwarfs 2 dimensions: id, 2 par, 2err, 0.,2x2 cov, med_snr, lchi
       feh.append(-10.)
       teff.append(float(cells[1]))
       logg.append(float(cells[2]))
@@ -314,10 +318,20 @@ def write_tab_fits(pixel, path=None):
       elem_err.append([nan,nan])
       chisq_tot.append(10.**float(cells[7]))
       snr_med.append(float(cells[6]))
-      cov = zeros((3,3))
-      cov[1:,1:] = reshape(array(cells[8:],dtype=float),(2,2))
-      #cov = reshape(array(cells[8:],dtype=float),(2,2))
-      covar.append(cov)    
+
+
+    if (float(cells[m-1]) < 1. and float(cells[m-2]) > 5.): # chi**2<10 and S/N>5
+      success.append(1) 
+    else: success.append(0)
+    fid.append(cells[0])
+    elem.append([nan,nan])
+    elem_err.append([nan,nan])
+    chisq_tot.append(10.**float(cells[m-1]))
+    snr_med.append(float(cells[m-2]))
+    cov = zeros((5,5))
+    cov[0:ndim,0:ndim] = reshape(array(cells[2*(ndim+1):2*(ndim+1)+ndim**2],dtype=float),(ndim,ndim))
+    covar.append(cov)
+
 
   hdu0=fits.PrimaryHDU()
   now = datetime.datetime.fromtimestamp(time.time())
@@ -333,7 +347,7 @@ def write_tab_fits(pixel, path=None):
   #col05 = fits.Column(name='feh',format='e4',array=array(feh))
   #col06 = fits.Column(name='alphafe',format='e4',array=array(alphafe))
   #col07 = fits.Column(name='micro',format='e4',array=array(micro))
-  #col08 = fits.Column(name='covar',format='9e4',dim='(3, 3)',array=array(covar).reshape(len(success),3,3))
+  #col08 = fits.Column(name='covar',format='9e4',dim='(5, 5)',array=array(covar).reshape(len(success),5,5))
   #col09 = fits.Column(name='elem',format='2e4',dim='(2)',array=array(elem))
   #col10 = fits.Column(name='elem_err',format='2e4',dim='(2)',array=array(elem_err))
   #col11 = fits.Column(name='chisq_tot',format='e4',array=array(chisq_tot))
@@ -352,7 +366,7 @@ def write_tab_fits(pixel, path=None):
   cols['feh'] = array(feh)
   cols['alphafe'] = array(alphafe) 
   cols['micro'] = array(micro)*units.km/units.s
-  cols['covar'] = array(covar).reshape(len(success),3,3)
+  cols['covar'] = array(covar).reshape(len(success),5,5)
   cols['elem'] = array(elem)
   cols['elem_err'] = array(elem_err)
   cols['chisq_tot'] = array(chisq_tot)
@@ -366,7 +380,7 @@ def write_tab_fits(pixel, path=None):
   'feh': 'Metallicity [Fe/H] = log10(N(Fe)/N(H)) - log10(N(Fe)/N(H))sun' ,
   'alphafe': 'Alpha-to-iron ratio [alpha/Fe]',
   'micro': 'Microturbulence',
-  'covar': 'Covariance matrix for (Teff,logg,[Fe/H])',
+  'covar': 'Covariance matrix for ([Fe/H], [a/Fe], logmicro, Teff,logg)',
   'elem': 'Elemental abundance ratios to iron [elem/Fe]',
   'elem_err': 'Uncertainties in the elemental abundance ratios to iron',
   'chisq_tot': 'Total chi**2',
@@ -522,7 +536,7 @@ tuple(ppar) )
   err.close()
 
 
-def opfmerge(pixel,path=None,wait_on_sorted=False):
+def opfmerge(pixel,path=None,wait_on_sorted=False,pre='n'):
 
   if path is None: path="./"
   root=os.path.join(path,pixel)
@@ -539,8 +553,15 @@ def opfmerge(pixel,path=None,wait_on_sorted=False):
   n=sorted(glob.glob(root+".nrd?"))
   
   llimit = [3500.,5500.,7000.,10000.,20000.,6000.,10000.,10000.,15000.]
-  iteff = [2,     2,     2,    2,     2,      2,    2,     2,     2   ]
-  ilchi = [9,     9,     9,    9,     9,      7,    7,     7,     7   ]
+  if (pre == 'n'):
+    iteff = [2,     2,     2,    2,     2,      2,    2,     2,     2   ]
+    ilchi = [18,    18,    18,   18,    18,     11,   11,    11,    11   ]
+  elif (pre == 'm'):
+    iteff = [4,     4,     4,    4,     4,      2,    2,     2,     2   ]
+    ilchi = [38,    38,    38,   38,    38,     11,   11,    11,    11   ]
+  else:
+    print('Error: pre is neither n or m -- unknown grid family')
+    sys.exit()
 
   ngrid=len(o)
   if ngrid != len(m): 
@@ -704,7 +725,7 @@ def packfits(input="*.fits",output="output.fits"):
 
 
 #process a single pixel
-def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None):
+def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n'):
   
   #get input data files
   datafiles,zbestfiles  = finddatafiles(path,pixel,sdir,rvpath=rvpath) 
@@ -759,10 +780,16 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None):
       
       #set the set of grids to be used
       grids=[]
-      for item in range(9): grids.append('n_rdesi'+str(item+1))    
+      for item in range(9): grids.append(pre+'_rdesi'+str(item+1))    
       #for item in range(10): grids.append('n_rdesi'+str(item+1))
       print('grids=',grids)
-      maxorder=[3,3,3,2,1,3,3,3,3] #max. order that can be used for interpolations
+      if (pre == 'n'):
+        maxorder=[3,3,3,2,1,3,3,3,3] #max. order that can be used for interpolations
+      elif (pre == 'm'):
+        maxorder=[3,3,3,3,2,3,3,3,3]
+      else:
+        print('Error: pre is neither n or m -- unknown grid family')
+        sys.exit()
       #bands=['b']
       bands=['b','r','z']
 
@@ -789,9 +816,16 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None):
       #set the set of grids to be used
       #SDSS/BOSS
       grids=[]
-      for item in range(9): grids.append('n_rboss'+str(item+1))
+      for item in range(9): grids.append(pre+'_rboss'+str(item+1))
       print(grids)
-      maxorder=[3,3,3,2,1,3,3,3,3] #max. order that can be used for interpolations
+      if (pre == 'n'):
+        maxorder=[3,3,3,2,1,3,3,3,3] #max. order that can be used for interpolations
+      elif (pre == 'm'):
+        maxorder=[3,3,3,3,2,3,3,3,3]
+      else:
+        print('Error: pre is neither n or m -- unknown grid family')
+        sys.exit()
+
       bands=['']
       
       #LAMOST
@@ -896,7 +930,7 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None):
 
     #write slurm script
     write_slurm(pixel,path=os.path.join(sdir,pixel),
-            ngrids=len(grids),nthreads=nthreads, suffix=suffix)
+            ngrids=len(grids),nthreads=nthreads, suffix=suffix, pre=pre)
 
 
     #loop over all grids
@@ -972,6 +1006,7 @@ def run(pixel,path=None):
 if __name__ == "__main__":
 
   nthreads=4
+  pre='m'
 
   path=sys.argv[1]
   rvpath=path
@@ -998,7 +1033,7 @@ if __name__ == "__main__":
     if sdir != '': 
       if not os.path.exists(sdir):os.mkdir(sdir)
     if not os.path.exists(os.path.join(sdir,pixel)):os.mkdir(os.path.join(sdir,pixel))
-    do(path,pixel,sdir=sdir,truth=truthtuple,nthreads=nthreads, rvpath=rvpath)
+    do(path,pixel,sdir=sdir,truth=truthtuple,nthreads=nthreads, rvpath=rvpath, pre=pre)
     #run(pixel,path=os.path.join(sdir,pixel))
 
 
