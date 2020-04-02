@@ -97,7 +97,7 @@ def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix='', pre='n'):
       f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
               "'); from piferre import opfmerge, write_tab_fits, write_mod_fits; opfmerge(\'"+\
               str(pixel)+suffix+"\',pre='"+pre+"\'); write_tab_fits(\'"+\
-              str(pixel)+suffix+"\'); write_mod_fits(\'"+\
+              str(pixel)+suffix+"\',pre='"+pre+"\'); write_mod_fits(\'"+\
               str(pixel)+suffix+"\')\"\n")
     f.close()
     os.chmod(os.path.join(path,pixel+suffix+'.slurm'),0o755)
