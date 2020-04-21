@@ -139,7 +139,7 @@ def mknml(synthfiles,root,k,order,path=None,nthreads=1):
     #nml['CONT']=1
     #nml['NCONT']=0
     nml['CONT']=3
-    nml['NCONT']=50
+    nml['NCONT']=100
 
     return nml
 
