@@ -70,7 +70,7 @@ def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix='', pre='n'):
     if host[:4] == 'cori':
       f.write("#SBATCH --qos=regular" + "\n")
       f.write("#SBATCH --constraint=haswell" + "\n")
-      f.write("#SBATCH --time=60"+"\n") #minutes
+      f.write("#SBATCH --time=180"+"\n") #minutes
       f.write("#SBATCH --ntasks=1" + "\n")
       f.write("#SBATCH --cpus-per-task="+str(nthreads*2)+"\n")
     else:
