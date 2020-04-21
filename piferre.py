@@ -1031,7 +1031,7 @@ def run(pixel,path=None):
 if __name__ == "__main__":
 
   nthreads=4
-  pre='m'
+  pre='n'
 
   path=sys.argv[1]
   rvpath=path
