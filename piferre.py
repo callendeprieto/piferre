@@ -720,7 +720,7 @@ def finddatafiles(path,pixel,sdir='',rvpath=None):
 def packfits(input="*.fits",output="output.fits"):
 
 
-  f = glob.glob(input)
+  f = sorted(glob.glob(input))
 
   print('reading ... ',f[0])
   hdul1 = fits.open(f[0])
