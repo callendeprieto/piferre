@@ -1030,7 +1030,7 @@ def run(pixel,path=None):
 
 if __name__ == "__main__":
 
-  nthreads=1
+  nthreads=4
   pre='n'
 
   path=sys.argv[1]
