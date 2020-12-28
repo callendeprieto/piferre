@@ -232,7 +232,7 @@ def readspec(filename,band=None):
 
   hdu=fits.open(filename)
 
-  if filename.find('spectra-64') > -1 or filename.find('exp_') > -1: #DESI
+  if filename.find('spectra-') > -1 or filename.find('exp_') > -1: #DESI
     wavelength=hdu[band+'_WAVELENGTH'].data #wavelength array
     flux=hdu[band+'_FLUX'].data       #flux array (multiple spectra)
     ivar=hdu[band+'_IVAR'].data       #inverse variance (multiple spectra)
@@ -662,6 +662,9 @@ def finddatafiles(path,pixel,sdir='',rvpath=None):
 
   if rvpath is None: rvpath = path
 
+  print(path,rvpath)
+  print('path,sdir,pixel=',path,sdir,pixel)
+
   infiles=os.listdir(os.path.join(path,sdir,pixel))  
   datafiles=[]
   zbestfiles=[]
@@ -671,7 +674,9 @@ def finddatafiles(path,pixel,sdir='',rvpath=None):
       for ff2 in extrafiles: 
         infiles.append(os.path.join(ff,ff2))
 
+  print(path,rvpath)
   if rvpath != path:
+    print('hola')
     if os.path.isdir(os.path.join(rvpath,sdir,pixel)):
       infiles2=os.listdir(os.path.join(rvpath,sdir,pixel))
       for ff in infiles2: #add subdirs, which may contain zbest files for SDSS/BOSS
@@ -687,9 +692,9 @@ def finddatafiles(path,pixel,sdir='',rvpath=None):
 
   for filename in infiles:
 # DESI sims/data
-    if (filename.find('spectra-64') > -1 and filename.find('.fits') > -1):
+    if (filename.find('spectra-') > -1 and filename.find('.fits') > -1):
       datafiles.append(os.path.join(path,sdir,pixel,filename))
-    elif (filename.find('zbest-64') > -1 and filename.find('.fits') > -1):
+    elif (filename.find('zbest-') > -1 and filename.find('.fits') > -1):
       zbestfiles.append(os.path.join(rvpath,sdir,pixel,filename))
 # BOSS data
     elif (filename.find('spPlate') > -1 and filename.find('.fits') > -1):
@@ -1035,9 +1040,12 @@ if __name__ == "__main__":
 
   path=sys.argv[1]
   rvpath=path
-  #path is the path to the spectra-64 directory
+  rvpath=os.path.join(path,'../rv_output')
+  #path is the path to the spectra directory
   pixels=getpixels(path)
   print(pixels)
+  print('hey')
+  print(path,rvpath)
   
 
   if (len(sys.argv) == 3):  
@@ -1049,11 +1057,9 @@ if __name__ == "__main__":
     head, pixel = os.path.split(entry)
     print('head/pixel=',head,pixel)
     sdir=''
-    if head.find('spectra-64') > -1: 
-      sdir=pixel[:-2]
-    if head.find('spectra_fake_64') > -1:
+    print('path=',path)
+    if head != path:
       head, sdir = os.path.split(head)
-      rvpath = os.path.join(path,"../rv_output")
       if not os.path.exists(sdir): os.mkdir(sdir)
     if sdir != '': 
       if not os.path.exists(sdir):os.mkdir(sdir)
