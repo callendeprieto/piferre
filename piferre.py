@@ -1033,7 +1033,6 @@ def run(pixel,path=None):
 
 def main(args):
 
-
   parser = argparse.ArgumentParser(description='prepare a data set for processing with FERRE')
 
   parser.add_argument('-p','--path',
@@ -1068,10 +1067,6 @@ def main(args):
                       
 
   args = parser.parse_args()
-
-  if args.version:
-    print(rvspecfit._version.version)
-    sys.exit(0)
 
   path=args.path
   rvpath=args.rvpath
