@@ -21,6 +21,7 @@ import astropy.units as units
 import matplotlib.pyplot as plt
 import subprocess
 import datetime, time
+import argparse
 
 #extract the header of a synthfile
 def head_synth(synthfile):
@@ -107,16 +108,15 @@ def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix='', pre='n'):
 
   
 #create a FERRE control hash (content for a ferre input.nml file)
-def mknml(synthfiles,root,k,order,path=None,nthreads=1):
-    if path is None: path="."
-    path=os.path.abspath(path)
+def mknml(synthfiles,root,k,order,libpath='.',nthreads=1):
+    libpath=os.path.abspath(libpath)
     header=head_synth(synthfiles[0])
     nml={}
     ndim=int(header['N_OF_DIM'])
     nml['NDIM']=ndim
     nml['NOV']=ndim
     nml['INDV']=' '.join(map(str,arange(ndim)+1))
-    for i in range(len(synthfiles)): nml['SYNTHFILE('+str(i+1)+')'] = "'"+os.path.join(path,synthfiles[i])+"'"
+    for i in range(len(synthfiles)): nml['SYNTHFILE('+str(i+1)+')'] = "'"+os.path.join(libpath,synthfiles[i])+"'"
     nml['PFILE'] = "'"+root+".vrd"+"'"
     nml['FFILE'] = "'"+root+".frd"+"'"
     nml['ERFILE'] = "'"+root+".err"+"'"
@@ -755,7 +755,7 @@ def packfits(input="*.fits",output="output.fits"):
 
 
 #process a single pixel
-def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n'):
+def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n', libpath='.'):
   
   #get input data files
   datafiles,zbestfiles  = finddatafiles(path,pixel,sdir,rvpath=rvpath) 
@@ -914,7 +914,7 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n'):
         gridfile=grids[0]+'-'+bands[j]+'.dat'
 
       #read grid wavelength array
-      x1=lambda_synth(gridfile)
+      x1=lambda_synth(os.path.join(libpath,gridfile))
 
       #read DESI data, select targets, and resample 
       (x,y,ivar,r)=readspec(datafile,bands[j])
@@ -977,7 +977,7 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n'):
         synthfiles.append(gridfile)
 
       #prepare ferre control file
-      nml=mknml(synthfiles,pixel+suffix,k,maxorder[k],nthreads=nthreads)
+      nml=mknml(synthfiles,pixel+suffix,k,maxorder[k],nthreads=nthreads,libpath=libpath)
       writenml(nml,nmlfile='input.nml'+suffix+'_'+str(k),path=os.path.join(sdir,pixel))
       writenml(nml,path=os.path.join(sdir,pixel))
 
@@ -1031,25 +1031,63 @@ def run(pixel,path=None):
 
   return code
 
+def main(args):
 
 
-if __name__ == "__main__":
+  parser = argparse.ArgumentParser(description='prepare a data set for processing with FERRE')
 
-  nthreads=4
-  pre='n'
+  parser.add_argument('-p','--path',
+                      type=str,
+                      help='path to the input spectra dir tree',
+                      default=None)
 
-  path=sys.argv[1]
-  rvpath=path
-  #rvpath=os.path.join(path,'../rv_output')
-  #path is the path to the spectra directory
-  pixels=getpixels(path)
-  
+  parser.add_argument('-t','--truthfile',
+                      type=str,
+                      help='truth file for DESI simulations',
+                      default=None)
 
-  if (len(sys.argv) == 3):  
-    truthfile=sys.argv[2] 
+  parser.add_argument('-rv','--rvpath',
+                      type=str,
+                      help='path to the RV input data',
+                      default=None)
+
+  parser.add_argument('-pre','--prefix',
+                      type=str,
+                      help='prefix that identifies a family of spectral libraries',
+                      default='n')
+
+  parser.add_argument('-l','--libpath',
+                      type=str,
+                      help='path to the libraries, if not in the current dir',
+                      default='.')
+
+  parser.add_argument('-n','--nthreads',
+                      type=int,
+                      help='number of threads per FERRE job',
+                      default=4)
+                      
+
+  args = parser.parse_args()
+
+  if args.version:
+    print(rvspecfit._version.version)
+    sys.exit(0)
+
+  path=args.path
+  rvpath=args.rvpath
+  if rvpath is None: rvpath=path
+
+  truthfile=args.truthfile
+  if (truthfile is not None):  
     truthtuple=readtruth(truthfile)
   else: truthtuple=None
 
+  pre=args.prefix
+  libpath.args.libpath
+  nthreads=args.nthreads
+
+  pixels=getpixels(path)
+  
   for entry in pixels:
     head, pixel = os.path.split(entry)
     print('head/pixel=',head,pixel)
@@ -1063,5 +1101,6 @@ if __name__ == "__main__":
     if not os.path.exists(os.path.join(sdir,pixel)):os.mkdir(os.path.join(sdir,pixel))
     do(path,pixel,sdir=sdir,truth=truthtuple,nthreads=nthreads, rvpath=rvpath, pre=pre)
     #run(pixel,path=os.path.join(sdir,pixel))
-
-
+  
+if __name__ == "__main__":
+  main(sys.argv[1:])
