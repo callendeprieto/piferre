@@ -1040,12 +1040,9 @@ if __name__ == "__main__":
 
   path=sys.argv[1]
   rvpath=path
-  rvpath=os.path.join(path,'../rv_output')
+  #rvpath=os.path.join(path,'../rv_output')
   #path is the path to the spectra directory
   pixels=getpixels(path)
-  print(pixels)
-  print('hey')
-  print(path,rvpath)
   
 
   if (len(sys.argv) == 3):  
