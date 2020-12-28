@@ -110,7 +110,7 @@ def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix='', pre='n'):
 #create a FERRE control hash (content for a ferre input.nml file)
 def mknml(synthfiles,root,k,order,libpath='.',nthreads=1):
     libpath=os.path.abspath(libpath)
-    header=head_synth(synthfiles[0])
+    header=head_synth(os.path.join(libpath,synthfiles[0]))
     nml={}
     ndim=int(header['N_OF_DIM'])
     nml['NDIM']=ndim
@@ -1078,7 +1078,7 @@ def main(args):
   else: truthtuple=None
 
   pre=args.prefix
-  libpath.args.libpath
+  libpath=args.libpath
   nthreads=args.nthreads
 
   pixels=getpixels(path)
@@ -1094,7 +1094,7 @@ def main(args):
     if sdir != '': 
       if not os.path.exists(sdir):os.mkdir(sdir)
     if not os.path.exists(os.path.join(sdir,pixel)):os.mkdir(os.path.join(sdir,pixel))
-    do(path,pixel,sdir=sdir,truth=truthtuple,nthreads=nthreads, rvpath=rvpath, pre=pre)
+    do(path,pixel,sdir=sdir,truth=truthtuple,nthreads=nthreads, rvpath=rvpath, pre=pre, libpath=libpath)
     #run(pixel,path=os.path.join(sdir,pixel))
   
 if __name__ == "__main__":
