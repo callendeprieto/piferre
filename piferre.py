@@ -2,10 +2,9 @@
 '''
 Interface to use FERRE from python for DESI/BOSS/WEAVE data
 
-use: piferre path-to-spectra [truthfile]
+use: piferre -p path-to-spectra [-t truthfile -rv rvpath -m models -l libpath -n nthreads]
 
-e.g. piferre 
-/home/callende/work/desi/berkeley/spectro/redux/dc17a2/spectra-64 
+e.g. piferre -p /data/spectro/redux/dc17a2/spectra-64 
 
 Author C. Allende Prieto
 '''
@@ -51,7 +50,7 @@ def lambda_synth(synthfile):
     return x
 
 #create a slurm script for a given pixel
-def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix='', pre='n'):
+def write_slurm(root,nthreads=1,path=None,ngrids=None, pre='n'):
     ferre=os.environ['HOME']+"/ferre/src/a.out"
     python_path=os.environ['HOME']+"/piferre"
     try: 
@@ -60,11 +59,10 @@ def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix='', pre='n'):
       host='Unknown'
 
     now=time.strftime("%c")
-    sdir=pixel[:-2]
     if path is None: path='.'
     if ngrids is None: ngrids=1
 
-    f=open(os.path.join(path,pixel+suffix+'.slurm'),'w')
+    f=open(os.path.join(path,root+'.slurm'),'w')
     f.write("#!/bin/bash \n")
     f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
     f.write("#This script was written by piferre.py on "+now+" \n") 
@@ -75,10 +73,10 @@ def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix='', pre='n'):
       f.write("#SBATCH --ntasks=1" + "\n")
       f.write("#SBATCH --cpus-per-task="+str(nthreads*2)+"\n")
     else:
-      f.write("#SBATCH  -J "+str(pixel)+" \n")
+      f.write("#SBATCH  -J "+str(root)+" \n")
       f.write("#SBATCH  -p batch"+" \n")
-      f.write("#SBATCH  -o "+str(pixel)+"_%j.out"+" \n")
-      f.write("#SBATCH  -e "+str(pixel)+"_%j.err"+" \n")
+      f.write("#SBATCH  -o "+str(root)+"_%j.out"+" \n")
+      f.write("#SBATCH  -e "+str(root)+"_%j.err"+" \n")
       f.write("#SBATCH  -n "+str(nthreads)+" \n")
       f.write("#SBATCH  -t 04:00:00"+" \n") #hh:mm:ss
       f.write("#SBATCH  -D "+os.path.abspath(path)+" \n")
@@ -86,8 +84,8 @@ def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix='', pre='n'):
     f.write("export OMP_NUM_THREADS="+str(nthreads)+"\n")
     f.write("cd "+os.path.abspath(path)+"\n")
     for i in range(ngrids):
-      #f.write("cp input.nml"+suffix+"_"+str(i)+" input.nml \n")
-      f.write("time "+ferre+" input.nml"+suffix+"_"+str(i)+" >& log_"+str(i))
+      #f.write("cp input.nml-"+root+"_"+str(i)+" input.nml \n")
+      f.write("time "+ferre+" input.nml-"+root+"_"+str(i)+" >& log_"+str(i))
       #if (i == 8): 
       #  f.write( "  \n")
       #else:
@@ -97,11 +95,11 @@ def write_slurm(pixel,nthreads=1,path=None,ngrids=None, suffix='', pre='n'):
       f.write("wait \n")
       f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
               "'); from piferre import opfmerge, write_tab_fits, write_mod_fits; opfmerge(\'"+\
-              str(pixel)+suffix+"\',pre='"+pre+"\'); write_tab_fits(\'"+\
-              str(pixel)+suffix+"\',pre='"+pre+"\'); write_mod_fits(\'"+\
-              str(pixel)+suffix+"\')\"\n")
+              str(root)+"\',pre='"+pre+"\'); write_tab_fits(\'"+\
+              str(root)+"\',pre='"+pre+"\'); write_mod_fits(\'"+\
+              str(root)+"\')\"\n")
     f.close()
-    os.chmod(os.path.join(path,pixel+suffix+'.slurm'),0o755)
+    os.chmod(os.path.join(path,root+'.slurm'),0o755)
 
     return None
 
@@ -258,14 +256,14 @@ def readspec(filename,band=None):
   return((wavelength,flux,ivar,res))
 
 #write piferre param. output
-def write_tab_fits(pixel, path=None, pre='n'):
+def write_tab_fits(root, path=None, pre='n'):
   
   if path is None: path=""
-  root=os.path.join(path,pixel)
-  o=glob.glob(root+".opf")
-  m=glob.glob(root+".mdl")
-  n=glob.glob(root+".nrd")
-  fmp=glob.glob(root+".fmp.fits")
+  proot=os.path.join(path,root)
+  o=glob.glob(proot+".opf")
+  m=glob.glob(proot+".mdl")
+  n=glob.glob(proot+".nrd")
+  fmp=glob.glob(proot+".fmp.fits")
   
   success=[]
   fid=[]
@@ -428,43 +426,43 @@ def write_tab_fits(pixel, path=None, pre='n'):
     hdulist.append(hdu)
 
   hdul=fits.HDUList(hdulist)
-  hdul.writeto('sptab-64-'+root+'.fits')
+  hdul.writeto('sptab_'+root+'.fits')
   
   return None
   
 #write piferre spec. output  
-def write_mod_fits(pixel, path=None):  
+def write_mod_fits(root, path=None):  
   
   if path is None: path=""
-  root=os.path.join(path,pixel)
+  proot=os.path.join(path,root)
   
-  xbandfiles = sorted(glob.glob(root+'-*.wav'))
+  xbandfiles = sorted(glob.glob(proot+'-*.wav'))
   band = []
   npix = []
   for entry in xbandfiles:
     match = re.search('-[\w]*.wav',entry)
     tag = match.group()[1:-4]
     if match: band.append(tag.upper())
-    x = loadtxt(root+'-'+tag+'.wav')
+    x = loadtxt(proot+'-'+tag+'.wav')
     npix.append(len(x))
     
-  x = loadtxt(root+'.wav')
+  x = loadtxt(proot+'.wav')
   if len(npix) == 0: npix.append(len(x))
 
-  m=glob.glob(root+".mdl")
-  e=glob.glob(root+".err")
-  n=glob.glob(root+".nrd")
+  m=glob.glob(proot+".mdl")
+  e=glob.glob(proot+".err")
+  n=glob.glob(proot+".nrd")
 
-  fmp=glob.glob(root+".fmp.fits")  
+  fmp=glob.glob(proot+".fmp.fits")  
   mdata=loadtxt(m[0])
   edata=loadtxt(e[0])
   if (len(n) > 0): 
     odata=loadtxt(n[0])
-    f=glob.glob(root+".frd")
+    f=glob.glob(proot+".frd")
     fdata=loadtxt(f[0])
     edata=edata/fdata*odata
   else:
-    odata=loadtxt(root+".frd")  
+    odata=loadtxt(proot+".frd")  
 
   hdu0=fits.PrimaryHDU()
   now = datetime.datetime.fromtimestamp(time.time())
@@ -511,19 +509,19 @@ def write_mod_fits(pixel, path=None):
     hdulist.append(hdu)
 
   hdul=fits.HDUList(hdulist)
-  hdul.writeto('spmod-64-'+root+'.fits')
+  hdul.writeto('spmod_'+root+'.fits')
   
   return None
 
 #write ferre files
-def write_ferre_input(root,ids,par,y,ey,path=None,suffix=''):
+def write_ferre_input(root,ids,par,y,ey,path=None):
 
   if path is None: path="./"
 
   #open ferre input files
-  vrd=open(os.path.join(path,root)+suffix+'.vrd','w')
-  frd=open(os.path.join(path,root)+suffix+'.frd','w')
-  err=open(os.path.join(path,root)+suffix+'.err','w')
+  vrd=open(os.path.join(path,root)+'.vrd','w')
+  frd=open(os.path.join(path,root)+'.frd','w')
+  err=open(os.path.join(path,root)+'.err','w')
 
   nspec, freq = y.shape
 
@@ -701,7 +699,7 @@ def finddatafiles(path,pixel,sdir='',rvpath=None):
       datafiles.append(os.path.join(path,sdir,pixel,filename))
     elif (filename.find('spZbest') > -1 and filename.find('.fits') > -1):
       zbestfiles.append(os.path.join(rvpath,sdir,pixel,filename))
-#  DESI commissioning data
+#  DESI RVSPEC files
     elif (filename.find('rvtab') > -1 and filename.find('.fits') > -1):
       zbestfiles.append(os.path.join(rvpath,sdir,pixel,filename))
 
@@ -762,10 +760,13 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n', libpath='.
   if (datafiles == None or zbestfiles == None): return None
 
   #loop over possible multiple data files in the same pixel
-  for i in range(len(datafiles)):
+  for ifi in range(len(datafiles)):
 
-    datafile=datafiles[i]
-    zbestfile=zbestfiles[i]
+    datafile=datafiles[ifi]
+    zbestfile=zbestfiles[ifi]
+    fileroot=datafile.split('.')[-2].split('/')[-1]
+    print('datafile=',datafile)
+    print('fileroot=',fileroot)
 
     #get redshifts
     if zbestfile.find('best') > -1:
@@ -785,7 +786,6 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n', libpath='.
 
     if 'FIBERMAP' in enames: #DESI data
       fibermap=hdu['FIBERMAP']
-      suffix=''
       targetid=fibermap.data['TARGETID']
       if 'RA_TARGET' in fibermap.data.names: 
         ra=fibermap.data['RA_TARGET']
@@ -827,7 +827,6 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n', libpath='.
 
       plate=pheader['PLATEID']
       mjd=pheader['MJD']
-      suffix="-"+str(mjd)
       #fibermap=hdu['PLUGMAP']
       fibermap=hdu[5]
       fiberid=fibermap.data['fiberid']
@@ -932,13 +931,13 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n', libpath='.
       print('n(process_target)=',process_target.nonzero()[0].size)
       y2=zeros((npass,len(x1)))
       ey2=zeros((npass,len(x1)))
-      k2=0
+      k=0
       print('nspec,len(z),npass,len(x1)=',nspec,len(z),npass,len(x1))
-      for k in range(nspec):
-        if process_target[k]:
-          y2[k2,:]=interp(x1,x*(1.-z[targetid[k]]),y[k,:])
-          ey2[k2,:]=interp(x1,x*(1-z[targetid[k]]),ey[k,:])
-          k2=k2+1
+      for i in range(nspec):
+        if process_target[i]:
+          y2[k,:]=interp(x1,x*(1.-z[targetid[i]]),y[i,:])
+          ey2[k,:]=interp(x1,x*(1-z[targetid[i]]),ey[i,:])
+          k=k+1
 
       if (j==0):
         xx=x1
@@ -949,18 +948,18 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n', libpath='.
         yy=concatenate((yy,y2),axis=1)
         eyy=concatenate((eyy,ey2),axis=1)
 
-      savetxt(os.path.join(sdir,pixel,pixel)+suffix+'-'+bands[j]+'.wav',x1,fmt='%14.5e')
+      savetxt(os.path.join(sdir,pixel,fileroot)+'-'+bands[j]+'.wav',x1,fmt='%14.5e')
 
-    savetxt(os.path.join(sdir,pixel,pixel)+suffix+'.wav',xx,fmt='%14.5e')
+    savetxt(os.path.join(sdir,pixel,fileroot)+'.wav',xx,fmt='%14.5e')
     fmp = tbl.Table(fibermap.data) [process_target]
     hdu0 = fits.BinTableHDU(fmp)
-    hdu0.writeto(os.path.join(sdir,pixel,pixel)+suffix+'.fmp.fits')
+    hdu0.writeto(os.path.join(sdir,pixel,fileroot)+'.fmp.fits')
 
-    write_ferre_input(pixel,ids,par,yy,eyy,path=os.path.join(sdir,pixel),suffix=suffix)
+    write_ferre_input(fileroot,ids,par,yy,eyy,path=os.path.join(sdir,pixel))
 
     #write slurm script
-    write_slurm(pixel,path=os.path.join(sdir,pixel),
-            ngrids=len(grids),nthreads=nthreads, suffix=suffix, pre=pre)
+    write_slurm(fileroot,path=os.path.join(sdir,pixel),
+            ngrids=len(grids),nthreads=nthreads, pre=pre)
 
 
     #loop over all grids
@@ -977,9 +976,8 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n', libpath='.
         synthfiles.append(gridfile)
 
       #prepare ferre control file
-      nml=mknml(synthfiles,pixel+suffix,k,maxorder[k],nthreads=nthreads,libpath=libpath)
-      writenml(nml,nmlfile='input.nml'+suffix+'_'+str(k),path=os.path.join(sdir,pixel))
-      writenml(nml,path=os.path.join(sdir,pixel))
+      nml=mknml(synthfiles,fileroot,k,maxorder[k],nthreads=nthreads,libpath=libpath)
+      writenml(nml,nmlfile='input.nml-'+fileroot+'_'+str(k),path=os.path.join(sdir,pixel))
 
       print(k)
       print(nml)
@@ -1050,9 +1048,9 @@ def main(args):
                       help='path to the RV input data',
                       default=None)
 
-  parser.add_argument('-pre','--prefix',
+  parser.add_argument('-m','--models',
                       type=str,
-                      help='prefix that identifies a family of spectral libraries',
+                      help='family of spectral libraries to use',
                       default='n')
 
   parser.add_argument('-l','--libpath',
@@ -1077,7 +1075,7 @@ def main(args):
     truthtuple=readtruth(truthfile)
   else: truthtuple=None
 
-  pre=args.prefix
+  pre=args.models
   libpath=args.libpath
   nthreads=args.nthreads
 
