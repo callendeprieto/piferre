@@ -1,0 +1,131 @@
+bands: ['b', 'r', 'z']
+grids: ['n_rdesi0','n_rdesi1','n_rdesi2','n_rdesi3','n_rdesi4','n_rdesi5','n_rdesi6','n_rdesi7','n_rdesi8','n_rdesi9']
+global:
+    algor: 3
+    f_format: 1
+    f_access: 0
+    errbar: 1
+    covprint: 1
+    inter: 3
+    ffile_ext: 'frd'
+    erfile_ext: 'err'   
+n_rdesi0:
+   param:
+       nov: 3
+       indv: [1, 2, 3]
+       cont: 3
+       ncont: 100
+       pfile_ext: 'vrd'
+       opfile_ext: 'opf0'
+       offile_ext: 'mdl0'
+       sffile_ext: 'nrd0'
+       opindex: [3, 1, 2, None, None]
+   Ca: 
+       nov: 1
+       indv: [3]
+       cont: 3
+       ncont: 100
+       pfile_ext: 'opf0'
+       opfile_ext: 'oca0'
+       offile_ext: 'mca0'
+       sffile_ext: 'nca0'
+       opindex: [3, 1, 2, None, None]
+n_rdesi1:
+   param:
+       nov: 3
+       indv: [1, 2, 3]
+       cont: 3
+       ncont: 100
+       pfile_ext: 'vrd'
+       opfile_ext: 'opf1'
+       offile_ext: 'mdl1'
+       sffile_ext: 'nrd1'
+       opindex: [1, 2, 3, None, None]
+n_rdesi2:
+   param:
+       nov: 3
+       indv: [1, 2, 3]
+       cont: 3
+       ncont: 100
+       pfile_ext: 'vrd'
+       opfile_ext: 'opf2'
+       offile_ext: 'mdl2'
+       sffile_ext: 'nrd2'
+       opindex: [1, 2, 3, None, None]
+n_rdesi3:
+   param:
+       nov: 3
+       indv: [1, 2, 3]
+       cont: 3
+       ncont: 100
+       pfile_ext: 'vrd'
+       opfile_ext: 'opf3'
+       offile_ext: 'mdl3'
+       sffile_ext: 'nrd3'
+       opindex: [1, 2, 3, None, None]
+n_rdesi4:
+   param:
+       nov: 3
+       indv: [1, 2, 3]
+       cont: 3
+       ncont: 100
+       pfile_ext: 'vrd'
+       opfile_ext: 'opf4'
+       offile_ext: 'mdl4'
+       sffile_ext: 'nrd4'
+       opindex: [1, 2, 3, None, None]
+n_rdesi5:
+   param:
+       nov: 3
+       indv: [1, 2, 3]
+       cont: 3
+       ncont: 100
+       pfile_ext: 'vrd'
+       opfile_ext: 'opf5'
+       offile_ext: 'mdl5'
+       sffile_ext: 'nrd5'
+       opindex: [1, 2, 3, None, None]
+n_rdesi6:
+   param:
+       nov: 2
+       indv: [1, 2]
+       cont: 3
+       ncont: 300
+       pfile_ext: 'vrd'
+       opfile_ext: 'opf6'
+       offile_ext: 'mdl6'
+       sffile_ext: 'nrd6'
+       opindex: [None, 1, 2, None, None]
+n_rdesi7:
+   param:
+       nov: 2
+       indv: [1, 2]
+       cont: 3
+       ncont: 300
+       pfile_ext: '.vrd'
+       opfile_ext: '.opf7'
+       offile_ext: '.mdl7'
+       sffile_ext: '.nrd7'
+       opindex: [None, 1, 2, None, None]
+n_rdesi8:
+   param:
+       nov: 2
+       indv: [1, 2]
+       cont: 3
+       ncont: 300
+       pfile_ext: 'vrd'
+       opfile_ext: 'opf8'
+       offile_ext: 'mdl8'
+       sffile_ext: 'nrd8'
+       opindex: [None, 1, 2, None, None]
+n_rdesi9:
+   param:
+       nov: 2
+       indv: [1, 2]
+       cont: 3
+       ncont: 300
+       pfile_ext: 'vrd'
+       opfile_ext: 'opf9'
+       offile_ext: 'mdl9'
+       sffile_ext: 'nrd9'
+       opindex: [None, 1, 2, None, None]
