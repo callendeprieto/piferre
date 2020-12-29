@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 import subprocess
 import datetime, time
 import argparse
+import yaml
 
 #extract the header of a synthfile
 def head_synth(synthfile):
@@ -85,7 +86,7 @@ def write_slurm(root,nthreads=1,path=None,ngrids=None, pre='n'):
     f.write("cd "+os.path.abspath(path)+"\n")
     for i in range(ngrids):
       #f.write("cp input.nml-"+root+"_"+str(i)+" input.nml \n")
-      f.write("time "+ferre+" input.nml-"+root+"_"+str(i)+" >& log_"+str(i))
+      f.write("time "+ferre+" -l input.lst-"+root+"_"+str(i)+" >& log_"+str(i))
       #if (i == 8): 
       #  f.write( "  \n")
       #else:
@@ -106,40 +107,65 @@ def write_slurm(root,nthreads=1,path=None,ngrids=None, pre='n'):
 
   
 #create a FERRE control hash (content for a ferre input.nml file)
-def mknml(synthfiles,root,k,order,libpath='.',nthreads=1):
+def mknml(config,root,nthreads=1,libpath='.',path='.'):
+
+  grids=config['grids']
+
+  for k in range(len(grids)): #loop over all grids
+    synth=grids[k]
+    synthfiles=[]
+    for band in config['bands']:
+      if band == '':
+        gridfile=synth+'.dat'
+      else:
+        gridfile=synth+'-'+band+'.dat'
+      synthfiles.append(gridfile)
+
     libpath=os.path.abspath(libpath)
     header=head_synth(os.path.join(libpath,synthfiles[0]))
-    nml={}
     ndim=int(header['N_OF_DIM'])
-    nml['NDIM']=ndim
-    nml['NOV']=ndim
-    nml['INDV']=' '.join(map(str,arange(ndim)+1))
-    for i in range(len(synthfiles)): nml['SYNTHFILE('+str(i+1)+')'] = "'"+os.path.join(libpath,synthfiles[i])+"'"
-    nml['PFILE'] = "'"+root+".vrd"+"'"
-    nml['FFILE'] = "'"+root+".frd"+"'"
-    nml['ERFILE'] = "'"+root+".err"+"'"
-    nml['OPFILE'] = "'"+root+".opf"+str(k)+"'"
-    nml['OFFILE'] = "'"+root+".mdl"+str(k)+"'"
-    nml['SFFILE'] = "'"+root+".nrd"+str(k)+"'"
-    #nml['WFILE'] = "'"+root+".wav"+"'"
-    nml['ERRBAR']=1
-    nml['COVPRINT']=1
-    #nml['WINTER']=2
-    nml['INTER']=order
-    nml['ALGOR']=3
-    #nml['GEN_NUM']=5000
-    #nml['NRUNS']=2**ndim
-    #nml['INDINI']=''
-    #for i in range(ndim): nml['INDINI']=nml['INDINI']+' 2 '
-    nml['NTHREADS']=nthreads
-    nml['F_FORMAT']=1
-    nml['F_ACCESS']=0
-    #nml['CONT']=1
-    #nml['NCONT']=0
-    nml['CONT']=3
-    nml['NCONT']=100
 
-    return nml
+    lst=open(os.path.join(path,'input.lst-'+root+'_'+str(k)),'w')
+    for run in config[synth]: #loop over all runs (param + elements)
+      print('run=',run)
+      nml={}
+      nml['NDIM']=ndim
+      nml['NOV']=config[synth][run]['nov']
+      #nml['INDV']=' '.join(map(str,arange(ndim)+1))
+      nml['INDV']=' '.join(map(str,config[synth][run]['indv']))
+      for i in range(len(synthfiles)): 
+        nml['SYNTHFILE('+str(i+1)+')'] = "'"+os.path.join(libpath,synthfiles[i])+"'"
+      nml['PFILE'] = "'"+root+'.'+config[synth][run]['pfile_ext']+"'"
+      nml['FFILE'] = "'"+root+'.'+config['global']['ffile_ext']+"'"
+      nml['ERFILE'] = "'"+root+'.'+config['global']['erfile_ext']+"'"
+      nml['OPFILE'] = "'"+root+'.'+config[synth][run]['opfile_ext']+"'"
+      nml['OFFILE'] = "'"+root+'.'+config[synth][run]['offile_ext']+"'"
+      nml['SFFILE'] = "'"+root+'.'+config[synth][run]['sffile_ext']+"'"
+      #nml['WFILE'] = "'"+root+".wav"+"'"
+      nml['ERRBAR']=config['global']['errbar']
+      nml['COVPRINT']=config['global']['covprint']
+      #nml['WINTER']=2
+      nml['INTER']=config['global']['inter']
+      nml['ALGOR']=config['global']['algor']
+      #nml['GEN_NUM']=5000
+      #nml['NRUNS']=2**ndim
+      #nml['INDINI']=''
+      #for i in range(ndim): nml['INDINI']=nml['INDINI']+' 2 '
+      nml['NTHREADS']=nthreads
+      nml['F_FORMAT']=config['global']['f_format']
+      nml['F_ACCESS']=config['global']['f_access']
+      #nml['CONT']=1
+      #nml['NCONT']=0
+      nml['CONT']=config[synth][run]['cont']
+      nml['NCONT']=config[synth][run]['ncont']
+
+      nmlfile='input.nml-'+root+'_'+str(k)+run
+      lst.write(nmlfile+'\n')
+      writenml(nml,nmlfile=nmlfile,path=path)
+
+    lst.close()
+
+  return None
 
 #write out a FERRE control hash to an input.nml file
 def writenml(nml,nmlfile='input.nml',path=None):
@@ -759,6 +785,26 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n', libpath='.
   datafiles,zbestfiles  = finddatafiles(path,pixel,sdir,rvpath=rvpath) 
   if (datafiles == None or zbestfiles == None): return None
 
+  #identify data source
+  datafile=datafiles[0]
+  hdu=fits.open(datafile)
+  enames=extnames(hdu)
+  if 'FIBERMAP' in enames: 
+    source='desi'
+  else:
+    source='boss'
+
+  #gather config. info
+  ydir = os.path.dirname(os.path.realpath(__file__))
+  yfile=open(os.path.join(ydir,source+'-'+pre+'.yaml'),'r')
+  config=yaml.full_load(yfile)
+  yfile.close()
+  #set the set of grids to be used
+  grids=config['grids']
+  print('grids=',grids)
+  bands=config['bands']
+
+
   #loop over possible multiple data files in the same pixel
   for ifi in range(len(datafiles)):
 
@@ -784,7 +830,7 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n', libpath='.
     print('datafile='+datafile)
     print('extensions=',enames)
 
-    if 'FIBERMAP' in enames: #DESI data
+    if source == 'desi': #DESI data
       fibermap=hdu['FIBERMAP']
       targetid=fibermap.data['TARGETID']
       if 'RA_TARGET' in fibermap.data.names: 
@@ -808,20 +854,6 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n', libpath='.
           for kk in range(len(targetid)-1): mag.append(-9999.*ones(5))
       nspec=ra.size
       
-      #set the set of grids to be used
-      grids=[]
-      for item in range(9): grids.append(pre+'_rdesi'+str(item+1))    
-      #for item in range(10): grids.append('n_rdesi'+str(item+1))
-      print('grids=',grids)
-      if (pre == 'n'):
-        maxorder=[3,3,3,2,1,3,3,3,3] #max. order that can be used for interpolations
-      elif (pre == 'm'):
-        maxorder=[3,3,3,3,2,3,3,3,3]
-      else:
-        print('Error: pre is neither n or m -- unknown grid family')
-        sys.exit()
-      #bands=['b']
-      bands=['b','r','z']
 
     else:  #SDSS/BOSS data
 
@@ -840,27 +872,6 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n', libpath='.
         targetid.append(str(plate)+'-'+str(mjd)+'-'+str(fiberid[i]))
 
       targetid=array(targetid)
-
-
-      #set the set of grids to be used
-      #SDSS/BOSS
-      grids=[]
-      for item in range(9): grids.append(pre+'_rboss'+str(item+1))
-      print(grids)
-      if (pre == 'n'):
-        maxorder=[3,3,3,2,1,3,3,3,3] #max. order that can be used for interpolations
-      elif (pre == 'm'):
-        maxorder=[3,3,3,3,2,3,3,3,3]
-      else:
-        print('Error: pre is neither n or m -- unknown grid family')
-        sys.exit()
-
-      bands=['']
-      
-      #LAMOST
-      #grids=['n_crump3hL']
-      #maxorder=[3]
-      #bands=['']
 
 
     #identify targets to process based on redshift: 0.00<=|z|<0.01
@@ -963,27 +974,10 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n', libpath='.
 
 
     #loop over all grids
-    for k in range(len(grids)):
- 
-      #make an array with the names of the synthfiles
-      synthfiles=[]
-      for j in range(len(bands)):
-        if bands[j] == '': 
-          gridfile=grids[k]+'.dat'
-        else:
-          gridfile=grids[k]+'-'+bands[j]+'.dat'
+    mknml(config,fileroot,nthreads=nthreads,libpath=libpath,path=os.path.join(sdir,pixel))
 
-        synthfiles.append(gridfile)
-
-      #prepare ferre control file
-      nml=mknml(synthfiles,fileroot,k,maxorder[k],nthreads=nthreads,libpath=libpath)
-      writenml(nml,nmlfile='input.nml-'+fileroot+'_'+str(k),path=os.path.join(sdir,pixel))
-
-      print(k)
-      print(nml)
-
-      #run ferre
-      #ferrerun(path=os.path.join(sdir,pixel))
+    #run ferre
+    #ferrerun(path=os.path.join(sdir,pixel))
 
     #opfmerge(pixel,path=os.path.join(sdir,pixel))
 
