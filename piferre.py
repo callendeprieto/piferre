@@ -51,7 +51,7 @@ def lambda_synth(synthfile):
     return x
 
 #create a slurm script for a given pixel
-def write_slurm(root,nthreads=1,path=None,ngrids=None, pre='n'):
+def write_slurm(root,nthreads=1,path=None,ngrids=None, config='desi-n.yaml'):
     ferre=os.environ['HOME']+"/ferre/src/a.out"
     python_path=os.environ['HOME']+"/piferre"
     try: 
@@ -96,8 +96,8 @@ def write_slurm(root,nthreads=1,path=None,ngrids=None, pre='n'):
       f.write("wait \n")
       f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
               "'); from piferre import opfmerge, write_tab_fits, write_mod_fits; opfmerge(\'"+\
-              str(root)+"\',pre='"+pre+"\'); write_tab_fits(\'"+\
-              str(root)+"\',pre='"+pre+"\'); write_mod_fits(\'"+\
+              str(root)+"\',config='"+config+"\'); write_tab_fits(\'"+\
+              str(root)+"\',config='"+config+"\'); write_mod_fits(\'"+\
               str(root)+"\')\"\n")
     f.close()
     os.chmod(os.path.join(path,root+'.slurm'),0o755)
@@ -107,14 +107,14 @@ def write_slurm(root,nthreads=1,path=None,ngrids=None, pre='n'):
 
   
 #create a FERRE control hash (content for a ferre input.nml file)
-def mknml(config,root,nthreads=1,libpath='.',path='.'):
+def mknml(conf,root,nthreads=1,libpath='.',path='.'):
 
-  grids=config['grids']
+  grids=conf['grids']
 
   for k in range(len(grids)): #loop over all grids
     synth=grids[k]
     synthfiles=[]
-    for band in config['bands']:
+    for band in conf['bands']:
       if band == '':
         gridfile=synth+'.dat'
       else:
@@ -126,38 +126,38 @@ def mknml(config,root,nthreads=1,libpath='.',path='.'):
     ndim=int(header['N_OF_DIM'])
 
     lst=open(os.path.join(path,'input.lst-'+root+'_'+str(k)),'w')
-    for run in config[synth]: #loop over all runs (param + elements)
+    for run in conf[synth]: #loop over all runs (param + elements)
       print('run=',run)
       nml={}
       nml['NDIM']=ndim
-      nml['NOV']=config[synth][run]['nov']
+      nml['NOV']=conf[synth][run]['nov']
       #nml['INDV']=' '.join(map(str,arange(ndim)+1))
-      nml['INDV']=' '.join(map(str,config[synth][run]['indv']))
+      nml['INDV']=' '.join(map(str,conf[synth][run]['indv']))
       for i in range(len(synthfiles)): 
         nml['SYNTHFILE('+str(i+1)+')'] = "'"+os.path.join(libpath,synthfiles[i])+"'"
-      nml['PFILE'] = "'"+root+'.'+config[synth][run]['pfile_ext']+"'"
-      nml['FFILE'] = "'"+root+'.'+config['global']['ffile_ext']+"'"
-      nml['ERFILE'] = "'"+root+'.'+config['global']['erfile_ext']+"'"
-      nml['OPFILE'] = "'"+root+'.'+config[synth][run]['opfile_ext']+"'"
-      nml['OFFILE'] = "'"+root+'.'+config[synth][run]['offile_ext']+"'"
-      nml['SFFILE'] = "'"+root+'.'+config[synth][run]['sffile_ext']+"'"
+      nml['PFILE'] = "'"+root+'.'+conf[synth][run]['pfile_ext']+"'"
+      nml['FFILE'] = "'"+root+'.'+conf['global']['ffile_ext']+"'"
+      nml['ERFILE'] = "'"+root+'.'+conf['global']['erfile_ext']+"'"
+      nml['OPFILE'] = "'"+root+'.'+conf[synth][run]['opfile_ext']+"'"
+      nml['OFFILE'] = "'"+root+'.'+conf[synth][run]['offile_ext']+"'"
+      nml['SFFILE'] = "'"+root+'.'+conf[synth][run]['sffile_ext']+"'"
       #nml['WFILE'] = "'"+root+".wav"+"'"
-      nml['ERRBAR']=config['global']['errbar']
-      nml['COVPRINT']=config['global']['covprint']
+      nml['ERRBAR']=conf['global']['errbar']
+      nml['COVPRINT']=conf['global']['covprint']
       #nml['WINTER']=2
-      nml['INTER']=config['global']['inter']
-      nml['ALGOR']=config['global']['algor']
+      nml['INTER']=conf['global']['inter']
+      nml['ALGOR']=conf['global']['algor']
       #nml['GEN_NUM']=5000
       #nml['NRUNS']=2**ndim
       #nml['INDINI']=''
       #for i in range(ndim): nml['INDINI']=nml['INDINI']+' 2 '
       nml['NTHREADS']=nthreads
-      nml['F_FORMAT']=config['global']['f_format']
-      nml['F_ACCESS']=config['global']['f_access']
+      nml['F_FORMAT']=conf['global']['f_format']
+      nml['F_ACCESS']=conf['global']['f_access']
       #nml['CONT']=1
       #nml['NCONT']=0
-      nml['CONT']=config[synth][run]['cont']
-      nml['NCONT']=config[synth][run]['ncont']
+      nml['CONT']=conf[synth][run]['cont']
+      nml['NCONT']=conf[synth][run]['ncont']
 
       nmlfile='input.nml-'+root+'_'+str(k)+run
       lst.write(nmlfile+'\n')
@@ -282,7 +282,7 @@ def readspec(filename,band=None):
   return((wavelength,flux,ivar,res))
 
 #write piferre param. output
-def write_tab_fits(root, path=None, pre='n'):
+def write_tab_fits(root, path=None, config='desi-n.yaml'):
   
   if path is None: path=""
   proot=os.path.join(path,root)
@@ -312,8 +312,8 @@ def write_tab_fits(root, path=None, pre='n'):
     assert (m > 6), 'Error, the file '+o[0]+' has less than 7 columns, which would correspond to ndim=2'
     ndim=int(sqrt(m-3)-1)
 
-    if (m == 19):
-      #Kurucz grids with 3 dimensions: id, 3 par, 3 err, 0., 3x3 cov, med_snr, lchi
+    if (ndim == 3):
+      #Kurucz grids with 3 dimensions: id, 3 par, 3 err, 0., med_snr, lchi, 3x3 cov
       #see Allende Prieto et al. (2018, A&A)
       feh.append(float(cells[1]))
       teff.append(float(cells[2]))
@@ -322,15 +322,11 @@ def write_tab_fits(root, path=None, pre='n'):
       micro.append(nan)
       chisq_tot.append(10.**float(cells[9]))
       snr_med.append(float(cells[8]))
-      if (pre == 'n'):
-        cov = reshape(array(cells[10:],dtype=float),(3,3))
-        covar.append(cov)
-      else:
-        print('Error: a 3 parameter grid was unexpectedly included among the *m* grids')
-        sys.exit()
+      cov = reshape(array(cells[10:],dtype=float),(3,3))
+      covar.append(cov)
 
-    elif (m == 39):
-      #Kurucz grids with 5 dimensions: id, 5 par, 5 err, 0., 5x5 cov, med_snr, lchi
+    elif (ndim == 5):
+      #Kurucz grids with 5 dimensions: id, 5 par, 5 err, 0., med_snr, lchi, 5x5 cov
       #see Allende Prieto et al. (2018, A&A)
       feh.append(float(cells[1]))
       teff.append(float(cells[4]))
@@ -339,15 +335,11 @@ def write_tab_fits(root, path=None, pre='n'):
       micro.append(float(cells[3]))
       chisq_tot.append(10.**float(cells[13]))
       snr_med.append(float(cells[12]))
-      if (pre == 'm'):
-        cov = reshape(array(cells[14:],dtype=float),(5,5))
-        covar.append(cov)
-      else:
-        print('Error: a 5 parameter grid was unexpectedly included among the *n* grids')
-        sys.exit()
-
-    elif (m == 12):
-      #white dwarfs 2 dimensions: id, 2 par, 2err, 0.,2x2 cov, med_snr, lchi
+      cov = reshape(array(cells[14:],dtype=float),(5,5))
+      covar.append(cov)
+  
+    elif (ndim == 2):
+      #white dwarfs 2 dimensions: id, 2 par, 2err, 0., med_snr, lchi, 2x2 cov
       feh.append(-10.)
       teff.append(float(cells[1]))
       logg.append(float(cells[2]))
@@ -355,7 +347,7 @@ def write_tab_fits(root, path=None, pre='n'):
       micro.append(nan)
       chisq_tot.append(10.**float(cells[7]))
       snr_med.append(float(cells[6]))
-      if (pre == 'n'):
+      if (config == 'desi-n.yaml'):
         cov = zeros((3,3))
         cov[1:,1:] = reshape(array(cells[8:],dtype=float),(2,2))
         #cov = reshape(array(cells[8:],dtype=float),(2,2))
@@ -365,7 +357,26 @@ def write_tab_fits(root, path=None, pre='n'):
         cov[3:,3:] = reshape(array(cells[8:],dtype=float),(2,2))
         covar.append(cov)    
    
-
+    elif (ndim == 4):
+      #Phoenix grid from Sergey, with 4 dimensions: id, 4 par, 4err, 0., med_snr, lchi, 4x4 cov
+      feh.append(float(cells[2])
+      teff.append(float(cells[4]))
+      logg.append(float(cells[3]))
+      alphafe.append(float(cells[1]))
+      micro.append(nan)
+      chisq_tot.append(10.**float(cells[11]))
+      snr_med.append(float(cells[10]))
+      if (config == 'desi-n.yaml'):
+        cov = zeros((3,3))
+        cov[:,:] = reshape(array(cells[12:],dtype=float),(4,4))[1:,1:]
+        covar.append(cov)    
+      else:
+        print('Error: this path in the code is not yet ready!')
+        sys.exit()
+        cov = zeros((5,5))
+        cov[3:,3:] = reshape(array(cells[8:],dtype=float),(2,2))
+        covar.append(cov)    
+   
 
     if (chisq_tot[-1] < 1. and snr_med[-1] > 5.): # chi**2<10 and S/N>5
       success.append(1) 
@@ -408,7 +419,7 @@ def write_tab_fits(root, path=None, pre='n'):
   cols['feh'] = array(feh)
   cols['alphafe'] = array(alphafe) 
   cols['micro'] = array(micro)*units.km/units.s
-  if (pre == 'n'):
+  if (config == 'desi-n.yaml'):
     cols['covar'] = array(covar).reshape(len(success),3,3)
   else:
     cols['covar'] = array(covar).reshape(len(success),5,5)
@@ -581,32 +592,39 @@ tuple(ppar) )
   err.close()
 
 
-def opfmerge(pixel,path=None,wait_on_sorted=False,pre='n'):
+def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
 
   if path is None: path="./"
-  root=os.path.join(path,pixel)
+  proot=os.path.join(path,root)
 
   if wait_on_sorted:
-    o=sorted(glob.glob(root+".opf*_sorted"))  
+    o=sorted(glob.glob(proot+".opf*_sorted"))  
     while (len(o) > 0):
       time.sleep(5)
-      o=sorted(glob.glob(root+".opf*_sorted"))
+      o=sorted(glob.glob(proot+".opf*_sorted"))
       
 
-  o=sorted(glob.glob(root+".opf?"))
-  m=sorted(glob.glob(root+".mdl?"))
-  n=sorted(glob.glob(root+".nrd?"))
-  
-  llimit = [3500.,5500.,7000.,10000.,20000.,6000.,10000.,10000.,15000.]
-  if (pre == 'n'):
-    iteff = [2,     2,     2,    2,     2,      1,    1,     1,     1   ]
-    ilchi = [9,     9,     9,    9,     9,      7,    7,     7,     7   ]
-  elif (pre == 'm'):
-    iteff = [4,     4,     4,    4,     4,      1,    1,     1,     1   ]
-    ilchi = [13,    13,    13,   13,    13,     7,    7,     7,     7   ]
-  else:
-    print('Error: pre is neither n or m -- unknown grid family')
-    sys.exit()
+  o=sorted(glob.glob(proot+".opf?"))
+  m=sorted(glob.glob(proot+".mdl?"))
+  n=sorted(glob.glob(proot+".nrd?"))
+ 
+
+  llimit=[] # lower limits for Teff
+  iteff=[]  # column for Teff in opf
+  ilchi=[]  # column for log10(red. chi**2) in opf
+  ydir = os.path.dirname(os.path.realpath(__file__))
+  yfile=open(os.path.join(ydir,config),'r')
+  conf=yaml.full_load(yfile)
+  yfile.close()
+  #set the set of grids to be used
+  grids=conf['grids']
+  for entry in grids:
+    tmplist=conf[entry]['param']['labels']
+    iteffcol = [idx for idx, element in enumerate(tmplist) if element == 'Teff'][0]
+    llimit.append(conf[entry]['param']['llimits'][iteffcol])
+    iteff.append(iteffcol+1)
+    ilchi.append(conf[entry]['param']['ndim']*2+3)
+
 
   ngrid=len(o)
   if ngrid != len(m): 
@@ -628,13 +646,13 @@ def opfmerge(pixel,path=None,wait_on_sorted=False,pre='n'):
   print(o)
   print(of)
   #open output files
-  oo=open(root+'.opf','w')
-  mo=open(root+'.mdl','w')
-  if len(n) > 0: no=open(root+'.nrd','w')
+  oo=open(proot+'.opf','w')
+  mo=open(proot+'.mdl','w')
+  if len(n) > 0: no=open(proot+'.nrd','w')
  
   for line in of[0]: 
-    array=line.split()
-    min_chi=float(array[ilchi[0]])
+    tmparr=line.split()
+    min_chi=float(tmparr[ilchi[0]])
     min_oline=line
     print(min_chi,min_oline)
     min_mline=mf[0].readline()
@@ -643,13 +661,13 @@ def opfmerge(pixel,path=None,wait_on_sorted=False,pre='n'):
       oline=of[i+1].readline()
       mline=mf[i+1].readline()
       if len(n) > 0: nline=nf[i+1].readline()
-      array=oline.split()
-      #print(len(array))
-      #print(array)
-      #print(i,ilchi[i+1],len(array))
-      #print(i,float(array[ilchi[i+1]]))
-      if float(array[ilchi[i+1]]) < min_chi and float(array[iteff[i+1]]) > llimit[i+1]*1.01: 
-        min_chi=float(array[ilchi[i+1]])
+      tmparr=oline.split()
+      #print(len(tmparr))
+      #print(tmparr)
+      #print(i,ilchi[i+1],len(tmparr))
+      #print(i,float(tmparr[ilchi[i+1]]))
+      if float(tmparr[ilchi[i+1]]) < min_chi and float(tmparr[iteff[i+1]]) > llimit[i+1]*1.01: 
+        min_chi=float(tmparr[ilchi[i+1]])
         min_oline=oline
         min_mline=mline
         if len(n) > 0: min_nline=nline
@@ -779,7 +797,7 @@ def packfits(input="*.fits",output="output.fits"):
 
 
 #process a single pixel
-def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n', libpath='.'):
+def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, libpath='.', config='desi-n.yaml'):
   
   #get input data files
   datafiles,zbestfiles  = finddatafiles(path,pixel,sdir,rvpath=rvpath) 
@@ -796,13 +814,13 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n', libpath='.
 
   #gather config. info
   ydir = os.path.dirname(os.path.realpath(__file__))
-  yfile=open(os.path.join(ydir,source+'-'+pre+'.yaml'),'r')
-  config=yaml.full_load(yfile)
+  yfile=open(os.path.join(ydir,config),'r')
+  conf=yaml.full_load(yfile)
   yfile.close()
   #set the set of grids to be used
-  grids=config['grids']
+  grids=conf['grids']
   print('grids=',grids)
-  bands=config['bands']
+  bands=conf['bands']
 
 
   #loop over possible multiple data files in the same pixel
@@ -970,11 +988,11 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, pre='n', libpath='.
 
     #write slurm script
     write_slurm(fileroot,path=os.path.join(sdir,pixel),
-            ngrids=len(grids),nthreads=nthreads, pre=pre)
+            ngrids=len(grids),nthreads=nthreads, config=config)
 
 
     #loop over all grids
-    mknml(config,fileroot,nthreads=nthreads,libpath=libpath,path=os.path.join(sdir,pixel))
+    mknml(conf,fileroot,nthreads=nthreads,libpath=libpath,path=os.path.join(sdir,pixel))
 
     #run ferre
     #ferrerun(path=os.path.join(sdir,pixel))
@@ -1042,11 +1060,6 @@ def main(args):
                       help='path to the RV input data',
                       default=None)
 
-  parser.add_argument('-m','--models',
-                      type=str,
-                      help='family of spectral libraries to use',
-                      default='n')
-
   parser.add_argument('-l','--libpath',
                       type=str,
                       help='path to the libraries, if not in the current dir',
@@ -1057,6 +1070,10 @@ def main(args):
                       help='number of threads per FERRE job',
                       default=4)
                       
+  parser.add_argument('-c','--config',
+                      type=int,
+                      help='yaml configuration file for FERRE runs',
+                      default='desi-n.yaml')
 
   args = parser.parse_args()
 
@@ -1069,7 +1086,7 @@ def main(args):
     truthtuple=readtruth(truthfile)
   else: truthtuple=None
 
-  pre=args.models
+  config=args.config
   libpath=args.libpath
   nthreads=args.nthreads
 
@@ -1085,8 +1102,13 @@ def main(args):
       if not os.path.exists(sdir): os.mkdir(sdir)
     if sdir != '': 
       if not os.path.exists(sdir):os.mkdir(sdir)
-    if not os.path.exists(os.path.join(sdir,pixel)):os.mkdir(os.path.join(sdir,pixel))
-    do(path,pixel,sdir=sdir,truth=truthtuple,nthreads=nthreads, rvpath=rvpath, pre=pre, libpath=libpath)
+    if not os.path.exists(os.path.join(sdir,pixel)): 
+      os.mkdir(os.path.join(sdir,pixel))
+
+    do(path,pixel,sdir=sdir,truth=truthtuple, 
+       rvpath=rvpath, libpath=libpath, 
+       nthreads=nthreads, config=config,)
+
     #run(pixel,path=os.path.join(sdir,pixel))
   
 if __name__ == "__main__":
