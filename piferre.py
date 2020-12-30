@@ -359,7 +359,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
    
     elif (ndim == 4):
       #Phoenix grid from Sergey, with 4 dimensions: id, 4 par, 4err, 0., med_snr, lchi, 4x4 cov
-      feh.append(float(cells[2])
+      feh.append(float(cells[2]))
       teff.append(float(cells[4]))
       logg.append(float(cells[3]))
       alphafe.append(float(cells[1]))
@@ -1071,7 +1071,7 @@ def main(args):
                       default=4)
                       
   parser.add_argument('-c','--config',
-                      type=int,
+                      type=str,
                       help='yaml configuration file for FERRE runs',
                       default='desi-n.yaml')
 
