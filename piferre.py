@@ -161,14 +161,14 @@ def mknml(conf,root,nthreads=1,libpath='.',path='.'):
 
       nmlfile='input.nml-'+root+'_'+str(k)+run
       lst.write(nmlfile+'\n')
-      writenml(nml,nmlfile=nmlfile,path=path)
+      write_nml(nml,nmlfile=nmlfile,path=path)
 
     lst.close()
 
   return None
 
 #write out a FERRE control hash to an input.nml file
-def writenml(nml,nmlfile='input.nml',path=None):
+def write_nml(nml,nmlfile='input.nml',path=None):
     if path is None: path='./'
     f=open(os.path.join(path,nmlfile),'w')
     f.write('&LISTA\n')
