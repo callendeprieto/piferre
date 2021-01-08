@@ -782,7 +782,9 @@ def packfits(input="*.fits",output="output.fits"):
       hdu = fits.BinTableHDU.from_columns(hdul1[i].columns, nrows=nrows)
       hdu.header['EXTNAME'] = hdul1[i].header['EXTNAME']
       for colname in hdul1[i].columns.names:
-        hdu.data[colname][nrows1:] = hdul2[i].data[colname] 
+        if colname in hdul2[i].columns.names:
+          hdu.data[colname][nrows1:] = hdul2[i].data[colname]
+        else: print('Warning: the file ',entry,' does not include column ',colname,' in extension ',i,' -- ',hdu.header['EXTNAME'])
 
       if i == 1: 
         hdu1 = hdu 
