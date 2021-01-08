@@ -124,7 +124,7 @@ def mknml(conf,root,nthreads=1,libpath='.',path='.'):
     libpath=os.path.abspath(libpath)
     header=head_synth(os.path.join(libpath,synthfiles[0]))
     ndim=int(header['N_OF_DIM'])
-    n_p=tuple(array((header['N_P'].split(),dtype=int))
+    n_p=tuple(array(header['N_P'].split(),dtype=int))
     inter=conf['global']['inter']
     if (min(n_p)-1 < inter): inter=min(n_p)-1
 
