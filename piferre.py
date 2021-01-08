@@ -782,6 +782,9 @@ def packfits(input="*.fits",output="output.fits"):
       if (str(type(hdul1[i])) == "<class 'astropy.io.fits.hdu.table.BinTableHDU'>"): #binary tables
         hdu = fits.BinTableHDU.from_columns(hdul1[i].columns, nrows=nrows)
         hdu.header['EXTNAME'] = hdul1[i].header['EXTNAME']
+        if (str(type(hdul2[i])) != "<class 'astropy.io.fits.hdu.table.BinTableHDU'>"): 
+          print(i, str(type(hdul1[i])),str(type(hdul2[i])))
+          print('Warning: the extension ',i, 'in file ',entry,' is not a binary table as expected based on the preceding files. The extension is skipped.')
         for colname in hdul1[i].columns.names:
           if colname in hdul2[i].columns.names:
             hdu.data[colname][nrows1:] = hdul2[i].data[colname]
@@ -789,8 +792,7 @@ def packfits(input="*.fits",output="output.fits"):
 
 
       elif (str(type(hdul1[i])) == "<class 'astropy.io.fits.hdu.image.ImageHDU'>"): #images
-        hdu = hdul1[i]
-        hdu.data = vstack( (hdul1[i].data, hdul2[i].data) )
+        hdu = fits.PrimaryHDU(vstack( (hdul1[i].data, hdul2[i].data) ))
         hdu.header['EXTNAME'] = hdul1[i].header['EXTNAME']
 
       if i == 1: 
