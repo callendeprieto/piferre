@@ -2,7 +2,7 @@
 '''
 Interface to use FERRE from python for DESI/BOSS/WEAVE data
 
-use: piferre -p path-to-spectra [-t truthfile -rv rvpath -m models -l libpath -n nthreads]
+use: piferre -p path-to-spectra [-t truthfile -rv rvpath -l libpath -n nthreads -c config]
 
 e.g. piferre -p /data/spectro/redux/dc17a2/spectra-64 
 
