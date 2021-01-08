@@ -13,7 +13,7 @@ import sys
 import os
 import glob
 import re
-from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack
+from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack
 from astropy.io import fits
 import astropy.table as tbl
 import astropy.units as units
@@ -779,12 +779,22 @@ def packfits(input="*.fits",output="output.fits"):
       nrows1 = hdul1[i].data.shape[0]
       nrows2 = hdul2[i].data.shape[0]
       nrows = nrows1 + nrows2
-      hdu = fits.BinTableHDU.from_columns(hdul1[i].columns, nrows=nrows)
-      hdu.header['EXTNAME'] = hdul1[i].header['EXTNAME']
-      for colname in hdul1[i].columns.names:
-        if colname in hdul2[i].columns.names:
-          hdu.data[colname][nrows1:] = hdul2[i].data[colname]
-        else: print('Warning: the file ',entry,' does not include column ',colname,' in extension ',i,' -- ',hdu.header['EXTNAME'])
+      print(str(type(hdul1[i])))
+      if (str(type(hdul1[i])) == "<class 'astropy.io.fits.hdu.table.BinTableHDU'>"): #binary tables
+        print('extension ',i,' is a binary table')
+        hdu = fits.BinTableHDU.from_columns(hdul1[i].columns, nrows=nrows)
+        hdu.header['EXTNAME'] = hdul1[i].header['EXTNAME']
+        for colname in hdul1[i].columns.names:
+          if colname in hdul2[i].columns.names:
+            hdu.data[colname][nrows1:] = hdul2[i].data[colname]
+          else: print('Warning: the file ',entry,' does not include column ',colname,' in extension ',i,' -- ',hdu.header['EXTNAME'])
+
+
+      elif (str(type(hdul1[i])) == "<class 'astropy.io.fits.hdu.image.ImageHDU'>"): #images
+        print('extension ',i,' is an image')
+        hdu = hdul1[i]
+        hdu.data = vstack( (hdul1[i].data, hdul2[i].data) )
+        hdu.header['EXTNAME'] = hdul1[i].header['EXTNAME']
 
       if i == 1: 
         hdu1 = hdu 
