@@ -70,7 +70,7 @@ def write_slurm(root,nthreads=1,path=None,ngrids=None, config='desi-n.yaml'):
     if host[:4] == 'cori':
       f.write("#SBATCH --qos=regular" + "\n")
       f.write("#SBATCH --constraint=haswell" + "\n")
-      f.write("#SBATCH --time=180"+"\n") #minutes
+      f.write("#SBATCH --time=60"+"\n") #minutes
       f.write("#SBATCH --ntasks=1" + "\n")
       f.write("#SBATCH --cpus-per-task="+str(nthreads*2)+"\n")
     else:
@@ -79,7 +79,7 @@ def write_slurm(root,nthreads=1,path=None,ngrids=None, config='desi-n.yaml'):
       f.write("#SBATCH  -o "+str(root)+"_%j.out"+" \n")
       f.write("#SBATCH  -e "+str(root)+"_%j.err"+" \n")
       f.write("#SBATCH  -n "+str(nthreads)+" \n")
-      f.write("#SBATCH  -t 04:00:00"+" \n") #hh:mm:ss
+      f.write("#SBATCH  -t 01:00:00"+" \n") #hh:mm:ss
       f.write("#SBATCH  -D "+os.path.abspath(path)+" \n")
     f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
     f.write("export OMP_NUM_THREADS="+str(nthreads)+"\n")
@@ -124,6 +124,9 @@ def mknml(conf,root,nthreads=1,libpath='.',path='.'):
     libpath=os.path.abspath(libpath)
     header=head_synth(os.path.join(libpath,synthfiles[0]))
     ndim=int(header['N_OF_DIM'])
+    n_p=tuple(array((header['N_P'].split(),dtype=int))
+    inter=conf['global']['inter']
+    if (min(n_p)-1 < inter): inter=min(n_p)-1
 
     lst=open(os.path.join(path,'input.lst-'+root+'_'+str(k)),'w')
     for run in conf[synth]: #loop over all runs (param + elements)
@@ -145,7 +148,7 @@ def mknml(conf,root,nthreads=1,libpath='.',path='.'):
       nml['ERRBAR']=conf['global']['errbar']
       nml['COVPRINT']=conf['global']['covprint']
       #nml['WINTER']=2
-      nml['INTER']=conf['global']['inter']
+      nml['INTER']=inter
       nml['ALGOR']=conf['global']['algor']
       #nml['GEN_NUM']=5000
       #nml['NRUNS']=2**ndim
