@@ -412,35 +412,35 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   #hdulist.append(hdu)
 
   cols = {}
-  cols['success'] = success
-  cols['fid'] = fid
-  cols['teff'] = array(teff)*units.K
-  cols['logg'] = array(logg)
-  cols['feh'] = array(feh)
-  cols['alphafe'] = array(alphafe) 
-  cols['micro'] = array(micro)*units.km/units.s
+  cols['SUCCESS'] = success
+  cols['FID'] = fid
+  cols['TEFF'] = array(teff)*units.K
+  cols['LOGG'] = array(logg)
+  cols['FEH'] = array(feh)
+  cols['ALPHAFE'] = array(alphafe) 
+  cols['MICRO'] = array(micro)*units.km/units.s
   if (config == 'desi-n.yaml'):
-    cols['covar'] = array(covar).reshape(len(success),3,3)
+    cols['COVAR'] = array(covar).reshape(len(success),3,3)
   else:
-    cols['covar'] = array(covar).reshape(len(success),5,5)
-  cols['elem'] = array(elem)
-  cols['elem_err'] = array(elem_err)
-  cols['chisq_tot'] = array(chisq_tot)
-  cols['snr_med'] = array(snr_med)
+    cols['COVAR'] = array(covar).reshape(len(success),5,5)
+  cols['ELEM'] = array(elem)
+  cols['ELEM_ERR'] = array(elem_err)
+  cols['CHISQ_TOT'] = array(chisq_tot)
+  cols['SNR_MED'] = array(snr_med)
 
   colcomm = {
   'success': 'Bit indicating whether the code has likely produced useful results',
-  'fid': 'Identifier used in FERRE to associate input/output files',
-  'teff': 'Effective temperature',
-  'logg': 'Surface gravity (g in cm/s**2)',
-  'feh': 'Metallicity [Fe/H] = log10(N(Fe)/N(H)) - log10(N(Fe)/N(H))sun' ,
-  'alphafe': 'Alpha-to-iron ratio [alpha/Fe]',
-  'micro': 'Microturbulence',
-  'covar': 'Covariance matrix for ([Fe/H], [a/Fe], logmicro, Teff,logg)',
-  'elem': 'Elemental abundance ratios to iron [elem/Fe]',
-  'elem_err': 'Uncertainties in the elemental abundance ratios to iron',
-  'chisq_tot': 'Total chi**2',
-  'snr_med': 'Median signal-to-ratio'
+  'FID': 'Identifier used in FERRE to associate input/output files',
+  'TEFF': 'Effective temperature',
+  'LOGG': 'Surface gravity (g in cm/s**2)',
+  'FEH': 'Metallicity [Fe/H] = log10(N(Fe)/N(H)) - log10(N(Fe)/N(H))sun' ,
+  'ALPHAFE': 'Alpha-to-iron ratio [alpha/Fe]',
+  'MICRO': 'Microturbulence',
+  'COVAR': 'Covariance matrix for ([Fe/H], [a/Fe], logmicro, Teff,logg)',
+  'ELEM': 'Elemental abundance ratios to iron [elem/Fe]',
+  'ELEM_ERR': 'Uncertainties in the elemental abundance ratios to iron',
+  'CHISQ_TOT': 'Total chi**2',
+  'SNR_MED': 'Median signal-to-ratio'
   }      
 
   
