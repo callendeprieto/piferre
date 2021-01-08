@@ -779,7 +779,6 @@ def packfits(input="*.fits",output="output.fits"):
       nrows1 = hdul1[i].data.shape[0]
       nrows2 = hdul2[i].data.shape[0]
       nrows = nrows1 + nrows2
-      print(str(type(hdul1[i])))
       if (str(type(hdul1[i])) == "<class 'astropy.io.fits.hdu.table.BinTableHDU'>"): #binary tables
         hdu = fits.BinTableHDU.from_columns(hdul1[i].columns, nrows=nrows)
         hdu.header['EXTNAME'] = hdul1[i].header['EXTNAME']
