@@ -113,10 +113,10 @@ n_rdesi7:
        indv: [1, 2]
        cont: 3
        ncont: 300
-       pfile_ext: '.vrd'
-       opfile_ext: '.opf7'
-       offile_ext: '.mdl7'
-       sffile_ext: '.nrd7'
+       pfile_ext: 'vrd'
+       opfile_ext: 'opf7'
+       offile_ext: 'mdl7'
+       sffile_ext: 'nrd7'
        labels: ['Teff','logg']
        llimits: [10000.00,       7.00000]
        steps: [5000., 0.5]
