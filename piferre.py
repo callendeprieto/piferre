@@ -91,7 +91,7 @@ def write_slurm(root,nthreads=1,minutes=60,path=None,ngrids=None, config='desi-n
     f.write("cd "+os.path.abspath(path)+"\n")
     for i in range(ngrids):
       #f.write("cp input.nml-"+root+"_"+str(i)+" input.nml \n")
-      f.write("time "+ferre+" -l input.lst-"+root+"_"+str(i)+" >& log_"+str(i))
+      f.write("time "+ferre+" -l input.lst-"+root+"_"+str(i)+" >& "+root+".log_"+str(i))
       #if (i == 8): 
       #  f.write( "  \n")
       #else:
@@ -100,16 +100,34 @@ def write_slurm(root,nthreads=1,minutes=60,path=None,ngrids=None, config='desi-n
     if ngrids > 1:
       f.write("wait \n")
       f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
-              "'); from piferre import opfmerge, write_tab_fits, write_mod_fits; opfmerge(\'"+\
+              "'); from piferre import opfmerge, write_tab_fits, write_mod_fits, cleanup; opfmerge(\'"+\
               str(root)+"\',config='"+config+"\'); write_tab_fits(\'"+\
               str(root)+"\',config='"+config+"\'); write_mod_fits(\'"+\
+              str(root)+"\'); cleanup(\'"+\
               str(root)+"\')\"\n")
     f.close()
     os.chmod(os.path.join(path,root+'.slurm'),0o755)
 
     return None
 
+#remove FERRE I/O files after the final FITS tables have been produced
+def cleanup(root):
+  vrdfiles = glob.glob(root+'*vrd')
+  wavefiles = glob.glob(root+'*wav')
+  opffiles = glob.glob(root+'*opf*')
+  nmlfiles = glob.glob('input.nml-'+root)
+  lstfiles = glob.glob('input.lst-'+root)
+  slurmfiles = glob.glob(root+'*slurm')
+  errfiles = glob.glob(root+'*err')
+  frdfiles = glob.glob(root+'*frd')
+  fmpfiles = glob.glob(root+'*fmp.fits')
+  logfiles = glob.glob(root+'.log*')
+  allfiles = vrdfiles + wavefiles + opffiles + nmlfiles + lstfiles + \
+             slurmfiles + errfiles + frdfiles + fmpfiles + logfiles 
 
+  for entry in allfiles: os.remove(entry)
+
+  return
   
 #create a FERRE control hash (content for a ferre input.nml file)
 def mknml(conf,root,nthreads=1,libpath='.',path='.'):
@@ -585,7 +603,8 @@ def write_ferre_input(root,ids,par,y,ey,path=None):
   i=0
   while (i < nspec):
 
-    print(str(i)+' ')
+    if i%10 == 0: print('. ',end='',flush=True)
+    if i%100 == 0 : print(str(i),end='',flush=True)
 
     #vrd.write("target_"+str(i+1)+" 0.0 0.0 0.0")
     ppar=[ids[i]]
@@ -609,7 +628,7 @@ tuple(ppar) )
   vrd.close()
   frd.close()
   err.close()
-
+  print('/')
 
 def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
 
