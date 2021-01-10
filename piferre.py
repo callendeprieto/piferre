@@ -23,6 +23,8 @@ import datetime, time
 import argparse
 import yaml
 
+clight=299792.458 #km/s
+
 #extract the header of a synthfile
 def head_synth(synthfile):
     file=open(synthfile,'r')
@@ -81,7 +83,8 @@ def write_slurm(root,nthreads=1,minutes=60,path=None,ngrids=None, config='desi-n
       f.write("#SBATCH  -n "+str(nthreads)+" \n")
       hours2 = int(minutes/60) 
       minutes2 = minutes%60
-      f.write("#SBATCH  -t "+{":2i"}.format(hours2)+":"+{":2i"}.format(minutes2)+":00"+" \n") #hh:mm:ss
+      f.write("#SBATCH  -t "+"{:02d}".format(hours2)+":"+"{:02d}".format(minutes2)+
+              ":00"+"\n") #hh:mm:ss
       f.write("#SBATCH  -D "+os.path.abspath(path)+" \n")
     f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
     f.write("export OMP_NUM_THREADS="+str(nthreads)+"\n")
@@ -225,7 +228,6 @@ def readzbest(filename):
 
 #read redshift derived by the Koposov pipeline
 def readk(filename):
-  clight=299792.458 #km/s
   hdu=fits.open(filename)
   if len(hdu) > 1:
     k=hdu[1].data
@@ -290,6 +292,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   
   if path is None: path=""
   proot=os.path.join(path,root)
+  v=glob.glob(proot+".vrd")
   o=glob.glob(proot+".opf")
   m=glob.glob(proot+".mdl")
   n=glob.glob(proot+".nrd")
@@ -307,6 +310,8 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   elem_err=[]
   snr_med=[]
   chisq_tot=[]
+  rv_adop=[]
+  vf=open(v[0],'r')
   of=open(o[0],'r')
   for line in of:
     cells=line.split()
@@ -315,6 +320,9 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
     m=len(cells)
     assert (m > 6), 'Error, the file '+o[0]+' has less than 7 columns, which would correspond to ndim=2'
     ndim=int(sqrt(m-3)-1)
+    
+    line = vf.readline()
+    vcells=line.split()
 
     if (ndim == 3):
       #Kurucz grids with 3 dimensions: id, 3 par, 3 err, 0., med_snr, lchi, 3x3 cov
@@ -326,6 +334,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       micro.append(nan)
       chisq_tot.append(10.**float(cells[9]))
       snr_med.append(float(cells[8]))
+      rv_adop.append(float(vcells[6])*clight)
       cov = reshape(array(cells[10:],dtype=float),(3,3))
       covar.append(cov)
 
@@ -339,6 +348,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       micro.append(float(cells[3]))
       chisq_tot.append(10.**float(cells[13]))
       snr_med.append(float(cells[12]))
+      rv_adop.append(float(vcells[6])*clight)
       cov = reshape(array(cells[14:],dtype=float),(5,5))
       covar.append(cov)
   
@@ -351,6 +361,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       micro.append(nan)
       chisq_tot.append(10.**float(cells[7]))
       snr_med.append(float(cells[6]))
+      rv_adop.append(float(vcells[6])*clight)
       if (config == 'desi-n.yaml'):
         cov = zeros((3,3))
         cov[1:,1:] = reshape(array(cells[8:],dtype=float),(2,2))
@@ -369,16 +380,17 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       alphafe.append(float(cells[1]))
       micro.append(nan)
       chisq_tot.append(10.**float(cells[11]))
+      rv_adop.append(float(vcells[6])*clight)
       snr_med.append(float(cells[10]))
-      if (config == 'desi-n.yaml'):
+      if (config == 'desi-s.yaml'):
         cov = zeros((3,3))
         cov[:,:] = reshape(array(cells[12:],dtype=float),(4,4))[1:,1:]
         covar.append(cov)    
       else:
         print('Error: this path in the code is not yet ready!')
-        sys.exit()
+        #sys.exit()
         cov = zeros((5,5))
-        cov[3:,3:] = reshape(array(cells[8:],dtype=float),(2,2))
+        #cov[3:,3:] = reshape(array(cells[8:],dtype=float),(2,2))
         covar.append(cov)    
    
 
@@ -426,11 +438,13 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   if (config == 'desi-n.yaml'):
     cols['COVAR'] = array(covar).reshape(len(success),3,3)
   else:
-    cols['COVAR'] = array(covar).reshape(len(success),5,5)
+    pass
+    #cols['COVAR'] = array(covar).reshape(len(success),5,5)
   cols['ELEM'] = array(elem)
   cols['ELEM_ERR'] = array(elem_err)
   cols['CHISQ_TOT'] = array(chisq_tot)
   cols['SNR_MED'] = array(snr_med)
+  cols['RV_ADOP'] = array(rv_adop)
 
   colcomm = {
   'success': 'Bit indicating whether the code has likely produced useful results',
@@ -444,7 +458,8 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   'ELEM': 'Elemental abundance ratios to iron [elem/Fe]',
   'ELEM_ERR': 'Uncertainties in the elemental abundance ratios to iron',
   'CHISQ_TOT': 'Total chi**2',
-  'SNR_MED': 'Median signal-to-ratio'
+  'SNR_MED': 'Median signal-to-ratio',
+  'RV_ADOP': 'Adopted Radial Velocity (km/s)'
   }      
 
   
@@ -894,6 +909,55 @@ def packfits(input="*.fits",output="output.fits"):
 
   return(None)
 
+#inspector
+def inspector(*args):
+
+  for file in args:
+    print('file=',file,' file[:6]=',file[:5])
+    if file[:5] == 'sptab':
+      sph=fits.open(file)
+      spt=sph['SPTAB'].data
+      fbm=sph['FIBERMAP'].data
+
+      sym='.'
+      plt.figure(1)
+
+      plt.subplot(2,2,1)
+      plt.plot(spt['teff'],spt['logg'],sym)
+      plt.xlabel('Teff')
+      plt.ylabel('logg')
+      plt.title(file)
+
+      plt.xlim([max(spt['teff'])*1.01,min(spt['teff'])*.99])
+      plt.ylim([max(spt['logg'])*1.01,min(spt['logg'])*0.99])
+      plt.xscale('log')
+
+      plt.subplot(2,2,2)
+      plt.plot(fbm['target_ra'],fbm['target_dec'],sym)
+      plt.xlabel('target_ra')
+      plt.ylabel('target_dec')
+      #plt.xlim([max(spt['teff'])]*1.01,min(spt['teff'])*.99])
+      #plt.xlim([max(spt['logg'])]*1.01,min(spt['logg'])*0.99])
+
+      plt.subplot(2,2,3)
+      plt.plot(spt['teff'],spt['logg'],sym)
+      plt.xlabel('Teff')
+      plt.ylabel('logg')
+
+      plt.xlim([8000.,min(spt['teff'])*0.99])
+      plt.ylim([5.5,-0.5])
+
+      plt.subplot(2,2,4)
+      plt.plot(spt['teff'],spt['feh'],sym)
+      plt.xlabel('Teff')
+      plt.ylabel('[Fe/H]')
+
+      plt.xlim([8000.,min(spt['teff'])*0.99])
+      plt.ylim([-5,1])
+
+      plt.show()
+
+  return None
 
 #process a single pixel
 def do(path, pixel, sdir='', truth=None, nthreads=1,minutes=60, 
