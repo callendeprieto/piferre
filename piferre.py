@@ -1,10 +1,10 @@
 #!/home/callende/anaconda3/bin/python3
 '''
-Interface to use FERRE from python for DESI/BOSS/WEAVE data
+Interface to use FERRE from python for DESI/BOSS data
 
-use: piferre -p path-to-spectra [-t truthfile -rv rvpath -l libpath -n nthreads -c config]
+use: piferre -sp path-to-spectra [-rv rvpath -l libpath -spt sptype -rvt rvtype -n nthreads -m minutes -c config -t truthfile ]
 
-e.g. piferre -p /data/spectro/redux/dc17a2/spectra-64 
+e.g. piferre -sp /data/spectro/redux/dc17a2/spectra-64 
 
 Author C. Allende Prieto
 '''
@@ -51,7 +51,7 @@ def lambda_synth(synthfile):
     return x
 
 #create a slurm script for a given pixel
-def write_slurm(root,nthreads=1,path=None,ngrids=None, config='desi-n.yaml'):
+def write_slurm(root,nthreads=1,minutes=60,path=None,ngrids=None, config='desi-n.yaml'):
     ferre=os.environ['HOME']+"/ferre/src/a.out"
     python_path=os.environ['HOME']+"/piferre"
     try: 
@@ -70,7 +70,7 @@ def write_slurm(root,nthreads=1,path=None,ngrids=None, config='desi-n.yaml'):
     if host[:4] == 'cori':
       f.write("#SBATCH --qos=regular" + "\n")
       f.write("#SBATCH --constraint=haswell" + "\n")
-      f.write("#SBATCH --time=60"+"\n") #minutes
+      f.write("#SBATCH --time="+str(minutes)+"\n") #minutes
       f.write("#SBATCH --ntasks=1" + "\n")
       f.write("#SBATCH --cpus-per-task="+str(nthreads*2)+"\n")
     else:
@@ -79,7 +79,9 @@ def write_slurm(root,nthreads=1,path=None,ngrids=None, config='desi-n.yaml'):
       f.write("#SBATCH  -o "+str(root)+"_%j.out"+" \n")
       f.write("#SBATCH  -e "+str(root)+"_%j.err"+" \n")
       f.write("#SBATCH  -n "+str(nthreads)+" \n")
-      f.write("#SBATCH  -t 01:00:00"+" \n") #hh:mm:ss
+      hours2 = int(minutes/60) 
+      minutes2 = minutes%60
+      f.write("#SBATCH  -t "+{":2i"}.format(hours2)+":"+{":2i"}.format(minutes2)+":00"+" \n") #hh:mm:ss
       f.write("#SBATCH  -D "+os.path.abspath(path)+" \n")
     f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
     f.write("export OMP_NUM_THREADS="+str(nthreads)+"\n")
@@ -130,7 +132,6 @@ def mknml(conf,root,nthreads=1,libpath='.',path='.'):
 
     lst=open(os.path.join(path,'input.lst-'+root+'_'+str(k)),'w')
     for run in conf[synth]: #loop over all runs (param + elements)
-      print('run=',run)
       nml={}
       nml['NDIM']=ndim
       nml['NOV']=conf[synth][run]['nov']
@@ -259,7 +260,7 @@ def readspec(filename,band=None):
 
   hdu=fits.open(filename)
 
-  if filename.find('spectra-') > -1 or filename.find('exp_') > -1: #DESI
+  if filename.find('spectra-') > -1 or filename.find('exp_') > -1 or filename.find('coadd') > -1: #DESI
     wavelength=hdu[band+'_WAVELENGTH'].data #wavelength array
     flux=hdu[band+'_FLUX'].data       #flux array (multiple spectra)
     ivar=hdu[band+'_IVAR'].data       #inverse variance (multiple spectra)
@@ -703,6 +704,7 @@ def extnames(hdu):
   return(names)
 
 #identify input data files and associated zbest files 
+#obsolete, use getdata instead
 def finddatafiles(path,pixel,sdir='',rvpath=None):
 
   if rvpath is None: rvpath = path
@@ -811,10 +813,14 @@ def packfits(input="*.fits",output="output.fits"):
 
 
 #process a single pixel
-def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, libpath='.', config='desi-n.yaml'):
+def do(path, pixel, sdir='', truth=None, nthreads=1,minutes=60, 
+       rvpath=None, libpath='.', 
+       sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
   
   #get input data files
-  datafiles,zbestfiles  = finddatafiles(path,pixel,sdir,rvpath=rvpath) 
+  #datafiles,zbestfiles  = finddatafiles(path,pixel,sdir,rvpath=rvpath) 
+  datafiles,zbestfiles  = getdata(sppath=os.path.join(path,sdir,pixel),rvpath=rvpath,
+                                  sptype=sptype, rvtype=rvtype) 
   if (datafiles == None or zbestfiles == None): return None
 
   #identify data source
@@ -1002,7 +1008,7 @@ def do(path,pixel,sdir='',truth=None,nthreads=1,rvpath=None, libpath='.', config
 
     #write slurm script
     write_slurm(fileroot,path=os.path.join(sdir,pixel),
-            ngrids=len(grids),nthreads=nthreads, config=config)
+            ngrids=len(grids),nthreads=nthreads, minutes=minutes, config=config)
 
 
     #loop over all grids
@@ -1022,6 +1028,8 @@ def getpixels(root):
   d1=os.listdir(root)
   d=[]
   for x in d1:
+    print('x=',x)
+    assert os.path.isdir(os.path.join(root,x)), 'the data directory must contain folders, not data files'
     d2=os.listdir(os.path.join(root,x))
     #d.append(os.path.join(root,x))
     res=[i for i in d2 if '.fits' in i] 
@@ -1036,6 +1044,47 @@ def getpixels(root):
   print(d)
   print(len(d))
   return(d)
+
+#get spectra and matching RV files
+def getdata(sppath='.',rvpath=None,sptype='spectra',rvtype='zbest'):
+
+  if rvpath is None: rvpath = sppath
+
+  spfiles1 = list(glob.iglob(os.path.join(sppath,'**',sptype+'*fits'), recursive=True))
+  rvfiles1 = list(glob.iglob(os.path.join(rvpath,'**',rvtype+'*fits'), recursive=True))
+  
+  #print('spfiles1=',spfiles1)
+  #print('rvfiles1',rvfiles1)
+
+  spfiles = []
+  rvfiles = []
+  for entry in spfiles1:
+    filename = os.path.split(entry)[-1]
+    #print('filename=',filename,' pattern=',filename[len(sptype):])
+    entry2 = list(filter(lambda x: filename[len(sptype):] in x, rvfiles1))
+    if len(entry2) == 1:
+      spfiles.append(entry)
+      rvfiles.append(entry2[0])
+    elif len(entry2) < 1:
+      print('Warning: there is no matching rv file for ',entry,' -- we skip this file')
+    else:
+      print('Warning: there are multiple matching rv files for ',entry,' -- we skip this file')
+      print('         rv matching files:',' '.join(entry2))
+  
+  #analyze the situation wrt input files
+  nsp=len(spfiles)
+  nrv=len(rvfiles)
+
+  print ('Found '+str(nsp)+' input spectra files')
+  for filename in spfiles: print(filename+'--')
+  print ('and '+str(nrv)+' associated rv files')
+  for filename in rvfiles: print(filename+'--')
+
+  if (nsp != nrv):
+    print('ERROR -- there is a mismatch between the number of spectra files and rv files, this pixel is skipped')
+    return (None,None)
+
+  return (spfiles,rvfiles)
 
 #run
 def run(pixel,path=None):
@@ -1059,14 +1108,9 @@ def main(args):
 
   parser = argparse.ArgumentParser(description='prepare a data set for processing with FERRE')
 
-  parser.add_argument('-p','--path',
+  parser.add_argument('-sp','--sppath',
                       type=str,
-                      help='path to the input spectra dir tree',
-                      default=None)
-
-  parser.add_argument('-t','--truthfile',
-                      type=str,
-                      help='truth file for DESI simulations',
+                      help='path to the input spectra dir tree (must contain directories)',
                       default=None)
 
   parser.add_argument('-rv','--rvpath',
@@ -1079,39 +1123,65 @@ def main(args):
                       help='path to the libraries, if not in the current dir',
                       default='.')
 
+  parser.add_argument('-spt','--sptype',
+                      type=str,
+                      help='type of data (spectra, coadd, spPlate)',
+                      default='spectra')
+
+  parser.add_argument('-rvt','--rvtype',
+                      type=str,
+                      help='type of RV data (zbest, rvtab_spectra, rvtab_coadd, spZbest)',
+                      default='zbest')
+
   parser.add_argument('-n','--nthreads',
                       type=int,
                       help='number of threads per FERRE job',
                       default=4)
+
+  parser.add_argument('-m','--minutes',
+                      type=int,
+                      help='requested CPU time in minutes per FERRE job',
+                      default=60)
                       
   parser.add_argument('-c','--config',
                       type=str,
                       help='yaml configuration file for FERRE runs',
                       default='desi-n.yaml')
 
+  parser.add_argument('-t','--truthfile',
+                      type=str,
+                      help='truth file for DESI simulations',
+                      default=None)
+
   args = parser.parse_args()
 
-  path=args.path
+  sppath=args.sppath
   rvpath=args.rvpath
-  if rvpath is None: rvpath=path
+  if rvpath is None: rvpath=sppath
+
+  libpath=args.libpath
+
+  sptype=args.sptype
+  rvtype=args.rvtype
+
+  config=args.config
+  nthreads=args.nthreads
+  minutes=args.minutes
 
   truthfile=args.truthfile
   if (truthfile is not None):  
     truthtuple=readtruth(truthfile)
   else: truthtuple=None
 
-  config=args.config
-  libpath=args.libpath
-  nthreads=args.nthreads
 
-  pixels=getpixels(path)
+  pixels=getpixels(sppath)
   
   for entry in pixels:
     head, pixel = os.path.split(entry)
     print('head/pixel=',head,pixel)
     sdir=''
-    print('path=',path)
-    if head != path:
+    print('sppath=',sppath)
+    if head != sppath:
       head, sdir = os.path.split(head)
       if not os.path.exists(sdir): os.mkdir(sdir)
     if sdir != '': 
@@ -1119,9 +1189,10 @@ def main(args):
     if not os.path.exists(os.path.join(sdir,pixel)): 
       os.mkdir(os.path.join(sdir,pixel))
 
-    do(path,pixel,sdir=sdir,truth=truthtuple, 
+    do(sppath,pixel,sdir=sdir,truth=truthtuple, 
        rvpath=rvpath, libpath=libpath, 
-       nthreads=nthreads, config=config,)
+       sptype=sptype, rvtype=rvtype,
+       nthreads=nthreads, minutes=minutes, config=config)
 
     #run(pixel,path=os.path.join(sdir,pixel))
   
