@@ -703,6 +703,89 @@ def extnames(hdu):
   for entry in x: names.append(entry[1])
   return(names)
 
+#run
+def run(pixel,path=None):
+  if path is None: path="./"
+  #directly run
+  #pwd=os.path.abspath(os.curdir)
+  #os.chdir(path)
+  #job="/bin/bash "+pixel+'.slurm'
+  #code=subprocess.call(job)
+  #os.chdir(pwd)
+  #slurm
+  job="sbatch "+os.path.join(path,pixel+'.slurm')
+  code=subprocess.call(job)
+  #kiko
+  #job="kiko "+os.path.join(path,pixel+'.slurm')
+  #code=subprocess.call(job)
+
+  return code
+
+#find pixels in 'root' directory (spectra-64)
+def getpixels(root):
+  #root='spectro/redux/dc17a2/spectra-64/'
+  d1=os.listdir(root)
+  d=[]
+  for x in d1:
+    print('x=',x)
+    assert os.path.isdir(os.path.join(root,x)), 'the data directory must contain folders, not data files'
+    d2=os.listdir(os.path.join(root,x))
+    #d.append(os.path.join(root,x))
+    res=[i for i in d2 if '.fits' in i] 
+    for y in d2: 
+      #d.append(os.path.join(root,x))
+      if len(res) == 0: # there are no fits files in the 1st directory, so 2 layer (e.g. DESI)
+        d.append(os.path.join(root,x,y))
+      else: 
+        entry=os.path.join(root,x)
+        if entry not in d: d.append(entry)  #keep only the first layer (SDSS/BOSS)
+
+  print(d)
+  print(len(d))
+  return(d)
+
+#get spectra and matching RV files
+def getdata(sppath='.',rvpath=None,sptype='spectra',rvtype='zbest'):
+
+  if rvpath is None: rvpath = sppath
+
+  spfiles1 = list(glob.iglob(os.path.join(sppath,'**',sptype+'*fits'), recursive=True))
+  rvfiles1 = list(glob.iglob(os.path.join(rvpath,'**',rvtype+'*fits'), recursive=True))
+  
+  #print('spfiles1=',spfiles1)
+  #print('rvfiles1',rvfiles1)
+
+  spfiles = []
+  rvfiles = []
+  for entry in spfiles1:
+    filename = os.path.split(entry)[-1]
+    #print('filename=',filename,' pattern=',filename[len(sptype):])
+    entry2 = list(filter(lambda x: filename[len(sptype):] in x, rvfiles1))
+    if len(entry2) == 1:
+      spfiles.append(entry)
+      rvfiles.append(entry2[0])
+    elif len(entry2) < 1:
+      print('Warning: there is no matching rv file for ',entry,' -- we skip this file')
+    else:
+      print('Warning: there are multiple matching rv files for ',entry,' -- we skip this file')
+      print('         rv matching files:',' '.join(entry2))
+  
+  #analyze the situation wrt input files
+  nsp=len(spfiles)
+  nrv=len(rvfiles)
+
+  print ('Found '+str(nsp)+' input spectra files')
+  for filename in spfiles: print(filename+'--')
+  print ('and '+str(nrv)+' associated rv files')
+  for filename in rvfiles: print(filename+'--')
+
+  if (nsp != nrv):
+    print('ERROR -- there is a mismatch between the number of spectra files and rv files, this pixel is skipped')
+    return (None,None)
+
+  return (spfiles,rvfiles)
+
+
 #identify input data files and associated zbest files 
 #obsolete, use getdata instead
 def finddatafiles(path,pixel,sdir='',rvpath=None):
@@ -1022,87 +1105,6 @@ def do(path, pixel, sdir='', truth=None, nthreads=1,minutes=60,
 
   return None
 
-#find pixels in 'root' directory (spectra-64)
-def getpixels(root):
-  #root='spectro/redux/dc17a2/spectra-64/'
-  d1=os.listdir(root)
-  d=[]
-  for x in d1:
-    print('x=',x)
-    assert os.path.isdir(os.path.join(root,x)), 'the data directory must contain folders, not data files'
-    d2=os.listdir(os.path.join(root,x))
-    #d.append(os.path.join(root,x))
-    res=[i for i in d2 if '.fits' in i] 
-    for y in d2: 
-      #d.append(os.path.join(root,x))
-      if len(res) == 0: # there are no fits files in the 1st directory, so 2 layer (e.g. DESI)
-        d.append(os.path.join(root,x,y))
-      else: 
-        entry=os.path.join(root,x)
-        if entry not in d: d.append(entry)  #keep only the first layer (SDSS/BOSS)
-
-  print(d)
-  print(len(d))
-  return(d)
-
-#get spectra and matching RV files
-def getdata(sppath='.',rvpath=None,sptype='spectra',rvtype='zbest'):
-
-  if rvpath is None: rvpath = sppath
-
-  spfiles1 = list(glob.iglob(os.path.join(sppath,'**',sptype+'*fits'), recursive=True))
-  rvfiles1 = list(glob.iglob(os.path.join(rvpath,'**',rvtype+'*fits'), recursive=True))
-  
-  #print('spfiles1=',spfiles1)
-  #print('rvfiles1',rvfiles1)
-
-  spfiles = []
-  rvfiles = []
-  for entry in spfiles1:
-    filename = os.path.split(entry)[-1]
-    #print('filename=',filename,' pattern=',filename[len(sptype):])
-    entry2 = list(filter(lambda x: filename[len(sptype):] in x, rvfiles1))
-    if len(entry2) == 1:
-      spfiles.append(entry)
-      rvfiles.append(entry2[0])
-    elif len(entry2) < 1:
-      print('Warning: there is no matching rv file for ',entry,' -- we skip this file')
-    else:
-      print('Warning: there are multiple matching rv files for ',entry,' -- we skip this file')
-      print('         rv matching files:',' '.join(entry2))
-  
-  #analyze the situation wrt input files
-  nsp=len(spfiles)
-  nrv=len(rvfiles)
-
-  print ('Found '+str(nsp)+' input spectra files')
-  for filename in spfiles: print(filename+'--')
-  print ('and '+str(nrv)+' associated rv files')
-  for filename in rvfiles: print(filename+'--')
-
-  if (nsp != nrv):
-    print('ERROR -- there is a mismatch between the number of spectra files and rv files, this pixel is skipped')
-    return (None,None)
-
-  return (spfiles,rvfiles)
-
-#run
-def run(pixel,path=None):
-  if path is None: path="./"
-  #directly run
-  #pwd=os.path.abspath(os.curdir)
-  #os.chdir(path)
-  #job="/bin/bash "+pixel+'.slurm'
-  #code=subprocess.call(job)
-  #os.chdir(pwd)
-  #slurm
-  job="sbatch "+os.path.join(path,pixel+'.slurm')
-  code=subprocess.call(job)
-  #kiko
-  #job="kiko "+os.path.join(path,pixel+'.slurm')
-  #code=subprocess.call(job)
-
-  return code
 
 def main(args):
 
