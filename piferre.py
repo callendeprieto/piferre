@@ -119,13 +119,15 @@ def cleanup(root):
   lstfiles = glob.glob('input.lst-'+root+'*')
   errfiles = glob.glob(root+'*err')
   frdfiles = glob.glob(root+'*frd')
+  vrdfiles = glob.glob(root+'*vrd')
   nrdfiles = glob.glob(root+'*nrd*')
   mdlfiles = glob.glob(root+'*mdl*')
   fmpfiles = glob.glob(root+'*fmp.fits')
   logfiles = glob.glob(root+'.log*')
   slurmfiles = glob.glob(root+'*slurm')
   allfiles = vrdfiles + wavefiles + opffiles + nmlfiles + lstfiles + \
-              errfiles + frdfiles + nrdfiles + mdlfiles+ fmpfiles + logfiles + slurmfiles
+              errfiles + frdfiles + vrdfiles + nrdfiles + mdlfiles + \
+              fmpfiles + logfiles + slurmfiles
 
   for entry in allfiles: os.remove(entry)
 
