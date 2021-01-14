@@ -995,7 +995,9 @@ def do(path, pixel, sdir='', truth=None, nthreads=1,minutes=60,
   #datafiles,zbestfiles  = finddatafiles(path,pixel,sdir,rvpath=rvpath) 
   datafiles,zbestfiles  = getdata(sppath=os.path.join(path,sdir,pixel),rvpath=rvpath,
                                   sptype=sptype, rvtype=rvtype) 
-  if (datafiles == None or zbestfiles == None): return None
+  				  
+  if (datafiles == None or zbestfiles == None or 
+      len(datafiles) == 0 or len(zbestfiles) == 0): return None
 
   #identify data source
   datafile=datafiles[0]
