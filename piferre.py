@@ -994,6 +994,8 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
   #get input data files
   #datafiles,zbestfiles  = finddatafiles(path,pixel,sdir,rvpath=rvpath) 
 
+  print('sppath,rvpath,sdir,pixel=',sppath,rvpath,sdir,pixel)
+
   datafiles,zbestfiles  = getdata(sppath=os.path.join(path,sdir,pixel),
 				rvpath=os.path.join(rvpath,sdir,pixel),
 				sptype=sptype, rvtype=rvtype) 
@@ -1278,6 +1280,7 @@ def main(args):
     print('head/pixel=',head,pixel)
     sdir=''
     print('sppath=',sppath)
+    print('rvpath=',rvpath)
     if head != sppath:
       head, sdir = os.path.split(head)
       if not os.path.exists(sdir): os.mkdir(sdir)
