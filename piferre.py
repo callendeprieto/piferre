@@ -795,8 +795,8 @@ def getdata(sppath='.',rvpath=None,sptype='spectra',rvtype='zbest'):
   spfiles1 = list(glob.iglob(os.path.join(sppath,'**',sptype+'*fits'), recursive=True))
   rvfiles1 = list(glob.iglob(os.path.join(rvpath,'**',rvtype+'*fits'), recursive=True))
   
-  #print('spfiles1=',spfiles1)
-  #print('rvfiles1',rvfiles1)
+  print('spfiles1=',spfiles1)
+  print('rvfiles1',rvfiles1)
 
   spfiles = []
   rvfiles = []
@@ -993,8 +993,10 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
   
   #get input data files
   #datafiles,zbestfiles  = finddatafiles(path,pixel,sdir,rvpath=rvpath) 
-  datafiles,zbestfiles  = getdata(sppath=os.path.join(path,sdir,pixel),rvpath=rvpath,
-                                  sptype=sptype, rvtype=rvtype) 
+
+  datafiles,zbestfiles  = getdata(sppath=os.path.join(path,sdir,pixel),
+				rvpath=os.path.join(rvpath,sdir,pixel),
+				sptype=sptype, rvtype=rvtype) 
   				  
   if (datafiles == None or zbestfiles == None or 
       len(datafiles) == 0 or len(zbestfiles) == 0): return None
