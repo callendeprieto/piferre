@@ -994,7 +994,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
   #get input data files
   #datafiles,zbestfiles  = finddatafiles(path,pixel,sdir,rvpath=rvpath) 
 
-  print('sppath,rvpath,sdir,pixel=',sppath,rvpath,sdir,pixel)
+  print('path,rvpath,sdir,pixel=',path,rvpath,sdir,pixel)
 
   datafiles,zbestfiles  = getdata(sppath=os.path.join(path,sdir,pixel),
 				rvpath=os.path.join(rvpath,sdir,pixel),
