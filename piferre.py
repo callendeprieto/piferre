@@ -53,7 +53,8 @@ def lambda_synth(synthfile):
     return x
 
 #create a slurm script for a given pixel
-def write_slurm(root,nthreads=1,minutes=60,path=None,ngrids=None, config='desi-n.yaml'):
+def write_slurm(root,nthreads=1,minutes=120,path=None,ngrids=None, 
+config='desi-n.yaml'):
     ferre=os.environ['HOME']+"/ferre/src/a.out"
     python_path=os.environ['HOME']+"/piferre"
     try: 
@@ -987,9 +988,8 @@ def inspector(*args):
   return None
 
 #process a single pixel
-def do(path, pixel, sdir='', truth=None, nthreads=1,minutes=60, 
-       rvpath=None, libpath='.', 
-       sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
+def do(path, pixel, sdir='', truth=None, nthreads=1,minutes=120, rvpath=None, 
+libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
   
   #get input data files
   #datafiles,zbestfiles  = finddatafiles(path,pixel,sdir,rvpath=rvpath) 
