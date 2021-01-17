@@ -1240,7 +1240,7 @@ def main(args):
   parser.add_argument('-m','--minutes',
                       type=int,
                       help='requested CPU time in minutes per FERRE job',
-                      default=60)
+                      default=120)
                       
   parser.add_argument('-c','--config',
                       type=str,
