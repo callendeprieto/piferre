@@ -78,7 +78,6 @@ config='desi-n.yaml'):
       f.write("#SBATCH --cpus-per-task="+str(nthreads*2)+"\n")
     else:
       f.write("#SBATCH  -J "+str(root)+" \n")
-      f.write("#SBATCH  -p batch"+" \n")
       f.write("#SBATCH  -o "+str(root)+"_%j.out"+" \n")
       f.write("#SBATCH  -e "+str(root)+"_%j.err"+" \n")
       f.write("#SBATCH  -n "+str(nthreads)+" \n")
