@@ -156,41 +156,38 @@ def mknml(conf,root,nthreads=1,libpath='.',path='.'):
     header=head_synth(os.path.join(libpath,synthfiles[0]))
     ndim=int(header['N_OF_DIM'])
     n_p=tuple(array(header['N_P'].split(),dtype=int))
-    inter=conf['global']['inter']
-    if (min(n_p)-1 < inter): inter=min(n_p)-1
 
     lst=open(os.path.join(path,'input.lst-'+root+'_'+str(k)),'w')
     for run in conf[synth]: #loop over all runs (param + elements)
-      nml={}
-      nml['NDIM']=ndim
-      nml['NOV']=conf[synth][run]['nov']
-      #nml['INDV']=' '.join(map(str,arange(ndim)+1))
-      nml['INDV']=' '.join(map(str,conf[synth][run]['indv']))
+      #global keywords in yaml adopted first
+      nml=dict(conf['global'])
+      #adding/override with param keywords in yaml
+      if 'param' in conf[synth]:
+        for key in conf[synth]['param'].keys(): nml[key]=conf[synth]['param'][key]
+      #adding/override with run keywords in yaml
+      for key in conf[synth][run].keys(): nml[key]=conf[synth][run][key]
+      #check that inter is feasible with this particular grid
+      if nml['inter'] in nml:
+        if (min(n_p)-1 < inter): nml['inter']=inter
+      #from command line
+      nml['nthreads']=nthreads
+      #from the actual grid
+      nml['ndim']=ndim
       for i in range(len(synthfiles)): 
         nml['SYNTHFILE('+str(i+1)+')'] = "'"+os.path.join(libpath,synthfiles[i])+"'"
-      nml['PFILE'] = "'"+root+'.'+conf[synth][run]['pfile_ext']+"'"
-      nml['FFILE'] = "'"+root+'.'+conf['global']['ffile_ext']+"'"
-      nml['ERFILE'] = "'"+root+'.'+conf['global']['erfile_ext']+"'"
-      nml['OPFILE'] = "'"+root+'.'+conf[synth][run]['opfile_ext']+"'"
-      nml['OFFILE'] = "'"+root+'.'+conf[synth][run]['offile_ext']+"'"
-      nml['SFFILE'] = "'"+root+'.'+conf[synth][run]['sffile_ext']+"'"
-      #nml['WFILE'] = "'"+root+".wav"+"'"
-      nml['ERRBAR']=conf['global']['errbar']
-      nml['COVPRINT']=conf['global']['covprint']
-      #nml['WINTER']=2
-      nml['INTER']=inter
-      nml['ALGOR']=conf['global']['algor']
-      #nml['GEN_NUM']=5000
-      #nml['NRUNS']=2**ndim
-      #nml['INDINI']=''
-      #for i in range(ndim): nml['INDINI']=nml['INDINI']+' 2 '
-      nml['NTHREADS']=nthreads
-      nml['F_FORMAT']=conf['global']['f_format']
-      nml['F_ACCESS']=conf['global']['f_access']
-      #nml['CONT']=1
-      #nml['NCONT']=0
-      nml['CONT']=conf[synth][run]['cont']
-      nml['NCONT']=conf[synth][run]['ncont']
+
+      #extensions provided in yaml for input/output files are not supplemented with root
+      nml['pfile'] = "'"+root+'.'+nml['pfile']+"'"
+      nml['ffile'] = "'"+root+'.'+nml['ffile']+"'"
+      nml['erfile'] = "'"+root+'.'+nml['erfile']+"'"
+      nml['opfile'] = "'"+root+'.'+nml['opfile']+"'"
+      nml['offile'] = "'"+root+'.'+nml['offile']+"'"
+      nml['sffile'] = "'"+root+'.'+nml['sffile']+"'"
+
+      #get rid of keywords in yaml that are not for the nml file, but for opfmerge or write_tab
+      if 'labels' in nml: del nml['labels']
+      if 'llimits' in nml: del nml['llimits']
+      if 'steps' in nml: del nml['steps']
 
       nmlfile='input.nml-'+root+'_'+str(k)+run
       lst.write(nmlfile+'\n')

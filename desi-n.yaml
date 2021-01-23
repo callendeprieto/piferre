@@ -1,5 +1,5 @@
 bands: ['b', 'r', 'z']
-grids: ['n_rdesi1','n_rdesi2','n_rdesi3','n_rdesi4','n_rdesi5','n_rdesi6','n_rdesi7','n_rdesi8','n_rdesi9']
+grids: ['n_rdesi1', 'n_rdesi2', 'n_rdesi3', 'n_rdesi4', 'n_rdesi5', 'n_rdesi6', 'n_rdesi7', 'n_rdesi8', 'n_rdesi9']
 global:
     algor: 3
     f_format: 1
@@ -7,145 +7,140 @@ global:
     errbar: 1
     covprint: 1
     inter: 3
-    ffile_ext: 'frd'
-    erfile_ext: 'err'   
+    ffile: 'frd'
+    erfile: 'err'   
 n_rdesi1:
    param:
        ndim: 3
        nov: 3
-       indv: [1, 2, 3]
+       indv:  1  2  3
        cont: 3
        ncont: 100
-       pfile_ext: 'vrd'
-       opfile_ext: 'opf1'
-       offile_ext: 'mdl1'
-       sffile_ext: 'nrd1'
-       labels: ['[Fe/H]','Teff','logg']
-       llimits: [-5.,3500.,0.0]
-       steps: [0.5, 500., 1.0]
+       pfile: 'vrd'
+       opfile: 'opf1'
+       offile: 'mdl1'
+       sffile: 'nrd1'
+       labels:  ['[Fe/H]',  'Teff',  'logg']
+       llimits: -5. 3500. 0.0
+       steps:  0.5  500.  1.0
    Ca: 
-       ndim: 3
        nov: 1
-       indv: [1]
-       cont: 3
-       ncont: 100
-       pfile_ext: 'opf1'
-       opfile_ext: 'oca1'
-       offile_ext: 'mca1'
-       sffile_ext: 'nca1'
-       labels: ['[Fe/H]','Teff','logg']
-       llimits: [-5.,3500.,0.0]
-       steps: [0.5, 500., 1.0]
+       indv: 1
+       pfile: 'opf1'
+       opfile: 'oca1'
+       offile: 'mca1'
+       sffile: 'nca1'
+       labels:  ['[Ca/H]',  'Teff',  'logg']
 n_rdesi2:
    param:
        ndim: 3
        nov: 3
-       indv: [1, 2, 3]
+       indv:  1  2  3
        cont: 3
        ncont: 100
-       pfile_ext: 'vrd'
-       opfile_ext: 'opf2'
-       offile_ext: 'mdl2'
-       sffile_ext: 'nrd2'
-       labels: ['[Fe/H]','Teff','logg']
-       llimits: [-5., 5500., 1.0]
-       steps: [0.5, 500., 1.0]
+       pfile: 'vrd'
+       opfile: 'opf2'
+       offile: 'mdl2'
+       sffile: 'nrd2'
+       labels:  ['[Fe/H]',  'Teff',  'logg']
+       llimits:  -5.  5500.  1.0
+       steps: 0.5 500. 1.0
 n_rdesi3:
    param:
        ndim: 3
        nov: 3
-       indv: [1, 2, 3]
+       indv:  1  2  3
        cont: 3
        ncont: 100
-       pfile_ext: 'vrd'
-       opfile_ext: 'opf3'
-       offile_ext: 'mdl3'
-       sffile_ext: 'nrd3'
-       labels: ['[Fe/H]','Teff','logg']
-       llimits: [-5., 7000., 2.0]
-       steps: [0.5, 1000., 1.0]
+       pfile: 'vrd'
+       opfile: 'opf3'
+       offile: 'mdl3'
+       sffile: 'nrd3'
+       labels:  ['[Fe/H]',  'Teff',  'logg']
+       llimits: -5.  7000.  2.0
+       steps: 0.5 1000. 1.0
 n_rdesi4:
    param:
        ndim: 3
        nov: 3
-       indv: [1, 2, 3]
+       indv:  1  2  3
        cont: 3
        ncont: 100
-       pfile_ext: 'vrd'
-       opfile_ext: 'opf4'
-       offile_ext: 'mdl4'
-       sffile_ext: 'nrd4'
-       labels: ['[Fe/H]','Teff','logg']
-       llimits: [-5., 10000., 3.0]
-       steps: [0.5, 2000., 1.0]
+       pfile: 'vrd'
+       opfile: 'opf4'
+       offile: 'mdl4'
+       sffile: 'nrd4'
+       labels:  ['[Fe/H]',  'Teff',  'logg']
+       llimits: -5. 10000. 3.0
+       steps: 0.5  2000. 1.0
 n_rdesi5:
    param:
        ndim: 3
        nov: 3
-       indv: [1, 2, 3]
+       indv:  1  2  3
        cont: 3
        ncont: 100
-       pfile_ext: 'vrd'
-       opfile_ext: 'opf5'
-       offile_ext: 'mdl5'
-       sffile_ext: 'nrd5'
-       labels: ['[Fe/H]','Teff','logg']
-       llimits: [-5., 20000., 4.0]
-       steps: [0.5, 5000., 1.0]
+       pfile: 'vrd'
+       opfile: 'opf5'
+       offile: 'mdl5'
+       sffile: 'nrd5'
+       labels: [ '[Fe/H]',  'Teff', 'logg']
+       llimits: -5. 20000. 4.0
+       steps: 0.5 5000. 1.0
 n_rdesi6:
    param:
        ndim: 2
        nov: 2
-       indv: [1, 2]
+       indv: 1 2
        cont: 3
        ncont: 300
-       pfile_ext: 'vrd'
-       opfile_ext: 'opf6'
-       offile_ext: 'mdl6'
-       sffile_ext: 'nrd6'
-       labels: ['Teff','logg']
-       llimits: [6000.00,       7.00000]
-       steps: [500., 0.5]
+       pfile: 'vrd'
+       opfile: 'opf6'
+       offile: 'mdl6'
+       sffile: 'nrd6'
+       labels: ['Teff' ,'logg']
+       llimits: 6000.00      7.00000
+       steps: 500. 0.5
 n_rdesi7:
    param:
        ndim: 2
        nov: 2
-       indv: [1, 2]
+       indv: 1 2
        cont: 3
        ncont: 300
-       pfile_ext: 'vrd'
-       opfile_ext: 'opf7'
-       offile_ext: 'mdl7'
-       sffile_ext: 'nrd7'
-       labels: ['Teff','logg']
-       llimits: [10000.00,       7.00000]
-       steps: [5000., 0.5]
+       pfile: 'vrd'
+       opfile: 'opf7'
+       offile: 'mdl7'
+       sffile: 'nrd7'
+       labels: ['Teff', 'logg']
+       llimits: 10000.00       7.00000
+       steps: 5000. 0.5
 n_rdesi8:
    param:
        ndim: 2
        nov: 2
-       indv: [1, 2]
+       indv: 1 2
        cont: 3
        ncont: 300
-       pfile_ext: 'vrd'
-       opfile_ext: 'opf8'
-       offile_ext: 'mdl8'
-       sffile_ext: 'nrd8'
-       labels: ['Teff','logg']
-       llimits: [10000.00,       7.00000]
-       steps: [1000., 0.25]
+       pfile: 'vrd'
+       opfile: 'opf8'
+       offile: 'mdl8'
+       sffile: 'nrd8'
+       labels: ['Teff', 'logg']
+       llimits: 10000.00       7.00000
+       steps: 1000.  0.25
 n_rdesi9:
    param:
        ndim: 2
        nov: 2
-       indv: [1, 2]
+       indv:  1 2
        cont: 3
        ncont: 300
-       pfile_ext: 'vrd'
-       opfile_ext: 'opf9'
-       offile_ext: 'mdl9'
-       sffile_ext: 'nrd9'
-       labels: ['Teff','logg']
-       llimits: [15000.00,       7.00000]
-       steps: [5000., 0.25]
+       pfile: 'vrd'
+       opfile: 'opf9'
+       offile: 'mdl9'
+       sffile: 'nrd9'
+       labels: [ 'Teff', 'logg']
+       llimits:  15000.00       7.00000
+       steps: 5000. 0.25
 
