@@ -96,7 +96,7 @@ config='desi-n.yaml'):
       #  f.write( "  \n")
       #else:
       #  f.write( " & \n")
-      f.write( " & \n")
+      f.write(" & \n")
     f.write("wait \n")
     f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
             "'); from piferre import opfmerge, write_tab_fits, write_mod_fits, cleanup; opfmerge(\'"+\
