@@ -97,14 +97,13 @@ config='desi-n.yaml'):
       #else:
       #  f.write( " & \n")
       f.write( " & \n")
-    if ngrids > 1:
-      f.write("wait \n")
-      f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
-              "'); from piferre import opfmerge, write_tab_fits, write_mod_fits, cleanup; opfmerge(\'"+\
-              str(root)+"\',config='"+config+"\'); write_tab_fits(\'"+\
-              str(root)+"\',config='"+config+"\'); write_mod_fits(\'"+\
-              str(root)+"\'); cleanup(\'"+\
-              str(root)+"\')\"\n")
+    f.write("wait \n")
+    f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
+            "'); from piferre import opfmerge, write_tab_fits, write_mod_fits, cleanup; opfmerge(\'"+\
+            str(root)+"\',config='"+config+"\'); write_tab_fits(\'"+\
+            str(root)+"\',config='"+config+"\'); write_mod_fits(\'"+\
+            str(root)+"\'); cleanup(\'"+\
+            str(root)+"\')\"\n")
     f.close()
     os.chmod(os.path.join(path,root+'.slurm'),0o755)
 
