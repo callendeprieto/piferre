@@ -24,6 +24,7 @@ import datetime, time
 import argparse
 import yaml
 
+version = '0.1.0'
 clight=299792.458 #km/s
 
 #extract the header of a synthfile
@@ -326,6 +327,29 @@ def get_dep_versions():
     ret['python'] = str.split(sys.version, ' ')[0]
     return ret
 
+
+#find out versions 
+def versions():
+
+  ver = get_dep_versions()
+  ver['piferre'] = version
+  log0file = glob.glob("*.log_0")
+  if len(log0file) < 1:
+    print("Warning: cannot find any *.log_0 file in the working directory")
+    fversion = 'unknown'
+  else:
+    l0 = open(log0file[0],'r')
+    while 1:
+      line = l0.readline()
+      if 'f e r r e' in line:
+        entries = line.split()
+        fversion = entries[-1][1:]
+        break
+  l0.close()
+  ver['ferre'] = fversion
+
+  return(ver)
+
 #write piferre param. output
 def write_tab_fits(root, path=None, config='desi-n.yaml'):
   
@@ -442,10 +466,17 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
 
 
   hdu0=fits.PrimaryHDU()
+
+  #find out processing date and add it to primary header
   now = datetime.datetime.fromtimestamp(time.time())
   nowstr = now.isoformat() 
   nowstr = nowstr[:nowstr.rfind('.')]
   hdu0.header['DATE'] = nowstr
+
+  #get versions and enter then in primary header
+  ver = get_versions()
+  for entry in ver.keys(): hdu0.header[entry] = ver[entry]
+  
   hdulist = [hdu0]
 
   #col01 = fits.Column(name='success',format='u1', array=array(success), unit='')
@@ -564,6 +595,11 @@ def write_mod_fits(root, path=None):
   nowstr = now.isoformat() 
   nowstr = nowstr[:nowstr.rfind('.')]
   hdu0.header['DATE'] = nowstr
+
+  #get versions and enter then in primary header
+  ver = get_versions()
+  for entry in ver.keys(): hdu0.header[entry] = ver[entry]
+
   hdulist = [hdu0]
 
   i = 0
