@@ -13,6 +13,7 @@ import sys
 import os
 import glob
 import re
+import importlib
 from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack
 from astropy.io import fits
 import astropy.table as tbl
@@ -308,6 +309,22 @@ def readspec(filename,band=None):
     
 
   return((wavelength,flux,ivar,res))
+
+#get dependencies versions, shamelessly copied from rvspec (Koposov's code)
+def get_dep_versions():
+    """
+    Get Packages versions
+    """
+    packages = [
+        'numpy', 'astropy', 'matplotlib', 'scipy',
+        'yaml'
+    ]
+    # Ideally you need to check that the list here matches the requirements.txt
+    ret = {}
+    for curp in packages:
+        ret[curp] = importlib.import_module(curp).__version__
+    ret['python'] = str.split(sys.version, ' ')[0]
+    return ret
 
 #write piferre param. output
 def write_tab_fits(root, path=None, config='desi-n.yaml'):
