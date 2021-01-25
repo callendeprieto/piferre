@@ -716,7 +716,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   for entry in grids:
     tmplist=conf[entry]['param']['labels']
     iteffcol = [idx for idx, element in enumerate(tmplist) if element == 'Teff'][0]
-    tmpstr=conf['n_rdesi1']['param']['llimits']
+    tmpstr=conf[entry]['param']['llimits']
     tmplist=tmpstr.split()
     llimit.append(float(tmplist[iteffcol]))
     iteff.append(iteffcol+1)
