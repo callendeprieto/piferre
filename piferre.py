@@ -759,10 +759,10 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
       mline=mf[i+1].readline()
       if len(n) > 0: nline=nf[i+1].readline()
       tmparr=oline.split()
-      #print(len(tmparr))
-      #print(tmparr)
-      #print(i,ilchi[i+1],len(tmparr))
-      #print(i,float(tmparr[ilchi[i+1]]))
+      print(len(tmparr))
+      print(tmparr)
+      print(i,ilchi[i+1],len(tmparr))
+      print(i,float(tmparr[ilchi[i+1]]))
       if float(tmparr[ilchi[i+1]]) < min_chi and float(tmparr[iteff[i+1]]) > llimit[i+1]*1.01: 
         min_chi=float(tmparr[ilchi[i+1]])
         min_oline=oline
