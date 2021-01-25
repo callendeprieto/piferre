@@ -14,7 +14,7 @@ import os
 import glob
 import re
 import importlib
-from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack
+from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32
 from astropy.io import fits
 import astropy.table as tbl
 import astropy.units as units
@@ -362,7 +362,8 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   fmp=glob.glob(proot+".fmp.fits")
   
   success=[]
-  fid=[]
+  targetid=[]
+  fiber=[]
   teff=[]
   logg=[]
   feh=[]
@@ -460,7 +461,9 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
     if (chisq_tot[-1] < 1. and snr_med[-1] > 5.): # chi**2<10 and S/N>5
       success.append(1) 
     else: success.append(0)
-    fid.append(cells[0])
+    tmp = cells[0].split('-')
+    targetid.append(int64(tmp[0]))
+    fiber.append(int32(tmp[1]))
     elem.append([nan,nan])
     elem_err.append([nan,nan])
 
@@ -479,27 +482,11 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   
   hdulist = [hdu0]
 
-  #col01 = fits.Column(name='success',format='u1', array=array(success), unit='')
-  #col02 = fits.Column(name='fid',format='30a',array=array(fid))  
-  #col03 = fits.Column(name='teff',format='e4',array=array(teff))
-  #col04 = fits.Column(name='logg',format='e4',array=array(logg))
-  #col05 = fits.Column(name='feh',format='e4',array=array(feh))
-  #col06 = fits.Column(name='alphafe',format='e4',array=array(alphafe))
-  #col07 = fits.Column(name='micro',format='e4',array=array(micro))
-  #col08 = fits.Column(name='covar',format='9e4',dim='(5, 5)',array=array(covar).reshape(len(success),5,5))
-  #col09 = fits.Column(name='elem',format='2e4',dim='(2)',array=array(elem))
-  #col10 = fits.Column(name='elem_err',format='2e4',dim='(2)',array=array(elem_err))
-  #col11 = fits.Column(name='chisq_tot',format='e4',array=array(chisq_tot))
-  #col12 = fits.Column(name='snr_med',format='e4',array=array(snr_med))
-
-  #coldefs = fits.ColDefs([col01,col02,col03,col04,col05,col06,col07,col08,col09,col10,col11,col12])
-  #hdu=fits.BinTableHDU.from_columns(coldefs)
-  #hdu.header=header
-  #hdulist.append(hdu)
 
   cols = {}
   cols['SUCCESS'] = success
-  cols['FID'] = fid
+  cols['TARGETID'] = targetid
+  cols['FIBER'] = fiber
   cols['TEFF'] = array(teff)*units.K
   cols['LOGG'] = array(logg)
   cols['FEH'] = array(feh)
@@ -514,11 +501,12 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   cols['ELEM_ERR'] = array(elem_err)
   cols['CHISQ_TOT'] = array(chisq_tot)
   cols['SNR_MED'] = array(snr_med)
-  cols['RV_ADOP'] = array(rv_adop)
+  cols['RV_ADOP'] = array(rv_adop)*units.km/units.s
 
   colcomm = {
   'success': 'Bit indicating whether the code has likely produced useful results',
-  'FID': 'Identifier used in FERRE to associate input/output files',
+  'TARGETID': 'DESI targetid',
+  'FIBER': 'DESI fiber',
   'TEFF': 'Effective temperature',
   'LOGG': 'Surface gravity (g in cm/s**2)',
   'FEH': 'Metallicity [Fe/H] = log10(N(Fe)/N(H)) - log10(N(Fe)/N(H))sun' ,
@@ -1101,6 +1089,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
     if source == 'desi': #DESI data
       fibermap=hdu['FIBERMAP']
       targetid=fibermap.data['TARGETID']
+      fiber=fibermap.data['FIBER']
       if 'RA_TARGET' in fibermap.data.names: 
         ra=fibermap.data['RA_TARGET']
       else:
@@ -1165,7 +1154,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
       for k in range(nspec):
         if process_target[k]:
           npass=npass+1
-          id=str(targetid[k])
+          if source == 'desi': id = str(targetid[k]) + '-' + str(fiber[k])
           ids.append(id)
           par[id]=[true_feh[targetid[k]],true_teff[targetid[k]],
                          true_logg[targetid[k]],true_rmag[targetid[k]],
@@ -1176,7 +1165,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
       for k in range(nspec):
         if process_target[k]:
           npass=npass+1
-          id=str(targetid[k])
+          if source == 'desi': id = str(targetid[k]) + '-' + str(fiber[k])
           ids.append(id)
           #we patch the redshift here to handle missing redshifts for comm. data from Sergey
           #z[targetid[k]]=0.0
