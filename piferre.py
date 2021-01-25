@@ -323,7 +323,7 @@ def get_dep_versions():
     # Ideally you need to check that the list here matches the requirements.txt
     ret = {}
     for curp in packages:
-        ret[curp] = importlib.import_module(curp).__version__
+        ret[curp[:8]] = importlib.import_module(curp).__version__
     ret['python'] = str.split(sys.version, ' ')[0]
     return ret
 
