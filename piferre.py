@@ -329,7 +329,7 @@ def get_dep_versions():
 
 
 #find out versions 
-def versions():
+def get_versions():
 
   ver = get_dep_versions()
   ver['piferre'] = version
