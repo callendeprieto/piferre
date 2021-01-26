@@ -224,7 +224,7 @@ def ferrerun(path=None):
 
 
 #read redshift derived by the DESI pipeline
-def readzbest(filename):
+def read_zbest(filename):
   hdu=fits.open(filename)
   if len(hdu) > 1:
     enames=extnames(hdu)
@@ -251,10 +251,10 @@ def readzbest(filename):
   return(z)
 
 #read redshift derived by the Koposov pipeline
-def readk(filename):
+def read_k(filename):
   hdu=fits.open(filename)
   if len(hdu) > 1:
-    k=hdu[1].data
+    k=hdu['rvtab'].data
     targetid=k['targetid']
     #targetid=k['fiber']
     #teff=k['teff']
@@ -269,7 +269,7 @@ def readk(filename):
   return(z)
 
 #read truth tables (for simulations)
-def readtruth(filename):
+def read_truth(filename):
   hdu=fits.open(filename)
   truth=hdu[1].data
   targetid=truth['targetid']
@@ -282,7 +282,7 @@ def readtruth(filename):
   return(feh,teff,logg,rmag,z)
 
 #read spectra
-def readspec(filename,band=None):
+def read_spec(filename,band=None):
 
   hdu=fits.open(filename)
 
@@ -310,6 +310,42 @@ def readspec(filename,band=None):
     
 
   return((wavelength,flux,ivar,res))
+
+#read sptab file, returning sptab, fibermap and primary header (s,f,p)
+def read_sptab(file):
+
+  d=fits.open(file)
+  h=d[0].header
+  s=d['sptab'].data
+  f=d['fibermap'].data
+ 
+  return(s,f,h) 
+
+#read spmod table, returning bx,by,rx,ry,zx,zy (wavelength and fluxes), and 
+#primary header (h)
+def read_spmod(file):
+
+  d=fits.open(file)
+  h=d[0].data
+  bx=d['b_wavelength'].data
+  by=d['b_model'].data
+  rx=d['r_wavelength'].data
+  ry=d['r_model'].data
+  zx=d['z_wavelength'].data
+  zy=d['z_model'].data
+
+  return(bx,by,rx,ry,zx,zy,h)
+
+
+#read  rvtab file, returning rvtab, fibermap and primary header (r,f,p)
+def read_rvtab(file):
+
+  d=fits.open(file)
+  h=d[0].header
+  r=d['rvtab'].data
+  f=d['fibermap'].data
+
+  return(r,f,h)
 
 #get dependencies versions, shamelessly copied from rvspec (Koposov's code)
 def get_dep_versions():
@@ -1072,10 +1108,10 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
 
     #get redshifts
     if zbestfile.find('best') > -1:
-      z=readzbest(zbestfile)
+      z=read_zbest(zbestfile)
     else:
       #Koposov pipeline
-      z=readk(zbestfile)
+      z=read_k(zbestfile)
   
     #read primary header and  
     #find out if there is FIBERMAP extension
@@ -1184,7 +1220,8 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
       x1=lambda_synth(os.path.join(libpath,gridfile))
 
       #read DESI data, select targets, and resample 
-      (x,y,ivar,r)=readspec(datafile,bands[j])
+
+      (x,y,ivar,r)=read_spec(datafile,bands[j])
       ey=sqrt(divide(1.,ivar,where=(ivar != 0.)))
       ey[where(ivar == 0.)]=max(y)*1e3
 
@@ -1307,8 +1344,7 @@ def main(args):
   minutes=args.minutes
 
   truthfile=args.truthfile
-  if (truthfile is not None):  
-    truthtuple=readtruth(truthfile)
+  if (truthfile is not None):  truthtuple=read_truth(truthfile)
   else: truthtuple=None
 
 
