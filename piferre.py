@@ -14,7 +14,7 @@ import os
 import glob
 import re
 import importlib
-from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32
+from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, median, std, mean
 from astropy.io import fits
 import astropy.table as tbl
 import astropy.units as units
