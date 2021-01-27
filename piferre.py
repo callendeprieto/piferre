@@ -347,6 +347,66 @@ def read_rvtab(file):
 
   return(r,f,h)
 
+
+#calibrate in flux an sframe using parameters in sptab and model flux in spmod
+def response(sframe,sptab,spmod):
+  """
+  sframe = sframe file
+  sptab = piferre sptabfile
+  spmod = piferre spmod produced with theoretical SEDs in the 'fit' field\
+
+  """
+
+  #info on calibration stars
+  s,f,h = read_sptab(sptab)
+  bx,by,rx,ry,zx,zy,h2 = read_spmod(spmod)
+  ind = {}  #dict that connects targetid to index of spectrum in spmod/tab
+  for i in range(len(f['target_ra'])): ind[f['targetid'][i]] = i
+
+
+  #observations
+  sf=fits.open(sframe)
+  fmp=sf['fibermap'].data
+  x=sf['wavelength'].data
+  y=sf['flux'].data
+
+  i=0
+  j=0
+  plt.clf()
+  for entry in fmp['targetid']: 
+    if entry in ind.keys() and s['teff'][ind[entry]] > 6000. and median(y[j,:]) > 600.:
+      print(entry,ind[entry],s['teff'][ind[entry]],
+	    s['logg'][ind[entry]],s['feh'][ind[entry]],
+	    s['snr_med'][ind[entry]],s['chisq_tot'][ind[entry]],
+	    fmp['gaia_phot_g_mean_mag'][j])
+      model = interp(x,bx,by['fit'][ind[entry],:])
+      scale = median(model)/median(y[j,:])
+      #plt.plot(x,y[j,:]/model*scale)
+      r = y[j,:]/model*scale 
+      if i == 0: 
+        rr = r
+      else:
+        rr = vstack((rr,r))
+        #plt.ylim([0,3])
+      i += 1
+    j += 1
+  print(i,j)
+  #plt.show()
+
+  #plt.clf()
+  ma=mean(rr,0)
+  me=median(rr,0)
+  st=std(rr,0)
+
+  plt.plot(x,ma,x,me,x,st)
+  print('median(std)=',median(st))
+  plt.plot([3500,6000],[median(st),median(st)])
+  plt.ylim([-0.5,2])
+  plt.show()
+
+  return(median(st))
+
+
 #get dependencies versions, shamelessly copied from rvspec (Koposov's code)
 def get_dep_versions():
     """
