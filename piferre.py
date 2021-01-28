@@ -16,6 +16,7 @@ import re
 import importlib
 from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, median, std, mean
 from astropy.io import fits
+from scipy.signal import savgol_filter
 import astropy.table as tbl
 import astropy.units as units
 import matplotlib.pyplot as plt
@@ -349,7 +350,7 @@ def read_rvtab(file):
 
 
 #calibrate in flux an sframe using parameters in sptab and model flux in spmod
-def response(sframe,sptab,spmod):
+def reponse(sframe,sptab,spmod,minteff=0.,maxg=21.,maxchi=1e5):
   """
   sframe = sframe file
   sptab = piferre sptabfile
@@ -369,42 +370,55 @@ def response(sframe,sptab,spmod):
   fmp=sf['fibermap'].data
   x=sf['wavelength'].data
   y=sf['flux'].data
+  ivar=sf['ivar'].data
 
   i=0
   j=0
-  plt.clf()
+  gstar=[]
+  teffstar=[]
+  chistar=[]
+  snrstar=[]
+  #plt.clf()
   for entry in fmp['targetid']: 
-    if entry in ind.keys() and s['teff'][ind[entry]] > 6000. and median(y[j,:]) > 600.:
-      print(entry,ind[entry],s['teff'][ind[entry]],
-	    s['logg'][ind[entry]],s['feh'][ind[entry]],
-	    s['snr_med'][ind[entry]],s['chisq_tot'][ind[entry]],
-	    fmp['gaia_phot_g_mean_mag'][j])
+    if entry in ind.keys() and s['teff'][ind[entry]] > minteff and fmp['gaia_phot_g_mean_mag'][j] > 0.0 and fmp['gaia_phot_g_mean_mag'][j] < maxg and s['chisq_tot'][ind[entry]] < maxchi:
+      #print(entry,ind[entry],s['teff'][ind[entry]],
+	#    s['logg'][ind[entry]],s['feh'][ind[entry]],
+	#    s['snr_med'][ind[entry]],s['chisq_tot'][ind[entry]],
+	#    fmp['gaia_phot_g_mean_mag'][j])
+      gstar.append(fmp['gaia_phot_g_mean_mag'][j])
+      teffstar.append(s['teff'][ind[entry]])
+      chistar.append(s['chisq_tot'][ind[entry]])
+      snrstar.append(s['snr_med'][ind[entry]])
       model = interp(x,bx,by['fit'][ind[entry],:])
       scale = median(model)/median(y[j,:])
-      #plt.plot(x,y[j,:]/model*scale)
       r = y[j,:]/model*scale 
+      w = ivar[j,:]*(model/scale)**2 
       if i == 0: 
         rr = r
+        ww = w
       else:
         rr = vstack((rr,r))
-        #plt.ylim([0,3])
+        ww = vstack((ww,w))
       i += 1
     j += 1
   print(i,j)
-  #plt.show()
 
   #plt.clf()
-  ma=mean(rr,0)
-  me=median(rr,0)
-  st=std(rr,0)
+  ma = mean(rr,0)            #straight mean response across spectra
+  ema = std(rr,0)/sqrt(i)    #uncertainty in mean
+  mw = sum(ww*rr,0)/sum(ww,0)#weighted mean
+  emw = 1./sqrt(sum(ww,0))   #uncertainty in w. mean
+  me = median(rr,0)          #median 
 
-  plt.plot(x,ma,x,me,x,st)
-  print('median(std)=',median(st))
-  plt.plot([3500,6000],[median(st),median(st)])
-  plt.ylim([-0.5,2])
-  plt.show()
+  #plt.plot(x,ma,x,me,x,mw,x,emw)
+  #plt.legend(['straight mean','median','weighted mean'])
+  print('median(ema),median(emw)=',median(ema),median(emw))
+  #plt.plot([3500,6000],[median(ema),median(ema)])
+  #plt.plot([3500,6000],[median(emw),median(emw)])
+  #plt.ylim([-0.5,2])
+  #plt.show()
 
-  return(median(st))
+  return(x,mw,emw,i,gstar,teffstar,chistar,snrstar)
 
 
 #get dependencies versions, shamelessly copied from rvspec (Koposov's code)
