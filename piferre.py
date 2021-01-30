@@ -349,21 +349,73 @@ def read_rvtab(file):
   return(r,f,h)
 
 
-#calibrate in flux an sframe using parameters in sptab and model flux in spmod
-def reponse(sframe,sptab,spmod,minteff=0.,maxg=21.,maxchi=1e5):
+def smooth(x,n):
+
+  """Smooth using a Svitzky-Golay cubic filter
+
+
+  Parameters
+  ----------
+  x: arr
+    input array to smooth
+  n: int
+    window size
+  """
+
+  x2 = savgol_filter(x, n, 3)
+
+  return(x2)
+
+
+#identify suitable calibration stars in an sframe by matching to an sptab, 
+#returning their indices in the sframe and sptab arrays
+def ind_calibrators(sframe,sptab,
+                    tefflim=[3600.,10000.],gaiaglim=[15.,20.],maxchi=1e5):
   """
   sframe = sframe file
-  sptab = piferre sptabfile
-  spmod = piferre spmod produced with theoretical SEDs in the 'fit' field\
+  sptab =  sptabfile
+  """
+
+  #read fibermap from sframefile
+
+  sf=fits.open(sframe)
+  fmp=sf['fibermap'].data
+
+  #info on calibration stars from sptab
+  s,f,h = read_sptab(sptab)
+  ind = {}  #dict that connects targetid to index of spectrum in spmod/tab
+  for i in range(len(f['target_ra'])): ind[f['targetid'][i]] = i
+
+  i = 0
+  j = 0
+  ind_sf = []
+  ind_sp = []
+  for entry in fmp['targetid']:
+    if entry in ind.keys():
+      ie = ind[entry]
+      if (s['teff'][ie] > tefflim[0] and s['teff'][ie] <= tefflim[1] and
+        fmp['gaia_phot_g_mean_mag'][j] > gaiaglim[0] and
+        fmp['gaia_phot_g_mean_mag'][j] < gaiaglim[1] and
+        s['chisq_tot'][ind[entry]] < maxchi):
+          ind_sf.append(j)
+          ind_sp.append(ie)
+          i += 1
+    j += 1
+
+  return(ind_sf,ind_sp)
+
+#calibrate in flux an sframe using parameters in sptab and model flux in spmod
+def reponse(ind_sf,ind_sp,sframe,spmod):
+  """
+  ind_sf = indices for calibrators in sframe
+  ind_sp = indices for calibrators in sptab/spmod
+  sframe = sframe file
+  spmod = piferre spmod produced with theoretical SEDs in the 'fit' field
 
   """
 
   #info on calibration stars
-  s,f,h = read_sptab(sptab)
   bx,by,rx,ry,zx,zy,h2 = read_spmod(spmod)
-  ind = {}  #dict that connects targetid to index of spectrum in spmod/tab
-  for i in range(len(f['target_ra'])): ind[f['targetid'][i]] = i
-
 
   #observations
   sf=fits.open(sframe)
@@ -372,53 +424,37 @@ def reponse(sframe,sptab,spmod,minteff=0.,maxg=21.,maxchi=1e5):
   y=sf['flux'].data
   ivar=sf['ivar'].data
 
-  i=0
-  j=0
-  gstar=[]
-  teffstar=[]
-  chistar=[]
-  snrstar=[]
-  #plt.clf()
-  for entry in fmp['targetid']: 
-    if entry in ind.keys() and s['teff'][ind[entry]] > minteff and fmp['gaia_phot_g_mean_mag'][j] > 0.0 and fmp['gaia_phot_g_mean_mag'][j] < maxg and s['chisq_tot'][ind[entry]] < maxchi:
-      #print(entry,ind[entry],s['teff'][ind[entry]],
-	#    s['logg'][ind[entry]],s['feh'][ind[entry]],
-	#    s['snr_med'][ind[entry]],s['chisq_tot'][ind[entry]],
-	#    fmp['gaia_phot_g_mean_mag'][j])
-      gstar.append(fmp['gaia_phot_g_mean_mag'][j])
-      teffstar.append(s['teff'][ind[entry]])
-      chistar.append(s['chisq_tot'][ind[entry]])
-      snrstar.append(s['snr_med'][ind[entry]])
-      model = interp(x,bx,by['fit'][ind[entry],:])
+  k = 0
+  for i in ind_sp: 
+      j = ind_sf[k]
+      model = interp(x,bx,by['fit'][i,:])
       scale = median(model)/median(y[j,:])
       r = y[j,:]/model*scale 
       w = ivar[j,:]*(model/scale)**2 
-      if i == 0: 
+      if k == 0: 
         rr = r
         ww = w
       else:
         rr = vstack((rr,r))
         ww = vstack((ww,w))
-      i += 1
-    j += 1
-  print(i,j)
+      k += 1
 
   #plt.clf()
-  ma = mean(rr,0)            #straight mean response across spectra
-  ema = std(rr,0)/sqrt(i)    #uncertainty in mean
+  #ma = mean(rr,0)            #straight mean response across spectra
+  #ema = std(rr,0)/sqrt(k)    #uncertainty in mean
   mw = sum(ww*rr,0)/sum(ww,0)#weighted mean
   emw = 1./sqrt(sum(ww,0))   #uncertainty in w. mean
   me = median(rr,0)          #median 
+  ms = smooth(mw,51)         #smoothed 
+  mws = mw - ms              #scatter around the smoothed data
+  ems = zeros(len(mw))
+  length = 51
+  for i in range(len(mw)): ems[i] = std(mws[max([0,i-length]):min([len(mws)-1,i+length])]) 
 
-  #plt.plot(x,ma,x,me,x,mw,x,emw)
-  #plt.legend(['straight mean','median','weighted mean'])
-  print('median(ema),median(emw)=',median(ema),median(emw))
-  #plt.plot([3500,6000],[median(ema),median(ema)])
-  #plt.plot([3500,6000],[median(emw),median(emw)])
-  #plt.ylim([-0.5,2])
-  #plt.show()
+  print('n, median(emw), median(ems)=',k, median(emw),median(ems))
+ 
 
-  return(x,mw,emw,i,gstar,teffstar,chistar,snrstar)
+  return(x,mw,emw,ms,ems,k)
 
 
 #get dependencies versions, shamelessly copied from rvspec (Koposov's code)
