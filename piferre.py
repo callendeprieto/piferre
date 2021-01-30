@@ -17,6 +17,7 @@ import importlib
 from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, median, std, mean
 from astropy.io import fits
 from scipy.signal import savgol_filter
+from dust_extinction.parameter_averages import F99
 import astropy.table as tbl
 import astropy.units as units
 import matplotlib.pyplot as plt
@@ -424,10 +425,14 @@ def reponse(ind_sf,ind_sp,sframe,spmod):
   y=sf['flux'].data
   ivar=sf['ivar'].data
 
+  ext = F99(Rv=3.1)
+
   k = 0
   for i in ind_sp: 
       j = ind_sf[k]
-      model = interp(x,bx,by['fit'][i,:])
+      model = by['fit'][i,:]
+      model = model * ext.extinguish(bx*units.AA, Ebv=fmp['ebv'][j])
+      model = interp(x,bx,model)
       scale = median(model)/median(y[j,:])
       r = y[j,:]/model*scale 
       w = ivar[j,:]*(model/scale)**2 
