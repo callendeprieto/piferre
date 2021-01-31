@@ -907,7 +907,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   oo=open(proot+'.opf','w')
   mo=open(proot+'.mdl','w')
   if len(n) > 0: no=open(proot+'.nrd','w')
-  if len(l) > 0: no=open(proot+'.ndl','w')
+  if len(l) > 0: lo=open(proot+'.ndl','w')
  
   for line in of[0]: 
     tmparr=line.split()
