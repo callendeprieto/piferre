@@ -717,6 +717,7 @@ def write_mod_fits(root, path=None):
   m=glob.glob(proot+".mdl")
   e=glob.glob(proot+".err")
   n=glob.glob(proot+".nrd")
+  l=glob.glob(proot+".ndl")
 
   fmp=glob.glob(proot+".fmp.fits")  
   mdata=loadtxt(m[0])
@@ -728,6 +729,10 @@ def write_mod_fits(root, path=None):
     edata=edata/fdata*odata
   else:
     odata=loadtxt(proot+".frd")  
+
+  if (len(l) > 0): 
+    ldata=loadtxt(l[0])
+
 
   hdu0=fits.PrimaryHDU()
   now = datetime.datetime.fromtimestamp(time.time())
@@ -762,8 +767,17 @@ def write_mod_fits(root, path=None):
     col02 = fits.Column(name='err',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=tdata)
     if mdata.ndim == 2: tdata = mdata[:,j1:j2]
     else: tdata = mdata[j1:j2][None,:]
-    col03 = fits.Column(name='fit',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=tdata)    
-    coldefs = fits.ColDefs([col01,col02,col03])
+    mdlname = 'fit'
+    if (len(l) > 0): mdlname = 'flx'
+    col03 = fits.Column(name=mdlname,format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=tdata)   
+    if (len(l) > 0): 
+      if ldata.ndim == 2: tdata = ldata[:,j1:j2]
+      else: tdata = ldata[j1:j2][None,:]
+      col04 = fits.Column(name='fit',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=tdata)   
+      coldefs = fits.ColDefs([col01,col02,col03,col04])  
+    else:
+      coldefs = fits.ColDefs([col01,col02,col03])
+
     hdu=fits.BinTableHDU.from_columns(coldefs, name=entry+'_MODEL')
     #hdu = fits.ImageHDU(name=entry+'_MODEL', data=stack([odata[:,j1:j2],edata[:,j1:j2],mdata[:,j1:j2]]) ) 
     #hdu.header['EXTNAME']=entry+'_MODEL'
