@@ -609,7 +609,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
         covar.append(cov)    
    
 
-    if (chisq_tot[-1] < 1. and snr_med[-1] > 5.): # chi**2<10 and S/N>5
+    if (chisq_tot[-1] < 1.5 and snr_med[-1] > 5.): # chi**2<1.5 and S/N>5
       success.append(1) 
     else: success.append(0)
     tmp = cells[0].split('-')
