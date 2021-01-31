@@ -17,9 +17,9 @@ import importlib
 from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, median, std, mean
 from astropy.io import fits
 from scipy.signal import savgol_filter
-from dust_extinction.parameter_averages import F99
 import astropy.table as tbl
 import astropy.units as units
+from dust_extinction.parameter_averages import F99
 import matplotlib.pyplot as plt
 import subprocess
 import datetime, time
@@ -841,6 +841,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   o=sorted(glob.glob(proot+".opf?"))
   m=sorted(glob.glob(proot+".mdl?"))
   n=sorted(glob.glob(proot+".nrd?"))
+  l=sorted(glob.glob(proot+".ndl?"))
  
 
   llimit=[] # lower limits for Teff
@@ -868,23 +869,31 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
     return(0)
   if (len(n) > 0):
     if ngrid != len(m):  
-      print("there are different number of opf? and mdl? arrays")
+      print("there are different number of opf? and nrd? arrays")
       return(0)
+  if (len(l) > 0):
+    if ngrid != len(l):  
+      print("there are different number of opf? and ndl? arrays")
+      return(0)
+
 
   #open input files
   of=[]
   mf=[]
   if len(n) > 0: nf=[]
+  if len(l) > 0: lf=[]
   for i in range(len(o)):
     of.append(open(o[i],'r'))
     mf.append(open(m[i],'r'))
     if len(n) > 0: nf.append(open(n[i],'r'))
+    if len(l) > 0: lf.append(open(l[i],'r'))
   print(o)
   print(of)
   #open output files
   oo=open(proot+'.opf','w')
   mo=open(proot+'.mdl','w')
   if len(n) > 0: no=open(proot+'.nrd','w')
+  if len(l) > 0: no=open(proot+'.ndl','w')
  
   for line in of[0]: 
     tmparr=line.split()
@@ -893,10 +902,12 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
     print(min_chi,min_oline)
     min_mline=mf[0].readline()
     if len(n) > 0: min_nline=nf[0].readline()
+    if len(l) > 0: min_lline=lf[0].readline()
     for i in range(len(o)-1):
       oline=of[i+1].readline()
       mline=mf[i+1].readline()
       if len(n) > 0: nline=nf[i+1].readline()
+      if len(l) > 0: lline=lf[i+1].readline()
       tmparr=oline.split()
       #print(len(tmparr))
       #print(tmparr)
@@ -907,11 +918,13 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
         min_oline=oline
         min_mline=mline
         if len(n) > 0: min_nline=nline
+        if len(l) > 0: min_lline=lline
     
     #print(min_chi,min_oline)
     oo.write(min_oline)
     mo.write(min_mline)
     if len(n) > 0: no.write(min_nline)
+    if len(l) > 0: lo.write(min_lline)
   
   #close input files
   for i in range(len(o)):
@@ -919,11 +932,13 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
     of[i].close
     mf[i].close
     if len(n) > 0: nf[i].close
+    if len(l) > 0: lf[i].close
 
   #close output files
   oo.close
   mo.close
   if len(n) > 0: no.close
+  if len(l) > 0: lo.close
   
   return None
 
