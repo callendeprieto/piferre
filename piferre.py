@@ -2,7 +2,7 @@
 '''
 Interface to use FERRE from python for DESI/BOSS data
 
-use: piferre -sp path-to-spectra [-rv rvpath -l libpath -spt sptype -rvt rvtype -n nthreads -m minutes -c config -t truthfile ]
+use: piferre -sp path-to-spectra [-rv rvpath -l libpath -spt sptype -rvt rvtype -c config -n nthreads -m minutes  -t truthfile ]
 
 e.g. piferre -sp /data/spectro/redux/dc17a2/spectra-64 
 
@@ -1437,6 +1437,11 @@ def main(args):
                       help='type of RV data (zbest, rvtab_spectra, rvtab_coadd, spZbest)',
                       default='zbest')
 
+  parser.add_argument('-c','--config',
+                      type=str,
+                      help='yaml configuration file for FERRE runs',
+                      default='desi-n.yaml')
+
   parser.add_argument('-n','--nthreads',
                       type=int,
                       help='number of threads per FERRE job',
@@ -1447,11 +1452,6 @@ def main(args):
                       help='requested CPU time in minutes per FERRE job',
                       default=120)
                       
-  parser.add_argument('-c','--config',
-                      type=str,
-                      help='yaml configuration file for FERRE runs',
-                      default='desi-n.yaml')
-
   parser.add_argument('-t','--truthfile',
                       type=str,
                       help='truth file for DESI simulations',
