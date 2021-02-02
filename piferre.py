@@ -124,7 +124,7 @@ def cleanup(root):
   frdfiles = glob.glob(root+'*frd')
   nrdfiles = glob.glob(root+'*nrd*')
   mdlfiles = glob.glob(root+'*mdl*')
-  ndlfiles = glob.glob(root+'*mdl*')
+  ndlfiles = glob.glob(root+'*ndl*')
   fmpfiles = glob.glob(root+'*fmp.fits')
   logfiles = glob.glob(root+'.log*')
   slurmfiles = glob.glob(root+'*slurm')
