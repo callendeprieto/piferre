@@ -173,8 +173,8 @@ def mknml(conf,root,nthreads=1,libpath='.',path='.'):
       #check that inter is feasible with this particular grid
       if nml['inter'] in nml:
         if (min(n_p)-1 < inter): nml['inter']=inter
-      #from command line
-      nml['nthreads']=nthreads
+      #nthreads from command line is for the slurm job, the ferre omp nthreads should come from the config yaml file
+      #nml['nthreads']=nthreads
       #from the actual grid
       nml['ndim']=ndim
       for i in range(len(synthfiles)): 
