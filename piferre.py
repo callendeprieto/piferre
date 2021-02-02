@@ -1445,7 +1445,7 @@ def main(args):
   parser.add_argument('-n','--nthreads',
                       type=int,
                       help='number of threads per FERRE job',
-                      default=4)
+                      default=32)
 
   parser.add_argument('-m','--minutes',
                       type=int,
