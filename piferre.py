@@ -105,7 +105,7 @@ config='desi-n.yaml'):
     f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
             "'); from piferre import opfmerge, write_tab_fits, write_mod_fits, cleanup; opfmerge(\'"+\
             str(root)+"\',config='"+config+"\'); write_tab_fits(\'"+\
-            str(root)+"\',config='"+config+"\'); write_mod_fits(\'"+\
+            str(root)+"\'); write_mod_fits(\'"+\
             str(root)+"\'); cleanup(\'"+\
             str(root)+"\')\"\n")
     f.close()
@@ -502,7 +502,7 @@ def get_versions():
   return(ver)
 
 #write piferre param. output
-def write_tab_fits(root, path=None, config='desi-n.yaml'):
+def write_tab_fits(root, path=None):
   
   if path is None: path=""
   proot=os.path.join(path,root)
@@ -577,15 +577,10 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       chisq_tot.append(10.**float(cells[7]))
       snr_med.append(float(cells[6]))
       rv_adop.append(float(vcells[6])*clight)
-      if (config == 'desi-n.yaml'):
-        cov = zeros((3,3))
-        cov[1:,1:] = reshape(array(cells[8:],dtype=float),(2,2))
-        #cov = reshape(array(cells[8:],dtype=float),(2,2))
-        covar.append(cov)    
-      else:
-        cov = zeros((5,5))
-        cov[3:,3:] = reshape(array(cells[8:],dtype=float),(2,2))
-        covar.append(cov)    
+      cov = zeros((3,3))
+      cov[1:,1:] = reshape(array(cells[8:],dtype=float),(2,2))
+      #cov = reshape(array(cells[8:],dtype=float),(2,2))
+      covar.append(cov)    
    
     elif (ndim == 4):
       #Phoenix grid from Sergey, with 4 dimensions: id, 4 par, 4err, 0., med_snr, lchi, 4x4 cov
@@ -597,16 +592,9 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       chisq_tot.append(10.**float(cells[11]))
       rv_adop.append(float(vcells[6])*clight)
       snr_med.append(float(cells[10]))
-      if (config == 'desi-s.yaml'):
-        cov = zeros((3,3))
-        cov[:,:] = reshape(array(cells[12:],dtype=float),(4,4))[1:,1:]
-        covar.append(cov)    
-      else:
-        print('Error: this path in the code is not yet ready!')
-        #sys.exit()
-        cov = zeros((5,5))
-        #cov[3:,3:] = reshape(array(cells[8:],dtype=float),(2,2))
-        covar.append(cov)    
+      cov = zeros((3,3))
+      cov[:,:] = reshape(array(cells[12:],dtype=float),(4,4))[1:,1:]
+      covar.append(cov)    
    
 
     if (chisq_tot[-1] < 1.5 and snr_med[-1] > 5.): # chi**2<1.5 and S/N>5
@@ -643,11 +631,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   cols['FEH'] = array(feh)
   cols['ALPHAFE'] = array(alphafe) 
   cols['MICRO'] = array(micro)*units.km/units.s
-  if (config == 'desi-n.yaml'):
-    cols['COVAR'] = array(covar).reshape(len(success),3,3)
-  else:
-    pass
-    #cols['COVAR'] = array(covar).reshape(len(success),5,5)
+  cols['COVAR'] = array(covar).reshape(len(success),3,3)
   cols['ELEM'] = array(elem)
   cols['ELEM_ERR'] = array(elem_err)
   cols['CHISQ_TOT'] = array(chisq_tot)
