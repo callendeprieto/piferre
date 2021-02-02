@@ -105,8 +105,8 @@ config='desi-n.yaml'):
     f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
             "'); from piferre import opfmerge, write_tab_fits, write_mod_fits, cleanup; opfmerge(\'"+\
             str(root)+"\',config='"+config+"\'); write_tab_fits(\'"+\
-            str(root)+"\'); write_mod_fits(\'"+\
-            str(root)+"\'); cleanup(\'"+\
+            str(root)+"\',config='"+config+"\'); write_mod_fits(\'"+\
+            str(root)+"\',config='"+config+"\'); cleanup(\'"+\
             str(root)+"\')\"\n")
     f.close()
     os.chmod(os.path.join(path,root+'.slurm'),0o755)
@@ -503,7 +503,7 @@ def get_versions():
   return(ver)
 
 #write piferre param. output
-def write_tab_fits(root, path=None):
+def write_tab_fits(root, path=None, config='desi-n.yaml'):
   
   if path is None: path=""
   proot=os.path.join(path,root)
@@ -615,6 +615,7 @@ def write_tab_fits(root, path=None):
   nowstr = now.isoformat() 
   nowstr = nowstr[:nowstr.rfind('.')]
   hdu0.header['DATE'] = nowstr
+  hdu0.header['FCONFIG'] = config
 
   #get versions and enter then in primary header
   ver = get_versions()
@@ -681,7 +682,7 @@ def write_tab_fits(root, path=None):
   return None
   
 #write piferre spec. output  
-def write_mod_fits(root, path=None):  
+def write_mod_fits(root, path=None, config='desi-n.yaml'):  
   
   if path is None: path=""
   proot=os.path.join(path,root)
@@ -724,6 +725,7 @@ def write_mod_fits(root, path=None):
   nowstr = now.isoformat() 
   nowstr = nowstr[:nowstr.rfind('.')]
   hdu0.header['DATE'] = nowstr
+  hdu0.header['FCONFIG'] = config
 
   #get versions and enter then in primary header
   ver = get_versions()
