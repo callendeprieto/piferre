@@ -124,12 +124,13 @@ def cleanup(root):
   frdfiles = glob.glob(root+'*frd')
   nrdfiles = glob.glob(root+'*nrd*')
   mdlfiles = glob.glob(root+'*mdl*')
+  ndlfiles = glob.glob(root+'*mdl*')
   fmpfiles = glob.glob(root+'*fmp.fits')
   logfiles = glob.glob(root+'.log*')
   slurmfiles = glob.glob(root+'*slurm')
   abufiles = glob.glob(root+'*.?ca?')
   allfiles = vrdfiles + wavefiles + opffiles + nmlfiles + lstfiles + \
-              errfiles + frdfiles + nrdfiles + mdlfiles + \
+              errfiles + frdfiles + nrdfiles + mdlfiles + ndlfiles + \
               fmpfiles + logfiles + slurmfiles + abufiles
 
   print('removing files:',end=' ')
