@@ -14,20 +14,22 @@ import os
 import glob
 import re
 import importlib
-from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, median, std, mean
+from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, log10, median, std, mean
 from astropy.io import fits
 from scipy.signal import savgol_filter
 import astropy.table as tbl
 import astropy.units as units
-from dust_extinction.parameter_averages import F99
 import matplotlib.pyplot as plt
 import subprocess
 import datetime, time
 import argparse
 import yaml
+from extinction import ccm89, apply
+from pyphot import get_library
 
 version = '0.1.0'
-clight=299792.458 #km/s
+hplanck=6.62607015e-34 # J s
+clight=299792458.0 #/s
 
 #extract the header of a synthfile
 def head_synth(synthfile):
@@ -264,9 +266,9 @@ def read_k(filename):
     #logg=k['loog']
     #vsini=k['vsini']
     #feh=k['feh']
-    #z=k['vrad']/clight
-    z=dict(zip(targetid, k['vrad']/clight))  
-    #z_err=dict(zip(k['target_id'], k['vrad_err']/clight))  
+    #z=k['vrad']/clight*1e3
+    z=dict(zip(targetid, k['vrad']/clight*1e3))  
+    #z_err=dict(zip(k['target_id'], k['vrad_err']/clight*1e3))  
   else:
     z=dict() 
   return(z)
@@ -416,6 +418,9 @@ def reponse(ind_sf,ind_sp,sframe,spmod):
 
   """
 
+  lib = get_library()
+  filter = lib['Gaia_MAW_G']
+
   #info on calibration stars
   bx,by,rx,ry,zx,zy,h2 = read_spmod(spmod)
 
@@ -426,16 +431,39 @@ def reponse(ind_sf,ind_sp,sframe,spmod):
   y=sf['flux'].data
   ivar=sf['ivar'].data
 
-  ext = F99(Rv=3.1)
+  #ext = F99(Rv=3.1)
 
   k = 0
   for i in ind_sp: 
       j = ind_sf[k]
-      model = by['fit'][i,:]
-      model = model * ext.extinguish(bx*units.AA, Ebv=fmp['ebv'][j])
-      model = interp(x,bx,model)
-      scale = median(model)/median(y[j,:])
-      r = y[j,:]/model*scale 
+      if x[0] < 4000.: 
+        model = interp(x,bx,by['fit'][i,:])
+      elif x[0] < 6000.: 
+        model = interp(x,rx,ry['fit'][i,:])
+      else: 
+        model = interp(x,zx,zy['fit'][i,:])
+
+      newx = x.byteswap().newbyteorder() # force native byteorder for calling ccm89
+      model = apply( ccm89(newx, fmp['ebv'][j]*3.1, 3.1), model) #redden model
+      model = model * x / (hplanck*1e7) / (clight*1e2) # erg/cm2/s/AA -> photons/cm2/s/AA
+
+      #scale = median(model)/median(y[j,:])
+      #print('scale1=',scale)
+
+      x_brz =     concatenate((bx[(bx < min(rx))],
+                        rx,
+                        zx[(zx > max(rx))]))
+      model_brz = concatenate((by['fit'][i,(bx < min(rx))],
+                        ry['fit'][i,:],
+                        zy['fit'][i,(zx > max(rx))]))
+
+
+      scale = filter.get_flux(x_brz,model_brz).value /  10.**( 
+                (fmp['gaia_phot_g_mean_mag'][j] + filter.Vega_zero_mag)/(-2.5) )
+
+      #print('scale2=',scale)
+
+      r = y[j,:]/model*scale
       w = ivar[j,:]*(model/scale)**2 
       if k == 0: 
         rr = r
@@ -457,10 +485,19 @@ def reponse(ind_sf,ind_sp,sframe,spmod):
   length = 51
   for i in range(len(mw)): ems[i] = std(mws[max([0,i-length]):min([len(mws)-1,i+length])]) 
 
-  print('n, median(emw), median(ems)=',k, median(emw),median(ems))
+  #now we compute the relative fiber transmission (including flux losses due to centering)
+  k = 0
+  a = zeros(len(ind_sp))
+  for i in ind_sp: 
+      j = ind_sf[k]
+      a[k] = mean(rr[k,:] / ms)
+      print(i,j,a[k],fmp['fiber_ra'][j],fmp['fiber_dec'][j],fmp['gaia_phot_g_mean_mag'][j],mean(y[j,:]))
+      k += 1
+
+  print('n, median(emw/mw), median(ems/mw)=',k, median(emw/mw),median(ems/mw))
  
 
-  return(x,mw,emw,ms,ems,k)
+  return(x,mw,emw,ms,ems,a)
 
 
 #get dependencies versions, shamelessly copied from rvspec (Koposov's code)
@@ -550,7 +587,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       micro.append(nan)
       chisq_tot.append(10.**float(cells[9]))
       snr_med.append(float(cells[8]))
-      rv_adop.append(float(vcells[6])*clight)
+      rv_adop.append(float(vcells[6])*clight/1e3)
       cov = reshape(array(cells[10:],dtype=float),(3,3))
       covar.append(cov)
 
@@ -564,7 +601,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       micro.append(float(cells[3]))
       chisq_tot.append(10.**float(cells[13]))
       snr_med.append(float(cells[12]))
-      rv_adop.append(float(vcells[6])*clight)
+      rv_adop.append(float(vcells[6])*clight/1e3)
       cov = reshape(array(cells[14:],dtype=float),(5,5))
       covar.append(cov)
   
@@ -577,7 +614,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       micro.append(nan)
       chisq_tot.append(10.**float(cells[7]))
       snr_med.append(float(cells[6]))
-      rv_adop.append(float(vcells[6])*clight)
+      rv_adop.append(float(vcells[6])*clight/1e3)
       cov = zeros((3,3))
       cov[1:,1:] = reshape(array(cells[8:],dtype=float),(2,2))
       #cov = reshape(array(cells[8:],dtype=float),(2,2))
@@ -591,7 +628,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       alphafe.append(float(cells[1]))
       micro.append(nan)
       chisq_tot.append(10.**float(cells[11]))
-      rv_adop.append(float(vcells[6])*clight)
+      rv_adop.append(float(vcells[6])*clight/1e3)
       snr_med.append(float(cells[10]))
       cov = zeros((3,3))
       cov[:,:] = reshape(array(cells[12:],dtype=float),(4,4))[1:,1:]
