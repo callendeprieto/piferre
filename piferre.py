@@ -24,8 +24,7 @@ import subprocess
 import datetime, time
 import argparse
 import yaml
-from extinction import ccm89, apply
-from pyphot import get_library
+
 
 version = '0.1.0'
 hplanck=6.62607015e-34 # J s
@@ -417,6 +416,9 @@ def reponse(ind_sf,ind_sp,sframe,spmod):
   spmod = piferre spmod produced with theoretical SEDs in the 'fit' field
 
   """
+
+  from extinction import ccm89, apply
+  from pyphot import get_library
 
   lib = get_library()
   filter = lib['Gaia_MAW_G']
