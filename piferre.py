@@ -14,7 +14,7 @@ import os
 import glob
 import re
 import importlib
-from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, log10, median, std, mean
+from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, log10, median, std, mean, pi
 from astropy.io import fits
 from scipy.signal import savgol_filter
 import astropy.table as tbl
@@ -446,6 +446,7 @@ def reponse(ind_sf,ind_sp,sframe,spmod):
         model = interp(x,zx,zy['fit'][i,:])
 
       newx = x.byteswap().newbyteorder() # force native byteorder for calling ccm89
+      model = model * 4. * pi  # Hlambda to Flambda
       model = apply( ccm89(newx, fmp['ebv'][j]*3.1, 3.1), model) #redden model
       model = model * x / (hplanck*1e7) / (clight*1e2) # erg/cm2/s/AA -> photons/cm2/s/AA
 
@@ -459,6 +460,7 @@ def reponse(ind_sf,ind_sp,sframe,spmod):
                         ry['fit'][i,:],
                         zy['fit'][i,(zx > max(rx))]))
 
+      model_brz = model_brz * 4. * pi  # Hlambda to Flambda
 
       scale = filter.get_flux(x_brz,model_brz).value /  10.**( 
                 (fmp['gaia_phot_g_mean_mag'][j] + filter.Vega_zero_mag)/(-2.5) )
@@ -502,6 +504,64 @@ def reponse(ind_sf,ind_sp,sframe,spmod):
   return(x,mw,emw,ms,ems,a)
 
 
+def calibrate(res,sframe):
+
+  #observations
+  sf=fits.open(sframe)
+  fmp=sf['fibermap'].data
+  x=sf['wavelength'].data
+  y=sf['flux'].data
+  ivar=sf['ivar'].data
+  mask=sf['mask'].data
+  resolution=sf['resolution'].data
+
+  for j in range(len(fmp['fiber_ra'])):
+    y[j,:] = y[j,:] / res
+    y[j,:] = y[j,:] / x * (hplanck*1e7) * (clight*1e2) #   photons/cm2/s/AA -> erg/cm2/s/AA
+    ivar[j,:] = ivar[j,:] * x**2 / (hplanck*1e7)**2 / (clight*1e2)**2
+    y[j,:] = y[j,:] * 1e17
+    ivar[j,:] = ivar[j,:] * 1e-34
+
+  hdu0=fits.PrimaryHDU()
+  now = datetime.datetime.fromtimestamp(time.time())
+  nowstr = now.isoformat() 
+  nowstr = nowstr[:nowstr.rfind('.')]
+  hdu0.header['DATE'] = nowstr
+
+  #get versions and enter then in primary header
+  ver = get_versions()
+  for entry in ver.keys(): hdu0.header[entry] = ver[entry]
+
+  hdulist = [hdu0]
+
+  npix = len(x)
+  entry = sframe[7]
+  print(entry,npix)
+
+  hdu = fits.ImageHDU(name='WAVELENGTH', data=x)
+  hdulist.append(hdu)
+    
+  hdu = fits.ImageHDU(name='FLUX', data=y)
+  hdulist.append(hdu)
+
+  hdu = fits.ImageHDU(name='IVAR', data=ivar)
+  hdulist.append(hdu)
+
+  hdu = fits.ImageHDU(name='MASK', data=mask)
+  hdulist.append(hdu)
+
+  hdu = fits.ImageHDU(name='RESOLUTION', data=resolution)
+  hdulist.append(hdu)
+
+  hdu=fits.BinTableHDU.from_columns(fmp, name='FIBERMAP')
+  hdulist.append(hdu)
+
+  hdul =fits.HDUList(hdulist)
+  hdul.writeto('f'+sframe[1:])
+
+
+  return None
+
 #get dependencies versions, shamelessly copied from rvspec (Koposov's code)
 def get_dep_versions():
     """
@@ -536,8 +596,8 @@ def get_versions():
         entries = line.split()
         fversion = entries[-1][1:]
         break
-  l0.close()
-  ver['ferre'] = fversion
+    l0.close()
+    ver['ferre'] = fversion
 
   return(ver)
 
