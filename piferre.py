@@ -1407,8 +1407,8 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
     #skip the rest of the code if there are no targets 
     #or the wavelengths for one band are not present
     if (process_target.nonzero()[0].size == 0): return None
-    for i in len(bands):
-      if bands[i]+'_WAVELENGTH' not in enames: return None
+    for i in range(len(bands)):
+      if bands[i].upper()+'_WAVELENGTH' not in enames: return None
 
 
     #set ids array (with targetids) and par dictionary for vrd/ipf file
