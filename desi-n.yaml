@@ -130,8 +130,8 @@ n_rdesi6:
    cal: 
        nov: 0
        cont: 0
-       pfile: 'opf5'
-       offile: 'mdl5'
+       pfile: 'opf6'
+       offile: 'mdl6'
 n_rdesi7:
    param:
        ndim: 2
