@@ -949,7 +949,8 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   ilchi=[]  # column for log10(red. chi**2) in opf
   ydir = os.path.dirname(os.path.realpath(__file__))
   yfile=open(os.path.join(ydir,config),'r')
-  conf=yaml.full_load(yfile)
+  #conf=yaml.full_load(yfile)
+  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
   yfile.close()
   #set the set of grids to be used
   grids=conf['grids']
@@ -1319,7 +1320,8 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
   #gather config. info
   ydir = os.path.dirname(os.path.realpath(__file__))
   yfile=open(os.path.join(ydir,config),'r')
-  conf=yaml.full_load(yfile)
+  #conf=yaml.full_load(yfile)
+  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
   yfile.close()
   #set the set of grids to be used
   grids=conf['grids']
