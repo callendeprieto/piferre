@@ -608,8 +608,8 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   proot=os.path.join(path,root)
   v=glob.glob(proot+".vrd")
   o=glob.glob(proot+".opf")
-  m=glob.glob(proot+".mdl")
-  n=glob.glob(proot+".nrd")
+  #m=glob.glob(proot+".mdl")
+  #n=glob.glob(proot+".nrd")
   fmp=glob.glob(proot+".fmp.fits")
   
   success=[]

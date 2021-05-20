@@ -27,6 +27,7 @@ s_rdesi:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf1'
        offile: 'mdl1'
    Ca: 
@@ -54,6 +55,7 @@ n_rdesi3:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf3'
        offile: 'mdl3'
 n_rdesi4:
@@ -73,6 +75,7 @@ n_rdesi4:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf4'
        offile: 'mdl4'
 n_rdesi5:
@@ -92,6 +95,7 @@ n_rdesi5:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf5'
        offile: 'mdl5'
 n_rdesi6:
@@ -111,6 +115,7 @@ n_rdesi6:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf6'
        offile: 'mdl6'
 n_rdesi7:
@@ -130,6 +135,7 @@ n_rdesi7:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf7'
        offile: 'mdl7'
 n_rdesi8:
@@ -149,6 +155,7 @@ n_rdesi8:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf8'
        offile: 'mdl8'
 n_rdesi9:
@@ -168,5 +175,6 @@ n_rdesi9:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf9'
        offile: 'mdl9'
