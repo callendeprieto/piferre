@@ -1,5 +1,5 @@
 bands: ['b', 'r', 'z']
-grids: ['s_rdesi', 'n_rdesi3', 'n_rdesi4', 'n_rdesi5', 'n_rdesi6', 'n_rdesi7', 'n_rdesi8', 'n_rdesi9']
+grids: ['b_rdesi1', 'b_rdesi2', 'b_rdesi3', 'n_rdesi3', 'n_rdesi4', 'n_rdesi5', 'n_rdesi6', 'n_rdesi7', 'n_rdesi8', 'n_rdesi9']
 global:
     algor: 3
     f_format: 1
@@ -10,11 +10,11 @@ global:
     ffile: 'frd'
     erfile: 'err'   
     nthreads: 4
-s_rdesi:
+b_rdesi1:
    param:
        ndim: 4
        nov: 4
-       indv:  1  2  3 4
+       indv:  1 2 3 4
        cont: 3
        ncont: 100
        pfile: 'vrd'
@@ -22,8 +22,8 @@ s_rdesi:
        offile: 'ndl0'
        sffile: 'nrd0'
        labels:  ['[a/Fe]','[Fe/H]',  'Teff',  'logg']
-       llimits: -0.4  -4. 2300. -0.5
-       steps:  0.2   0.5  100.  0.5
+       llimits: -1.0  -2.5 2500. -0.5
+       steps:  0.5   0.5  100.  0.5
    cal: 
        nov: 0
        cont: 0
@@ -37,7 +37,63 @@ s_rdesi:
        opfile: 'oca0'
        offile: 'mca0'
        sffile: 'nca0'
-       labels:   ['[a/Fe]','[Fe/H]',  'Teff',  'logg']
+       labels:  ['[a/Fe]','[Fe/H]',  'Teff',  'logg']
+b_rdesi2:
+   param:
+       ndim: 4
+       nov: 4
+       indv:  1 2 3 4
+       cont: 3
+       ncont: 100
+       pfile: 'vrd'
+       opfile: 'opf1'
+       offile: 'ndl1'
+       sffile: 'nrd1'
+       labels:  ['[a/Fe]','[Fe/H]',  'Teff',  'logg']
+       llimits: -1.0  -2.5 3500. 0.0
+       steps:  0.5   0.5  250.  0.5
+   cal: 
+       nov: 0
+       cont: 0
+       nthreads: 1
+       pfile: 'opf1'
+       offile: 'mdl1'
+   Ca: 
+       nov: 1
+       indv: 1
+       pfile: 'opf1'
+       opfile: 'oca1'
+       offile: 'mca1'
+       sffile: 'nca1'
+       labels:  ['[a/Fe]','[Fe/H]',  'Teff',  'logg']
+b_rdesi3:
+   param:
+       ndim: 4
+       nov: 4
+       indv:  1 2 3 4
+       cont: 3
+       ncont: 100
+       pfile: 'vrd'
+       opfile: 'opf2'
+       offile: 'ndl2'
+       sffile: 'nrd2'
+       labels:  ['[a/Fe]','[Fe/H]',  'Teff',  'logg']
+       llimits: -1.0  -2.5 5500. 2.5
+       steps:  0.5   0.5  250.  0.5
+   cal: 
+       nov: 0
+       cont: 0
+       nthreads: 1
+       pfile: 'opf2'
+       offile: 'mdl2'
+   Ca: 
+       nov: 1
+       indv: 1
+       pfile: 'opf2'
+       opfile: 'oca2'
+       offile: 'mca2'
+       sffile: 'nca2'
+       labels:  ['[a/Fe]','[Fe/H]',  'Teff',  'logg']
 n_rdesi3:
    param:
        ndim: 3
