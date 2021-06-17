@@ -14,7 +14,7 @@ s_rdesi:
    param:
        ndim: 4
        nov: 4
-       indv:  1  2  3 4
+       indv:  1 2 3 4
        cont: 3
        ncont: 100
        pfile: 'vrd'

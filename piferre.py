@@ -1,4 +1,6 @@
-#!/home/callende/anaconda3/bin/python3
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 '''
 Interface to use FERRE from python for DESI/BOSS data
 
