@@ -1247,15 +1247,17 @@ def packfits(input="*.fits",output="output.fits"):
 #inspector
 def inspector(*args):
 
-  for file in args:
-    print('file=',file,' file[:6]=',file[:5])
+  for entry in args:
+    file = os.path.split(entry)[-1]
+    print('entry=',entry,' filename=',file)
     if file[:5] == 'sptab':
-      sph=fits.open(file)
+      sph=fits.open(entry)
       spt=sph['SPTAB'].data
       fbm=sph['FIBERMAP'].data
 
       sym='.'
-      plt.figure(1)
+      plt.figure()
+      plt.ion()
 
       plt.subplot(2,2,1)
       plt.plot(spt['teff'],spt['logg'],sym)
