@@ -26,7 +26,7 @@ import subprocess
 import datetime, time
 import argparse
 import yaml
-
+from multiprocessing import Pool,cpu_count
 
 version = '0.1.0'
 hplanck=6.62607015e-34 # J s
@@ -234,7 +234,7 @@ def read_zbest(filename):
   hdu=fits.open(filename)
   if len(hdu) > 1:
     enames=extnames(hdu)
-    print(enames)
+    #print(enames)
     if 'ZBEST' in enames:
       zbest=hdu['zbest'].data
       targetid=zbest['targetid'] #array of long integers
@@ -248,8 +248,8 @@ def read_zbest(filename):
         targetid.append(str(plate[i])+'-'+str(mjd[i])+'-'+str(fiberid[i]))
       targetid=array(targetid)  #array of strings
 
-    print(type(targetid),type(zbest['z']),type(targetid[0]))
-    print(targetid.shape,zbest['z'].shape)
+    #print(type(targetid),type(zbest['z']),type(targetid[0]))
+    #print(targetid.shape,zbest['z'].shape)
     z=dict(zip(targetid, zbest['z']))
   else:
     z=dict()
@@ -1077,7 +1077,7 @@ def getpixels(root):
   d1=os.listdir(root)
   d=[]
   for x in d1:
-    print('x=',x)
+    #print('x=',x)
     assert os.path.isdir(os.path.join(root,x)), 'the data directory must contain folders, not data files'
     d2=os.listdir(os.path.join(root,x))
     #d.append(os.path.join(root,x))
@@ -1090,7 +1090,7 @@ def getpixels(root):
         entry=os.path.join(root,x)
         if entry not in d: d.append(entry)  #keep only the first layer (SDSS/BOSS)
 
-  print(d)
+  print('found pixels: ',d)
   print(len(d))
   return(d)
 
@@ -1102,8 +1102,8 @@ def getdata(sppath='.',rvpath=None,sptype='spectra',rvtype='zbest'):
   spfiles1 = list(glob.iglob(os.path.join(sppath,'**',sptype+'*fits'), recursive=True))
   rvfiles1 = list(glob.iglob(os.path.join(rvpath,'**',rvtype+'*fits'), recursive=True))
   
-  print('spfiles1=',spfiles1)
-  print('rvfiles1',rvfiles1)
+  #print('spfiles1=',spfiles1)
+  #print('rvfiles1',rvfiles1)
 
   spfiles = []
   rvfiles = []
@@ -1303,7 +1303,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
   #get input data files
   #datafiles,zbestfiles  = finddatafiles(path,pixel,sdir,rvpath=rvpath) 
 
-  print('path,rvpath,sdir,pixel=',path,rvpath,sdir,pixel)
+  print('do: path,rvpath,sdir,pixel=',path,rvpath,sdir,pixel)
 
   datafiles,zbestfiles  = getdata(sppath=os.path.join(path,sdir,pixel),
 				rvpath=os.path.join(rvpath,sdir,pixel),
@@ -1329,7 +1329,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
   yfile.close()
   #set the set of grids to be used
   grids=conf['grids']
-  print('grids=',grids)
+  #print('grids=',grids)
   bands=conf['bands']
 
 
@@ -1355,8 +1355,8 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
     hdu=fits.open(datafile)
     enames=extnames(hdu)
     pheader=hdu['PRIMARY'].header
-    print('datafile='+datafile)
-    print('extensions=',enames)
+    #print('datafile='+datafile)
+    #print('extensions=',enames)
 
     if source == 'desi': #DESI data
       fibermap=hdu['FIBERMAP']
@@ -1477,12 +1477,13 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
       #plt.show()
 
       nspec, freq = y.shape
-      print('nspec=',nspec)    
-      print('n(process_target)=',process_target.nonzero()[0].size)
+      if j == 0:
+        print('nspec=',nspec)    
+        print('n(process_target)=',process_target.nonzero()[0].size)
       y2=zeros((npass,len(x1)))
       ey2=zeros((npass,len(x1)))
       k=0
-      print('nspec,len(z),npass,len(x1)=',nspec,len(z),npass,len(x1))
+      #print('nspec,len(z),npass,len(x1)=',nspec,len(z),npass,len(x1))
       for i in range(nspec):
         if process_target[i]:
           y2[k,:]=interp(x1,x*(1.-z[targetid[i]]),y[i,:])
@@ -1595,12 +1596,13 @@ def main(args):
 
   pixels=getpixels(sppath)
   
+  dopars = []
   for entry in pixels:
     head, pixel = os.path.split(entry)
-    print('head/pixel=',head,pixel)
+    #print('head/pixel=',head,pixel)
     sdir=''
-    print('sppath=',sppath)
-    print('rvpath=',rvpath)
+    #print('sppath=',sppath)
+    #print('rvpath=',rvpath)
     if head != sppath:
       head, sdir = os.path.split(head)
       if not os.path.exists(sdir): os.mkdir(sdir)
@@ -1609,12 +1611,22 @@ def main(args):
     if not os.path.exists(os.path.join(sdir,pixel)): 
       os.mkdir(os.path.join(sdir,pixel))
 
-    do(sppath,pixel,sdir=sdir,truth=truthtuple, 
-       rvpath=rvpath, libpath=libpath, 
-       sptype=sptype, rvtype=rvtype,
-       nthreads=nthreads, minutes=minutes, config=config)
+    pararr = [sppath,pixel,sdir,truthtuple,nthreads, minutes, 
+       rvpath, libpath, sptype, rvtype, config]
+
+    #do(sppath,pixel,sdir=sdir,truth=truthtuple, 
+    #   rvpath=rvpath, libpath=libpath, 
+    #   sptype=sptype, rvtype=rvtype,
+    #   nthreads=nthreads, minutes=minutes, config=config)
 
     #run(pixel,path=os.path.join(sdir,pixel))
+
+    dopars.append(pararr)
+
+  ncores = cpu_count()
+  pool = Pool(int(ncores/2))
+  results = pool.starmap(do,dopars)
+
   
 if __name__ == "__main__":
   main(sys.argv[1:])
