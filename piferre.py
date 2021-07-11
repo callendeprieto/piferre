@@ -1102,8 +1102,8 @@ def getdata(sppath='.',rvpath=None,sptype='spectra',rvtype='zbest'):
   spfiles1 = list(glob.iglob(os.path.join(sppath,'**',sptype+'*fits'), recursive=True))
   rvfiles1 = list(glob.iglob(os.path.join(rvpath,'**',rvtype+'*fits'), recursive=True))
   
-  #print('spfiles1=',spfiles1)
-  #print('rvfiles1',rvfiles1)
+  print('spfiles1=',spfiles1)
+  print('rvfiles1',rvfiles1)
 
   spfiles = []
   rvfiles = []
