@@ -1245,7 +1245,9 @@ def packfits(input="*.fits",output="output.fits"):
   return(None)
 
 #inspector
-def inspector(*args):
+def inspector(*args,sym='.',rvrange=(-1e32,1e32),rarange=(0.,360.),
+               decrange=(-90,90), fehrange=(-100,100), 
+               parallaxrange=(-10000,10000)):
 
   for entry in args:
     file = os.path.split(entry)[-1]
@@ -1254,14 +1256,26 @@ def inspector(*args):
       sph=fits.open(entry)
       spt=sph['SPTAB'].data
       fbm=sph['FIBERMAP'].data
+      w=( (spt['rv_adop'] >= rvrange[0])  
+        & (spt['rv_adop'] <= rvrange[1])   
+        & (fbm['target_ra'] >= rarange[0])      
+        & (fbm['target_ra'] <= rarange[1])
+        & (fbm['target_dec'] >= decrange[0]) 
+        & (fbm['target_dec'] <= decrange[1]) 
+        & (spt['feh'] >= fehrange[0])
+        & (spt['feh'] <= fehrange[1]) 
+        & (fbm['parallax'] >= parallaxrange[0])
+        & (fbm['parallax'] <= parallaxrange[1]) )
+      spt=spt[w]
+      fbm=fbm[w]
+      n=where(w)[0] 
 
-      sym='.'
       plt.figure()
       plt.ion()
 
-      plt.subplot(2,2,1)
+      plt.subplot(3,2,1)
       plt.plot(spt['teff'],spt['logg'],sym)
-      plt.xlabel('Teff')
+ 
       plt.ylabel('logg')
       plt.title(file)
 
@@ -1269,14 +1283,14 @@ def inspector(*args):
       plt.ylim([max(spt['logg'])*1.01,min(spt['logg'])*0.99])
       plt.xscale('log')
 
-      plt.subplot(2,2,2)
+      plt.subplot(3,2,2)
       plt.plot(fbm['target_ra'],fbm['target_dec'],sym)
       plt.xlabel('target_ra')
       plt.ylabel('target_dec')
       #plt.xlim([max(spt['teff'])]*1.01,min(spt['teff'])*.99])
       #plt.xlim([max(spt['logg'])]*1.01,min(spt['logg'])*0.99])
 
-      plt.subplot(2,2,3)
+      plt.subplot(3,2,3)
       plt.plot(spt['teff'],spt['logg'],sym)
       plt.xlabel('Teff')
       plt.ylabel('logg')
@@ -1284,13 +1298,28 @@ def inspector(*args):
       plt.xlim([8000.,min(spt['teff'])*0.99])
       plt.ylim([5.5,-0.5])
 
-      plt.subplot(2,2,4)
+      plt.subplot(3,2,4)
       plt.plot(spt['teff'],spt['feh'],sym)
       plt.xlabel('Teff')
       plt.ylabel('[Fe/H]')
 
       plt.xlim([8000.,min(spt['teff'])*0.99])
       plt.ylim([-5,1])
+
+
+      plt.subplot(3,2,5)
+      plt.hist(spt['rv_adop'],bins=10)
+      plt.xlabel('RV')
+      plt.ylabel('N')
+
+
+      plt.subplot(3,2,6)
+      plt.hist(spt['feh'],bins=10)
+      plt.xlabel('[Fe/H]')
+      plt.ylabel('N')
+      plt.text(median(spt['feh']), 1, r'$\sigma=$'+"{:5.2f}".format(std(spt['feh'])) )
+
+      #plt.xlim([-5,1])
 
       plt.show()
 
