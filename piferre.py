@@ -1247,7 +1247,7 @@ def packfits(input="*.fits",output="output.fits"):
 #inspector
 def inspector(*args,sym='.',rvrange=(-1e32,1e32),rarange=(0.,360.),
                decrange=(-90,90), fehrange=(-100,100), 
-               parallaxrange=(-10000,10000)):
+               parallaxrange=(-10000,10000),title=''):
 
   for entry in args:
     file = os.path.split(entry)[-1]
@@ -1287,6 +1287,7 @@ def inspector(*args,sym='.',rvrange=(-1e32,1e32),rarange=(0.,360.),
       plt.plot(fbm['target_ra'],fbm['target_dec'],sym)
       plt.xlabel('target_ra')
       plt.ylabel('target_dec')
+      plt.title(title)
       #plt.xlim([max(spt['teff'])]*1.01,min(spt['teff'])*.99])
       #plt.xlim([max(spt['logg'])]*1.01,min(spt['logg'])*0.99])
 
@@ -1317,6 +1318,7 @@ def inspector(*args,sym='.',rvrange=(-1e32,1e32),rarange=(0.,360.),
       plt.hist(spt['feh'],bins=10)
       plt.xlabel('[Fe/H]')
       plt.ylabel('N')
+      plt.text(median(spt['feh'])-0.3, 1, r'$\mu=$'+"{:5.2f}".format(mean(spt['feh'])) )
       plt.text(median(spt['feh']), 1, r'$\sigma=$'+"{:5.2f}".format(std(spt['feh'])) )
 
       #plt.xlim([-5,1])
