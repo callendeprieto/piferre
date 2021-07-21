@@ -10,7 +10,7 @@ global:
     ffile: 'frd'
     erfile: 'err'   
     nthreads: 4
-n_rdesi1:
+m_rdesi1:
    param:
        ndim: 5
        nov: 5
@@ -38,7 +38,7 @@ n_rdesi1:
        offile: 'mca1'
        sffile: 'nca1'
        labels:  ['[Fe/H]', '[Ca/Fe]', 'Teff',  'logg']
-n_rdesi2:
+m_rdesi2:
    param:
        ndim: 5
        nov: 5
@@ -58,7 +58,7 @@ n_rdesi2:
        nthreads: 1
        pfile: 'opf2'
        offile: 'mdl2'
-n_rdesi3:
+m_rdesi3:
    param:
        ndim: 5
        nov: 5
@@ -78,7 +78,7 @@ n_rdesi3:
        nthreads: 1
        pfile: 'opf3'
        offile: 'mdl3'
-n_rdesi4:
+m_rdesi4:
    param:
        ndim: 5
        nov: 5
@@ -98,7 +98,7 @@ n_rdesi4:
        nthreads: 1
        pfile: 'opf4'
        offile: 'mdl4'
-n_rdesi5:
+m_rdesi5:
    param:
        ndim: 5
        nov: 5
@@ -118,7 +118,7 @@ n_rdesi5:
        nthreads: 1
        pfile: 'opf5'
        offile: 'mdl5'
-n_rdesi6:
+m_rdesi6:
    param:
        ndim: 2
        nov: 2
@@ -138,7 +138,7 @@ n_rdesi6:
        nthreads: 1
        pfile: 'opf6'
        offile: 'mdl6'
-n_rdesi7:
+m_rdesi7:
    param:
        ndim: 2
        nov: 2
@@ -158,7 +158,7 @@ n_rdesi7:
        nthreads: 1
        pfile: 'opf7'
        offile: 'mdl7'
-n_rdesi8:
+m_rdesi8:
    param:
        ndim: 2
        nov: 2
@@ -178,7 +178,7 @@ n_rdesi8:
        nthreads: 1
        pfile: 'opf8'
        offile: 'mdl8'
-n_rdesi9:
+m_rdesi9:
    param:
        ndim: 2
        nov: 2
