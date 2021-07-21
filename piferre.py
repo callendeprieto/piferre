@@ -1247,7 +1247,8 @@ def packfits(input="*.fits",output="output.fits"):
 #inspector
 def inspector(*args,sym='.',rvrange=(-1e32,1e32),rarange=(0.,360.),
                decrange=(-90,90), fehrange=(-100,100), 
-               parallaxrange=(-10000,10000),title=''):
+               parallaxrange=(-10000,10000),
+               title='',fig=''):
 
   for entry in args:
     file = os.path.split(entry)[-1]
@@ -1322,6 +1323,8 @@ def inspector(*args,sym='.',rvrange=(-1e32,1e32),rarange=(0.,360.),
       plt.text(median(spt['feh']), 1, r'$\sigma=$'+"{:5.2f}".format(std(spt['feh'])) )
 
       #plt.xlim([-5,1])
+
+      if fig != '': plt.savefig(fig)
 
       plt.show()
 
