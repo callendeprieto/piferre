@@ -21,7 +21,7 @@ n_rdesi1:
        opfile: 'opf1'
        offile: 'ndl1'
        sffile: 'nrd1'
-       labels:  ['[Fe/H]', '[a/Fe]', ' 'Teff',  'logg']
+       labels:  ['[Fe/H]', '[a/Fe]', 'Teff',  'logg']
        llimits: -5. -1.  -0.301029995663981 3500. 0.0
        steps:  0.25  0.25 0.301029995663981  250. 0.5
    cal: 
