@@ -613,6 +613,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   #m=glob.glob(proot+".mdl")
   #n=glob.glob(proot+".nrd")
   fmp=glob.glob(proot+".fmp.fits")
+
   
   success=[]
   targetid=[]
@@ -637,11 +638,26 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
     m=len(cells)
     assert (m > 6), 'Error, the file '+o[0]+' has less than 7 columns, which would correspond to ndim=2'
     ndim=int(sqrt(m-3)-1)
+    cov = zeros((5,5)) #order is given by the 5-d kurucz grids ([Fe/H], [a/Fe], micro, Teff, logg)
     
     line = vf.readline()
     vcells=line.split()
 
-    if (ndim == 3):
+    if (ndim == 2):
+      #white dwarfs 2 dimensions: id, 2 par, 2err, 0., med_snr, lchi, 2x2 cov
+      feh.append(-10.)
+      teff.append(float(cells[1]))
+      logg.append(float(cells[2]))
+      alphafe.append(nan)
+      micro.append(nan)
+      chisq_tot.append(10.**float(cells[6]))
+      snr_med.append(float(cells[5]))
+      rv_adop.append(float(vcells[6])*clight/1e3)
+      cov[3:,3:] = reshape(array(cells[7:],dtype=float),(2,2))
+      covar.append(cov)    
+
+
+    elif (ndim == 3):
       #Kurucz grids with 3 dimensions: id, 3 par, 3 err, 0., med_snr, lchi, 3x3 cov
       #see Allende Prieto et al. (2018, A&A)
       feh.append(float(cells[1]))
@@ -649,11 +665,33 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       logg.append(float(cells[3]))
       alphafe.append(nan)
       micro.append(nan)
-      chisq_tot.append(10.**float(cells[9]))
-      snr_med.append(float(cells[8]))
+      chisq_tot.append(10.**float(cells[8]))
+      snr_med.append(float(cells[7]))
       rv_adop.append(float(vcells[6])*clight/1e3)
-      cov = reshape(array(cells[10:],dtype=float),(3,3))
+      cov[2:,2:] = reshape(array(cells[9:],dtype=float),(3,3))
+      cov[0,:] = cov[2,:]
+      cov[2,:] = 0.
+      cov[:,0] = cov[:,2]
+      cov[:,2] = 0.
       covar.append(cov)
+
+    elif (ndim == 4):
+      #Phoenix grid from Sergey or MARCS grid, with 4 dimensions: id, 4 par, 4err, 0., med_snr, lchi, 4x4 cov
+      feh.append(float(cells[2]))
+      teff.append(float(cells[3]))
+      logg.append(float(cells[4]))
+      alphafe.append(float(cells[1]))
+      micro.append(nan)
+      chisq_tot.append(10.**float(cells[10]))
+      snr_med.append(float(cells[9]))
+      rv_adop.append(float(vcells[6])*clight/1e3)
+      cov[1:,1:] = reshape(array(cells[11:],dtype=float),(4,4))
+      cov[0,:] = cov[2,:]
+      cov[2,:] = 0.
+      cov[:,0] = cov[:,2]
+      cov[:,2] = 0.
+      covar.append(cov)    
+   
 
     elif (ndim == 5):
       #Kurucz grids with 5 dimensions: id, 5 par, 5 err, 0., med_snr, lchi, 5x5 cov
@@ -663,41 +701,13 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       logg.append(float(cells[5]))
       alphafe.append(float(cells[2]))
       micro.append(float(cells[3]))
-      chisq_tot.append(10.**float(cells[13]))
-      snr_med.append(float(cells[12]))
+      chisq_tot.append(10.**float(cells[12]))
+      snr_med.append(float(cells[11]))
       rv_adop.append(float(vcells[6])*clight/1e3)
-      cov = reshape(array(cells[14:],dtype=float),(5,5))
+      cov = reshape(array(cells[13:],dtype=float),(5,5))
       covar.append(cov)
-  
-    elif (ndim == 2):
-      #white dwarfs 2 dimensions: id, 2 par, 2err, 0., med_snr, lchi, 2x2 cov
-      feh.append(-10.)
-      teff.append(float(cells[1]))
-      logg.append(float(cells[2]))
-      alphafe.append(nan)
-      micro.append(nan)
-      chisq_tot.append(10.**float(cells[7]))
-      snr_med.append(float(cells[6]))
-      rv_adop.append(float(vcells[6])*clight/1e3)
-      cov = zeros((3,3))
-      cov[1:,1:] = reshape(array(cells[8:],dtype=float),(2,2))
-      #cov = reshape(array(cells[8:],dtype=float),(2,2))
-      covar.append(cov)    
-   
-    elif (ndim == 4):
-      #Phoenix grid from Sergey, with 4 dimensions: id, 4 par, 4err, 0., med_snr, lchi, 4x4 cov
-      feh.append(float(cells[2]))
-      teff.append(float(cells[3]))
-      logg.append(float(cells[4]))
-      alphafe.append(float(cells[1]))
-      micro.append(nan)
-      chisq_tot.append(10.**float(cells[11]))
-      rv_adop.append(float(vcells[6])*clight/1e3)
-      snr_med.append(float(cells[10]))
-      cov = zeros((3,3))
-      cov[:,:] = reshape(array(cells[12:],dtype=float),(4,4))[1:,1:]
-      covar.append(cov)    
-   
+     
+
 
     if (chisq_tot[-1] < 1.5 and snr_med[-1] > 5.): # chi**2<1.5 and S/N>5
       success.append(1) 
@@ -733,7 +743,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   cols['LOGG'] = array(logg)
   cols['FEH'] = array(feh)
   cols['ALPHAFE'] = array(alphafe) 
-  cols['MICRO'] = array(micro)*units.km/units.s
+  cols['LOG10MICRO'] = array(micro)
   cols['COVAR'] = array(covar).reshape(len(success),ndim,ndim)
   cols['ELEM'] = array(elem)
   cols['ELEM_ERR'] = array(elem_err)
@@ -745,12 +755,12 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   'success': 'Bit indicating whether the code has likely produced useful results',
   'TARGETID': 'DESI targetid',
   'FIBER': 'DESI fiber',
-  'TEFF': 'Effective temperature',
+  'TEFF': 'Effective temperature (K)',
   'LOGG': 'Surface gravity (g in cm/s**2)',
   'FEH': 'Metallicity [Fe/H] = log10(N(Fe)/N(H)) - log10(N(Fe)/N(H))sun' ,
   'ALPHAFE': 'Alpha-to-iron ratio [alpha/Fe]',
-  'MICRO': 'Microturbulence',
-  'COVAR': 'Covariance matrix for ([Fe/H], [a/Fe], logmicro, Teff,logg)',
+  'LOG10MICRO': 'Log10 of Microturbulence (km/s)',
+  'COVAR': 'Covariance matrix for ([Fe/H], [a/Fe], log10micro, Teff,logg)',
   'ELEM': 'Elemental abundance ratios to iron [elem/Fe]',
   'ELEM_ERR': 'Uncertainties in the elemental abundance ratios to iron',
   'CHISQ_TOT': 'Total chi**2',
