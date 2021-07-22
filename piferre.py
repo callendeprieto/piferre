@@ -1657,8 +1657,8 @@ def main(args):
 
     dopars.append(pararr)
 
-  ncores = cpu_count()
-  pool = Pool(ncores-1)
+  #ncores = cpu_count()
+  pool = Pool(10)
   results = pool.starmap(do,dopars)
 
   
