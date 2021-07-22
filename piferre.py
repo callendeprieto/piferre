@@ -650,10 +650,10 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       logg.append(float(cells[2]))
       alphafe.append(nan)
       micro.append(nan)
-      chisq_tot.append(10.**float(cells[6]))
-      snr_med.append(float(cells[5]))
+      chisq_tot.append(10.**float(cells[3+2*ndim]))
+      snr_med.append(float(cells[2+2*ndim]))
       rv_adop.append(float(vcells[6])*clight/1e3)
-      cov[3:,3:] = reshape(array(cells[7:],dtype=float),(2,2))
+      cov[3:,3:] = reshape(array(cells[4+2*ndim:],dtype=float),(2,2))
       covar.append(cov)    
 
 
@@ -665,10 +665,10 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       logg.append(float(cells[3]))
       alphafe.append(nan)
       micro.append(nan)
-      chisq_tot.append(10.**float(cells[8]))
-      snr_med.append(float(cells[7]))
+      chisq_tot.append(10.**float(cells[3+2*ndim]))
+      snr_med.append(float(cells[2+2*ndim]))
       rv_adop.append(float(vcells[6])*clight/1e3)
-      cov[2:,2:] = reshape(array(cells[9:],dtype=float),(3,3))
+      cov[2:,2:] = reshape(array(cells[4+2*ndim:],dtype=float),(3,3))
       cov[0,:] = cov[2,:]
       cov[2,:] = 0.
       cov[:,0] = cov[:,2]
@@ -682,10 +682,10 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       logg.append(float(cells[4]))
       alphafe.append(float(cells[1]))
       micro.append(nan)
-      chisq_tot.append(10.**float(cells[10]))
-      snr_med.append(float(cells[9]))
+      chisq_tot.append(10.**float(cells[3+2*ndim]))
+      snr_med.append(float(cells[2+2*ndim]))
       rv_adop.append(float(vcells[6])*clight/1e3)
-      cov[1:,1:] = reshape(array(cells[11:],dtype=float),(4,4))
+      cov[1:,1:] = reshape(array(cells[4+2*ndim:],dtype=float),(4,4))
       cov[0,:] = cov[2,:]
       cov[2,:] = 0.
       cov[:,0] = cov[:,2]
@@ -701,10 +701,10 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       logg.append(float(cells[5]))
       alphafe.append(float(cells[2]))
       micro.append(float(cells[3]))
-      chisq_tot.append(10.**float(cells[12]))
-      snr_med.append(float(cells[11]))
+      chisq_tot.append(10.**float(cells[3+2*ndim]))
+      snr_med.append(float(cells[2+2*ndim]))
       rv_adop.append(float(vcells[6])*clight/1e3)
-      cov = reshape(array(cells[13:],dtype=float),(5,5))
+      cov = reshape(array(cells[4+2*ndim:],dtype=float),(5,5))
       covar.append(cov)
      
 
