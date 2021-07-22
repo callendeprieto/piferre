@@ -238,6 +238,9 @@ def read_zbest(filename):
     if 'ZBEST' in enames:
       zbest=hdu['zbest'].data
       targetid=zbest['targetid'] #array of long integers
+    if 'REDSHIFT' in enames:
+      zbest=hdu['redshift'].data
+      targetid=zbest['targetid'] #array of long integers
     else:
       zbest=hdu[1].data
       plate=zbest['plate']
@@ -1186,6 +1189,8 @@ def finddatafiles(path,pixel,sdir='',rvpath=None):
       datafiles.append(os.path.join(path,sdir,pixel,filename))
     elif (filename.find('zbest-') > -1 and filename.find('.fits') > -1):
       zbestfiles.append(os.path.join(rvpath,sdir,pixel,filename))
+    elif (filename.find('redrock-') > -1 and filename.find('.fits') > -1):
+      zbestfiles.append(os.path.join(rvpath,sdir,pixel,filename))
 # BOSS data
     elif (filename.find('spPlate') > -1 and filename.find('.fits') > -1):
       datafiles.append(os.path.join(path,sdir,pixel,filename))
@@ -1387,7 +1392,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
     print('fileroot=',fileroot)
 
     #get redshifts
-    if zbestfile.find('best') > -1:
+    if zbestfile.find(rvtype) > -1:
       z=read_zbest(zbestfile)
     else:
       #Koposov pipeline
