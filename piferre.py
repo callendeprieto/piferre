@@ -239,7 +239,7 @@ def read_zbest(filename):
       zbest=hdu['zbest'].data
       targetid=zbest['targetid'] #array of long integers
     if 'REDSHIFTS' in enames:
-      zbest=hdu['redshift'].data
+      zbest=hdu['redshifts'].data
       targetid=zbest['targetid'] #array of long integers
     else:
       zbest=hdu[1].data
