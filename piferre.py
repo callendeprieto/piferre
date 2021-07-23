@@ -1260,10 +1260,11 @@ def packfits(input="*.fits",output="output.fits"):
   return(None)
 
 #inspector
-def inspector(*args,sym='.',rvrange=(-1e32,1e32),rarange=(0.,360.),
-               decrange=(-90,90), fehrange=(-100,100), 
+def inspector(*args,sym='.',rvrange=(-1e32,1e32),
+               rarange=(0.,360.), decrange=(-90,90),  
                pmrarange=(-1e32,1e32), pmdecrange=(-1e32,1e32),
                parallaxrange=(-10000,10000),
+               fehrange=(-100,100), teffrange=[0,100000],loggrange=[-100,100],
                title='',fig=''):
 
   for entry in args:
@@ -1275,19 +1276,22 @@ def inspector(*args,sym='.',rvrange=(-1e32,1e32),rarange=(0.,360.),
       fbm=sph['FIBERMAP'].data
       w=( (spt['rv_adop'] >= rvrange[0])  
         & (spt['rv_adop'] <= rvrange[1])   
+        & (spt['feh'] >= fehrange[0])
+        & (spt['feh'] <= fehrange[1]) 
+        & (spt['teff'] >= teffrange[0]) 
+        & (spt['teff'] <= teffrange[1])
+        & (spt['logg'] >= loggrange[0])
+        & (spt['logg'] <= loggrange[1]) 
         & (fbm['target_ra'] >= rarange[0])      
         & (fbm['target_ra'] <= rarange[1])
         & (fbm['target_dec'] >= decrange[0]) 
         & (fbm['target_dec'] <= decrange[1]) 
-        & (spt['feh'] >= fehrange[0])
-        & (spt['feh'] <= fehrange[1]) 
         & (fbm['parallax'] >= parallaxrange[0])
         & (fbm['parallax'] <= parallaxrange[1]) 
         & (fbm['pmra'] >= pmrarange[0])
         & (fbm['pmra'] <= pmrarange[1]) 
         & (fbm['pmdec'] >= pmdecrange[0])
         & (fbm['pmdec'] <= pmdecrange[1]) )
-
 
       plt.figure()
       plt.ion()
