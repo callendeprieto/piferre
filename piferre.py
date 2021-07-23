@@ -747,7 +747,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   cols['FEH'] = array(feh)
   cols['ALPHAFE'] = array(alphafe) 
   cols['LOG10MICRO'] = array(micro)
-  cols['COVAR'] = array(covar).reshape(len(success),ndim,ndim)
+  cols['COVAR'] = array(covar).reshape(len(success),5,5)
   cols['ELEM'] = array(elem)
   cols['ELEM_ERR'] = array(elem_err)
   cols['CHISQ_TOT'] = array(chisq_tot)
