@@ -1392,7 +1392,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
     print('fileroot=',fileroot)
 
     #get redshifts
-    if zbestfile.find(rvtype) > -1:
+    if (zbestfile.find('best') > -1) or (zbestfile.find('redrock') > -1):
       z=read_zbest(zbestfile)
     else:
       #Koposov pipeline
