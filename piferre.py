@@ -1262,6 +1262,7 @@ def packfits(input="*.fits",output="output.fits"):
 #inspector
 def inspector(*args,sym='.',rvrange=(-1e32,1e32),rarange=(0.,360.),
                decrange=(-90,90), fehrange=(-100,100), 
+               pmrarange=(-1e32,1e32), pmdecrange=(-1e32,1e32),
                parallaxrange=(-10000,10000),
                title='',fig=''):
 
@@ -1281,31 +1282,33 @@ def inspector(*args,sym='.',rvrange=(-1e32,1e32),rarange=(0.,360.),
         & (spt['feh'] >= fehrange[0])
         & (spt['feh'] <= fehrange[1]) 
         & (fbm['parallax'] >= parallaxrange[0])
-        & (fbm['parallax'] <= parallaxrange[1]) )
-      spt=spt[w]
-      fbm=fbm[w]
-      n=where(w)[0] 
+        & (fbm['parallax'] <= parallaxrange[1]) 
+        & (fbm['pmra'] >= pmrarange[0])
+        & (fbm['pmra'] <= pmrarange[1]) 
+        & (fbm['pmdec'] >= pmdecrange[0])
+        & (fbm['pmdec'] <= pmdecrange[1]) )
+
 
       plt.figure()
       plt.ion()
 
       plt.subplot(3,2,1)
-      plt.plot(spt['teff'],spt['logg'],sym)
- 
-      plt.ylabel('logg')
+      plt.plot(spt['feh'],spt['alphafe'],',')
+
+      spt=spt[w]
+      fbm=fbm[w]
+      n=where(w)[0]
+      plt.plot(spt['feh'],spt['alphafe'],sym)
+
+      plt.xlabel('[Fe/H]')
+      plt.ylabel('[a/Fe]')
       plt.title(file)
 
-      plt.xlim([max(spt['teff'])*1.01,min(spt['teff'])*.99])
-      plt.ylim([max(spt['logg'])*1.01,min(spt['logg'])*0.99])
-      plt.xscale('log')
-
       plt.subplot(3,2,2)
-      plt.plot(fbm['target_ra'],fbm['target_dec'],sym)
-      plt.xlabel('target_ra')
-      plt.ylabel('target_dec')
+      plt.hist(spt['teff'],bins=10)
+      plt.xlabel('Teff')
+      plt.ylabel('N')
       plt.title(title)
-      #plt.xlim([max(spt['teff'])]*1.01,min(spt['teff'])*.99])
-      #plt.xlim([max(spt['logg'])]*1.01,min(spt['logg'])*0.99])
 
       plt.subplot(3,2,3)
       plt.plot(spt['teff'],spt['logg'],sym)
@@ -1343,7 +1346,7 @@ def inspector(*args,sym='.',rvrange=(-1e32,1e32),rarange=(0.,360.),
 
       plt.show()
 
-  return None
+  return (mean(spt['feh']),std(spt['feh']),mean(spt['alphafe']),std(spt['alphafe'])) 
 
 #process a single pixel
 def do(path, pixel, sdir='', truth=None, nthreads=1,minutes=120, rvpath=None, 
