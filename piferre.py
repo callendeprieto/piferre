@@ -715,7 +715,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
     if (chisq_tot[-1] < 1.5 and snr_med[-1] > 5.): # chi**2<1.5 and S/N>5
       success.append(1) 
     else: success.append(0)
-    tmp = cells[0].split('-')
+    tmp = cells[0].split('_')
     targetid.append(int64(tmp[0]))
     fiber.append(int32(tmp[1]))
     elem.append([nan,nan])
@@ -1503,7 +1503,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
       for k in range(nspec):
         if process_target[k]:
           npass=npass+1
-          if source == 'desi': id = str(targetid[k]) + '-' + str(fiber[k])
+          if source == 'desi': id = str(targetid[k]) + '_' + str(fiber[k])
           ids.append(id)
           #we patch the redshift here to handle missing redshifts for comm. data from Sergey
           #z[targetid[k]]=0.0
