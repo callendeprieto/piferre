@@ -19,6 +19,7 @@ import importlib
 from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, log10, median, std, mean, pi
 from astropy.io import fits
 from scipy.signal import savgol_filter
+from pandas import read_csv
 import astropy.table as tbl
 import astropy.units as units
 import matplotlib.pyplot as plt
@@ -58,6 +59,27 @@ def lambda_synth(synthfile):
       if int(header['LOGW']) == 1: x=10.**x
       if int(header['LOGW']) == 2: x=exp(x)  
     return x
+
+#read a synthfile
+def read_synth(synthfile):
+    file=open(synthfile,'r')
+    line=file.readline()
+    header={}
+    nlines=1
+    while (1):
+        line=file.readline()
+        part=line.split('=')
+        if (len(part) < 2): break
+        k=part[0].strip()
+        v=part[1].strip()
+        header[k]=v
+        nlines+=1
+        print(nlines)
+    file.close()
+
+    data=read_csv(synthfile, skiprows=nlines+1, header=None, dtype=float).to_numpy()
+
+    return header,data
 
 #create a slurm script for a given pixel
 def write_slurm(root,nthreads=1,minutes=120,path=None,ngrids=None, 
