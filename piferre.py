@@ -1343,14 +1343,14 @@ def inspector(*args,sym='.',rvrange=(-1e32,1e32),
       plt.plot(spt['teff'],spt['logg'],sym)
       plt.xlabel('Teff')
       plt.ylabel('logg')
-      plt.xlim([8000.,min(spt['teff'])*0.99])
+      plt.xlim([8000.,2000])
       plt.ylim([5.5,-0.5])
 
       plt.subplot(3,2,4)
       plt.plot(spt['teff'],spt['feh'],sym)
       plt.xlabel('Teff')
       plt.ylabel('[Fe/H]')
-      plt.xlim([8000.,min(spt['teff'])*0.99])
+      plt.xlim([8000.,2000])
       plt.ylim([-5,1])
 
 
