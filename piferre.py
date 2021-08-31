@@ -156,7 +156,6 @@ def mergeslurm(path='./',nmerge=2):
       k = k + 1
       if k > 1: 
         entries = header[wtime].split('=')
-        print(entries,entries)
         header[wtime] = entries[0]+'='+str(time)+'\n'
         f2.writelines(header)
         f2.writelines(body)
@@ -176,7 +175,7 @@ def mergeslurm(path='./',nmerge=2):
         body.append(line)
   
   entries = header[wtime].split('=')
-  header[wtime] = entries[0]+'='+str(time) 
+  header[wtime] = entries[0]+'='+str(time)+'\n' 
   f2.writelines(header)
   f2.writelines(body)
   f2.close()
