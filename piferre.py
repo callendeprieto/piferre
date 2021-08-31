@@ -99,22 +99,23 @@ config='desi-n.yaml'):
     f.write("#!/bin/bash \n")
     f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
     f.write("#This script was written by piferre.py on "+now+" \n") 
+    f.write("#SBATCH --time="+str(minutes)+"\n") #minutes
+    f.write("#SBATCH --ntasks=1" + "\n")
     if host[:4] == 'cori':
       f.write("#SBATCH --qos=regular" + "\n")
       f.write("#SBATCH --constraint=haswell" + "\n")
-      f.write("#SBATCH --time="+str(minutes)+"\n") #minutes
-      f.write("#SBATCH --ntasks=1" + "\n")
+      #f.write("#SBATCH --time="+str(minutes)+"\n") #minutes
+      #f.write("#SBATCH --ntasks=1" + "\n")
       f.write("#SBATCH --cpus-per-task="+str(nthreads*2)+"\n")
     else:
-      f.write("#SBATCH  -J "+str(root)+" \n")
-      f.write("#SBATCH  -o "+str(root)+"_%j.out"+" \n")
-      f.write("#SBATCH  -e "+str(root)+"_%j.err"+" \n")
-      f.write("#SBATCH  -n "+str(nthreads)+" \n")
-      hours2 = int(minutes/60) 
-      minutes2 = minutes%60
-      f.write("#SBATCH  -t "+"{:02d}".format(hours2)+":"+"{:02d}".format(minutes2)+
-              ":00"+"\n") #hh:mm:ss
-      f.write("#SBATCH  -D "+os.path.abspath(path)+" \n")
+      #f.write("#SBATCH  -J "+str(root)+" \n")
+      #f.write("#SBATCH  -o "+str(root)+"_%j.out"+" \n")
+      #f.write("#SBATCH  -e "+str(root)+"_%j.err"+" \n")
+      f.write("#SBATCH --cpus-per-task="+str(nthreads)+"\n")
+      #hours2 = int(minutes/60) 
+      #minutes2 = minutes%60
+      #f.write("#SBATCH  -t "+"{:02d}".format(hours2)+":"+"{:02d}".format(minutes2)+":00"+"\n") #hh:mm:ss
+      #f.write("#SBATCH  -D "+os.path.abspath(path)+" \n")
     f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
     f.write("export OMP_NUM_THREADS="+str(nthreads)+"\n")
     f.write("cd "+os.path.abspath(path)+"\n")
@@ -260,7 +261,7 @@ def read_zbest(filename):
     if 'ZBEST' in enames:
       zbest=hdu['zbest'].data
       targetid=zbest['targetid'] #array of long integers
-    if 'REDSHIFTS' in enames:
+    elif 'REDSHIFTS' in enames:
       zbest=hdu['redshifts'].data
       targetid=zbest['targetid'] #array of long integers
     else:
