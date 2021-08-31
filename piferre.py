@@ -139,6 +139,54 @@ config='desi-n.yaml'):
 
     return None
 
+
+#identify all the *.slurm files in the path and merge them in groups of nmerge so that there are fewer/longer jobs. The scripts are named job-*.slurm and written to the current folder
+def mergeslurm(path='./',nmerge=2):
+
+  slurms = glob.glob(os.path.join(path,'**','*slurm'), recursive=True)
+
+  nfiles = len(slurms)
+
+  k = 0 
+  wtime = -1
+  for i in range(nfiles):
+    f1 = open(slurms[i],'r')
+    j = i % nmerge
+    if j == 0:
+      k = k + 1
+      if k > 1: 
+        entries = header[wtime].split('=')
+        print(entries,entries)
+        header[wtime] = entries[0]+'='+str(time)+'\n'
+        f2.writelines(header)
+        f2.writelines(body)
+        f2.close()
+      f2 = open('job-'+str(k)+'.slurm','w')
+      time = 0
+      header = []
+      body = []
+    for line in f1: 
+      if line[0] == "#":
+        if j == 0: header.append(line)
+        if '--time' in line:
+          entries = line.split('=') 
+          time = time + int(entries[1])
+          if j == 0: wtime = len(header)-1
+      else:
+        body.append(line)
+  
+  entries = header[wtime].split('=')
+  header[wtime] = entries[0]+'='+str(time) 
+  f2.writelines(header)
+  f2.writelines(body)
+  f2.close()
+    
+
+  print(slurms)
+
+  return None
+
+
 #remove FERRE I/O files after the final FITS tables have been produced
 def cleanup(root):
   vrdfiles = glob.glob(root+'*vrd')
