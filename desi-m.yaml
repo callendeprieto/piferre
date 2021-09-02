@@ -14,14 +14,14 @@ m_rdesi1:
    param:
        ndim: 5
        nov: 5
-       indv:  1  2  3 4 5
+       indv:  1  2  3  4  5
        cont: 3
        ncont: 100
        pfile: 'vrd'
        opfile: 'opf1'
        offile: 'ndl1'
        sffile: 'nrd1'
-       labels:  ['[Fe/H]', '[a/Fe]', 'Teff',  'logg']
+       labels:  ['[Fe/H]', '[a/Fe]', 'log10micro', 'Teff',  'logg']
        llimits: -5. -1.  -0.301029995663981 3500. 0.0
        steps:  0.25  0.25 0.301029995663981  250. 0.5
    cal: 
@@ -37,19 +37,19 @@ m_rdesi1:
        opfile: 'oca1'
        offile: 'mca1'
        sffile: 'nca1'
-       labels:  ['[Fe/H]', '[Ca/Fe]', 'Teff',  'logg']
+       labels:  ['[Fe/H]', '[Ca/Fe]', 'log10micro', 'Teff',  'logg']
 m_rdesi2:
    param:
        ndim: 5
        nov: 5
-       indv:  1  2  3 4 5
+       indv:  1  2  3  4  5
        cont: 3
        ncont: 100
        pfile: 'vrd'
        opfile: 'opf2'
        offile: 'ndl2'
        sffile: 'nrd2'
-       labels:  ['[Fe/H]', '[a/Fe]', 'Teff',  'logg']
+       labels:  ['[Fe/H]', '[a/Fe]', 'log10micro', 'Teff',  'logg']
        llimits:  -5. -1.  -0.301029995663981 5750. 1.0
        steps:   0.25  0.25 0.301029995663981  250. 0.5
    cal: 
@@ -62,14 +62,14 @@ m_rdesi3:
    param:
        ndim: 5
        nov: 5
-       indv:  1  2  3 4 5
+       indv:  1  2  3  4  5
        cont: 3
        ncont: 100
        pfile: 'vrd'
        opfile: 'opf3'
        offile: 'ndl3'
        sffile: 'nrd3'
-       labels:  ['[Fe/H]', '[a/Fe]', 'Teff',  'logg']
+       labels:  ['[Fe/H]', '[a/Fe]', 'log10micro', 'Teff',  'logg']
        llimits: -5.   -1. -0.301029995663981 7000. 2.0
        steps:   0.25 0.25  0.301029995663981  500. 0.5
    cal: 
@@ -89,7 +89,7 @@ m_rdesi4:
        opfile: 'opf4'
        offile: 'ndl4'
        sffile: 'nrd4'
-       labels:  ['[Fe/H]', '[a/Fe]', 'Teff',  'logg']
+       labels:  ['[Fe/H]', '[a/Fe]', 'log10micro', 'Teff',  'logg']
        llimits: -5. -1.  -0.301029995663981 10000. 3.0
        steps:  0.25  0.25 0.301029995663981  1000. 0.5
    cal: 
@@ -109,7 +109,7 @@ m_rdesi5:
        opfile: 'opf5'
        offile: 'ndl5'
        sffile: 'nrd5'
-       labels: ['[Fe/H]', '[a/Fe]', 'Teff',  'logg']
+       labels: ['[Fe/H]', '[a/Fe]', 'log10micro', 'Teff',  'logg']
        llimits: -5. -1.  -0.301029995663981 20000. 4.0
        steps:  0.25  0.25 0.301029995663981  1000. 0.5
    cal: 
