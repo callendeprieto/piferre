@@ -1421,7 +1421,7 @@ def inspector(*args,sym='.',rvrange=(-1e32,1e32),
 
       plt.show()
 
-  return (mean(spt['feh']),std(spt['feh']),mean(spt['alphafe']),std(spt['alphafe'])) 
+  return (mean(spt['feh']),std(spt['feh']),mean(sqrt(spt['covar'][:,0,0])), std(sqrt(spt['covar'][:,0,0])), mean(spt['alphafe']),std(spt['alphafe']), mean(sqrt(spt['covar'][:,0,0])), std(sqrt(spt['covar'][:,0,0])) )
 
 #process a single pixel
 def do(path, pixel, sdir='', truth=None, nthreads=1,minutes=120, rvpath=None, 
@@ -1488,7 +1488,10 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
     if source == 'desi': #DESI data
       fibermap=hdu['FIBERMAP']
       targetid=fibermap.data['TARGETID']
-      fiber=fibermap.data['FIBER']
+      if 'FIBER' in fibermap.data.names:
+        fiber=fibermap.data['FIBER']
+      else:
+        fiber=zeros(len(targetid),dtype=int) 
       if 'RA_TARGET' in fibermap.data.names: 
         ra=fibermap.data['RA_TARGET']
       else:
