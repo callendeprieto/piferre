@@ -82,7 +82,7 @@ def read_synth(synthfile):
     return header,data
 
 #create a slurm script for a given pixel
-def write_slurm(root,nthreads=1,minutes=120,path=None,ngrids=None, 
+def write_slurm(root,nthreads=1,minutes=288,path=None,ngrids=None, 
 config='desi-n.yaml'):
     ferre=os.environ['HOME']+"/ferre/src/a.out"
     python_path=os.environ['HOME']+"/piferre"
@@ -1424,7 +1424,7 @@ def inspector(*args,sym='.',rvrange=(-1e32,1e32),
   return (mean(spt['feh']),std(spt['feh']),mean(sqrt(spt['covar'][:,0,0])), std(sqrt(spt['covar'][:,0,0])), mean(spt['alphafe']),std(spt['alphafe']), mean(sqrt(spt['covar'][:,0,0])), std(sqrt(spt['covar'][:,0,0])) )
 
 #process a single pixel
-def do(path, pixel, sdir='', truth=None, nthreads=1,minutes=120, rvpath=None, 
+def do(path, pixel, sdir='', truth=None, nthreads=1,minutes=288, rvpath=None, 
 libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
   
   #get input data files
