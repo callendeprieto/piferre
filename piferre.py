@@ -1697,7 +1697,7 @@ def main(args):
   parser.add_argument('-m','--minutes',
                       type=int,
                       help='requested CPU time in minutes per FERRE job',
-                      default=120)
+                      default=288)
                       
   parser.add_argument('-t','--truthfile',
                       type=str,
