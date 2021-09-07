@@ -107,6 +107,8 @@ config='desi-n.yaml'):
       #f.write("#SBATCH --time="+str(minutes)+"\n") #minutes
       #f.write("#SBATCH --ntasks=1" + "\n")
       f.write("#SBATCH --cpus-per-task="+str(nthreads*2)+"\n")
+      f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
+      f.write("export OMP_NUM_THREADS="+str(nthreads*2)+"\n")
     else:
       #f.write("#SBATCH  -J "+str(root)+" \n")
       #f.write("#SBATCH  -o "+str(root)+"_%j.out"+" \n")
@@ -115,9 +117,10 @@ config='desi-n.yaml'):
       #hours2 = int(minutes/60) 
       #minutes2 = minutes%60
       #f.write("#SBATCH  -t "+"{:02d}".format(hours2)+":"+"{:02d}".format(minutes2)+":00"+"\n") #hh:mm:ss
-      #f.write("#SBATCH  -D "+os.path.abspath(path)+" \n")
-    f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
-    f.write("export OMP_NUM_THREADS="+str(nthreads)+"\n")
+      #f.write("#SBATCH  -D "+os.path.abspath(path)+" \n")    
+      f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
+      f.write("export OMP_NUM_THREADS="+str(nthreads)+"\n")
+ 
     f.write("cd "+os.path.abspath(path)+"\n")
     for i in range(ngrids):
       #f.write("cp input.nml-"+root+"_"+str(i)+" input.nml \n")
@@ -217,6 +220,17 @@ def cleanup(root):
 #create a FERRE control hash (content for a ferre input.nml file)
 def mknml(conf,root,nthreads=1,libpath='.',path='.'):
 
+  try: 
+    host=os.environ['HOST']
+  except:
+    host='Unknown'
+
+  try: 
+    scratch=os.environ['SCRATCH']
+  except:
+    scratch='./'
+
+
   grids=conf['grids']
 
   for k in range(len(grids)): #loop over all grids
@@ -260,6 +274,10 @@ def mknml(conf,root,nthreads=1,libpath='.',path='.'):
       nml['opfile'] = "'"+root+'.'+nml['opfile']+"'"
       nml['offile'] = "'"+root+'.'+nml['offile']+"'"
       nml['sffile'] = "'"+root+'.'+nml['sffile']+"'"
+
+      #make sure tmp 'sort' files are stored in $SCRATCH for cori
+      if host[:4] == 'cori':
+        nml['scratch'] = "'"+scratch+"'"
 
       #get rid of keywords in yaml that are not for the nml file, but for opfmerge or write_tab
       if 'labels' in nml: del nml['labels']
