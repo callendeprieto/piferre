@@ -108,7 +108,7 @@ config='desi-n.yaml'):
       #f.write("#SBATCH --ntasks=1" + "\n")
       f.write("#SBATCH --cpus-per-task="+str(nthreads*2)+"\n")
       f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
-      f.write("export OMP_NUM_THREADS="+str(nthreads*2)+"\n")
+      #f.write("export OMP_NUM_THREADS="+str(nthreads*2)+"\n")
     else:
       #f.write("#SBATCH  -J "+str(root)+" \n")
       #f.write("#SBATCH  -o "+str(root)+"_%j.out"+" \n")
@@ -119,7 +119,7 @@ config='desi-n.yaml'):
       #f.write("#SBATCH  -t "+"{:02d}".format(hours2)+":"+"{:02d}".format(minutes2)+":00"+"\n") #hh:mm:ss
       #f.write("#SBATCH  -D "+os.path.abspath(path)+" \n")    
       f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
-      f.write("export OMP_NUM_THREADS="+str(nthreads)+"\n")
+      #f.write("export OMP_NUM_THREADS="+str(nthreads)+"\n")
  
     f.write("cd "+os.path.abspath(path)+"\n")
     for i in range(ngrids):
