@@ -124,7 +124,7 @@ config='desi-n.yaml'):
     f.write("cd "+os.path.abspath(path)+"\n")
     for i in range(ngrids):
       #f.write("cp input.nml-"+root+"_"+str(i)+" input.nml \n")
-      f.write("(echo FERRE job" + str(i) )
+      f.write("(echo FERRE job " + str(i) )
       f.write(";time "+ferre+" -l input.lst-"+root+"_"+str(i)+" >& "+root+".log_"+str(i))
       f.write(") & \n")
     f.write("wait \n")
