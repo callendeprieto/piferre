@@ -125,7 +125,7 @@ config='desi-n.yaml'):
     for i in range(ngrids):
       #f.write("cp input.nml-"+root+"_"+str(i)+" input.nml \n")
       f.write("(  time "+ferre+" -l input.lst-"+root+"_"+str(i)+" >& "+root+".log_"+str(i))
-      f.write(" ; echo FERRE job " + str(i) + " & \n")
+      f.write(" ; echo FERRE job " + str(i) + " ) & \n")
     f.write("wait \n")
     f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
             "'); from piferre import opfmerge, write_tab_fits, write_mod_fits, cleanup; opfmerge(\'"+\
