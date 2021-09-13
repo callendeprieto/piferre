@@ -33,6 +33,7 @@ m_rdesi1:
    Ca: 
        nov: 1
        indv: 2
+       nthreads: 1
        pfile: 'opf1'
        opfile: 'oca1'
        offile: 'mca1'
