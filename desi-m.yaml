@@ -30,15 +30,6 @@ m_rdesi1:
        nthreads: 1
        pfile: 'opf1'
        offile: 'mdl1'
-   Ca: 
-       nov: 1
-       indv: 2
-       nthreads: 1
-       pfile: 'opf1'
-       opfile: 'oca1'
-       offile: 'mca1'
-       sffile: 'nca1'
-       labels:  ['[Fe/H]', '[Ca/Fe]', 'log10micro', 'Teff',  'logg']
 m_rdesi2:
    param:
        ndim: 5

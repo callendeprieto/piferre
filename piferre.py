@@ -1438,7 +1438,7 @@ def inspector(*args,sym='.',rvrange=(-1e32,1e32),
   return (mean(spt['feh']),std(spt['feh']),mean(sqrt(spt['covar'][:,0,0])), std(sqrt(spt['covar'][:,0,0])), mean(spt['alphafe']),std(spt['alphafe']), mean(sqrt(spt['covar'][:,0,0])), std(sqrt(spt['covar'][:,0,0])) )
 
 #process a single pixel
-def do(path, pixel, sdir='', truth=None, nthreads=1,minutes=288, rvpath=None, 
+def do(path, pixel, sdir='', truth=None, nthreads=1,minutes=120, rvpath=None, 
 libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
   
   #get input data files
@@ -1711,7 +1711,7 @@ def main(args):
   parser.add_argument('-m','--minutes',
                       type=int,
                       help='requested CPU time in minutes per FERRE job',
-                      default=288)
+                      default=120)
                       
   parser.add_argument('-t','--truthfile',
                       type=str,
