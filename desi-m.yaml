@@ -9,7 +9,7 @@ global:
     inter: 3
     ffile: 'frd'
     erfile: 'err'   
-    nthreads: 4
+    nthreads: 8
 m_rdesi1:
    param:
        ndim: 5
