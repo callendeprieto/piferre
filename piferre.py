@@ -848,7 +848,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   'FEH': 'Metallicity [Fe/H] = log10(N(Fe)/N(H)) - log10(N(Fe)/N(H))sun' ,
   'ALPHAFE': 'Alpha-to-iron ratio [alpha/Fe]',
   'LOG10MICRO': 'Log10 of Microturbulence (km/s)',
-  'PARAM': 'Array of atmospheric parameters ([Fe/H], [a/Fe], log10micro, Teff,logg)'
+  'PARAM': 'Array of atmospheric parameters ([Fe/H], [a/Fe], log10micro, Teff,logg)',
   'COVAR': 'Covariance matrix for ([Fe/H], [a/Fe], log10micro, Teff,logg)',
   'ELEM': 'Elemental abundance ratios to iron [elem/Fe]',
   'ELEM_ERR': 'Uncertainties in the elemental abundance ratios to iron',
@@ -861,11 +861,11 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   table = tbl.Table(cols)
   hdu=fits.BinTableHDU(table,name = 'SPTAB')
   #hdu.header['EXTNAME']= ('SPTAB', 'Stellar Parameter Table')
-  i = 0
+  k = 0
   for entry in colcomm.keys():
     print(entry) 
-    hdu.header['TCOMM'+str(i+1)] = colcomm[entry]
-    i+=1
+    hdu.header['TCOMM'+str(k+1)] = colcomm[entry]
+    k+=1
   hdulist.append(hdu)
 
 
@@ -936,6 +936,7 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
   i = 0
   j1 = 0
 
+
   for entry in band:
     j2 = j1 + npix[i] 
     print(entry,i,npix[i],j1,j2)
@@ -946,28 +947,36 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
     #hdu.header['EXTNAME']=entry+'_WAVELENGTH'
     hdulist.append(hdu)
     
+    cols = {}
+    colcomm = {}
     if odata.ndim == 2: tdata = odata[:,j1:j2]
     else: tdata = odata[j1:j2][None,:]
-    col01 = fits.Column(name='obs',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=tdata)
+    cols['obs'] = tdata
+    colcomm['obs'] = 'Observed spectra as fit'
     if edata.ndim == 2: tdata = edata[:,j1:j2]
     else: tdata = edata[j1:j2][None,:]
-    col02 = fits.Column(name='err',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=tdata)
-    if mdata.ndim == 2: tdata = mdata[:,j1:j2]
-    else: tdata = mdata[j1:j2][None,:]
+    cols['err'] = tdata
+    colcomm['err'] = 'Error in spectra as fit'
     mdlname = 'fit'
-    if (len(l) > 0): mdlname = 'flx'
-    col03 = fits.Column(name=mdlname,format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=tdata)   
+    if (len(l) > 0): 
+      mdlname = 'flx'
+      colcomm[mdlname] = 'Absolute model flux'
+    else:
+      colcomm[mdlname] = 'Best-fitting model'
+    cols[mdlname] = tdata
     if (len(l) > 0): 
       if ldata.ndim == 2: tdata = ldata[:,j1:j2]
       else: tdata = ldata[j1:j2][None,:]
-      col04 = fits.Column(name='fit',format=str(npix[i])+'e8', dim='('+str(npix[i])+')', array=tdata)   
-      coldefs = fits.ColDefs([col01,col02,col03,col04])  
-    else:
-      coldefs = fits.ColDefs([col01,col02,col03])
+      cols['fit'] = tdata
+      colcomm['fit'] = 'Best-fitting model'
 
-    hdu=fits.BinTableHDU.from_columns(coldefs, name=entry+'_MODEL')
-    #hdu = fits.ImageHDU(name=entry+'_MODEL', data=stack([odata[:,j1:j2],edata[:,j1:j2],mdata[:,j1:j2]]) ) 
-    #hdu.header['EXTNAME']=entry+'_MODEL'
+    table = tbl.Table(cols)
+    hdu=fits.BinTableHDU(table,name = entry+'_MODEL')
+    k = 0
+    for entry in colcomm.keys():
+      print(entry) 
+      hdu.header['TCOMM'+str(k+1)] = colcomm[entry]
+      k+=1
     hdulist.append(hdu)
     i += 1
     j1 = j2
