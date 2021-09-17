@@ -198,12 +198,13 @@ def cleanup(root):
   mdlfiles = glob.glob(root+'*mdl*')
   ndlfiles = glob.glob(root+'*ndl*')
   fmpfiles = glob.glob(root+'*fmp.fits')
+  scrfiles = glob.glob(root+'*scr.fits')
   logfiles = glob.glob(root+'.log*')
   slurmfiles = glob.glob(root+'*slurm')
   abufiles = glob.glob(root+'*.?ca?')
   allfiles = vrdfiles + wavefiles + opffiles + nmlfiles + lstfiles + \
               errfiles + frdfiles + nrdfiles + mdlfiles + ndlfiles + \
-              fmpfiles + logfiles + slurmfiles + abufiles
+              fmpfiles + scrfiles + logfiles + slurmfiles + abufiles
 
   print('removing files:',end=' ')
   for entry in allfiles: 
@@ -700,7 +701,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   #m=glob.glob(proot+".mdl")
   #n=glob.glob(proot+".nrd")
   fmp=glob.glob(proot+".fmp.fits")
-
+  scr=glob.glob(proot+".scr.fits")
   
   success=[]
   targetid=[]
@@ -873,8 +874,14 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
     ff=fits.open(fmp[0])
     fibermap=ff[1]
     hdu=fits.BinTableHDU.from_columns(fibermap, name='FIBERMAP')
-    #hdu.header['EXTNAME']='FIBERMAP'
     hdulist.append(hdu)
+
+  if len(scr) > 0:
+    ff=fits.open(scr[0])
+    scores=ff[1]
+    hdu=fits.BinTableHDU.from_columns(scores, name='SCORES')
+    hdulist.append(hdu)
+
 
   hdul=fits.HDUList(hdulist)
   hdul.writeto('sptab_'+root+'.fits')
@@ -906,6 +913,7 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
   l=glob.glob(proot+".ndl")
 
   fmp=glob.glob(proot+".fmp.fits")  
+  scr=glob.glob(proot+".scr.fits")
   mdata=loadtxt(m[0])
   edata=loadtxt(e[0])
   if (len(n) > 0): 
@@ -944,7 +952,6 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
     #coldefs = fits.ColDefs([colx])
     #hdu = fits.BinTableHDU.from_columns(coldefs)
     hdu = fits.ImageHDU(name=entry+'_WAVELENGTH', data=x[j1:j2])
-    #hdu.header['EXTNAME']=entry+'_WAVELENGTH'
     hdulist.append(hdu)
     
     cols = {}
@@ -986,6 +993,12 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
     fibermap=ff[1]
     hdu=fits.BinTableHDU.from_columns(fibermap, name='FIBERMAP')
     #hdu.header['EXTNAME']='FIBERMAP'
+    hdulist.append(hdu)
+
+  if len(scr) > 0:
+    ff=fits.open(scr[0])
+    scores=ff[1]
+    hdu=fits.BinTableHDU.from_columns(scores, name='SCORES')
     hdulist.append(hdu)
 
   hdul=fits.HDUList(hdulist)
@@ -1512,6 +1525,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
 
     if source == 'desi': #DESI data
       fibermap=hdu['FIBERMAP']
+      if 'SCORES' in enames: scores=hdu['SCORES']
       targetid=fibermap.data['TARGETID']
       if 'FIBER' in fibermap.data.names:
         fiber=fibermap.data['FIBER']
@@ -1660,6 +1674,10 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
     fmp = tbl.Table(fibermap.data) [process_target]
     hdu0 = fits.BinTableHDU(fmp)
     hdu0.writeto(os.path.join(sdir,pixel,fileroot)+'.fmp.fits')
+    if 'SCORES' in enames: 
+      scr = tbl.Table(scores.data) [process_target]
+      hdu0 = fits.BinTableHDU(scr)
+      hdu0.writeto(os.path.join(sdir,pixel,fileroot)+'.scr.fits')
 
     write_ferre_input(fileroot,ids,par,yy,eyy,path=os.path.join(sdir,pixel))
 
