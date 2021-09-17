@@ -831,6 +831,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   cols['FEH'] = array(feh)
   cols['ALPHAFE'] = array(alphafe) 
   cols['LOG10MICRO'] = array(micro)
+  cols['PARAM'] = vstack ( (feh, alphafe, micro, teff, logg) ).T
   cols['COVAR'] = array(covar).reshape(len(success),5,5)
   cols['ELEM'] = array(elem)
   cols['ELEM_ERR'] = array(elem_err)
@@ -847,6 +848,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   'FEH': 'Metallicity [Fe/H] = log10(N(Fe)/N(H)) - log10(N(Fe)/N(H))sun' ,
   'ALPHAFE': 'Alpha-to-iron ratio [alpha/Fe]',
   'LOG10MICRO': 'Log10 of Microturbulence (km/s)',
+  'PARAM': 'Array of atmospheric parameters ([Fe/H], [a/Fe], log10micro, Teff,logg)'
   'COVAR': 'Covariance matrix for ([Fe/H], [a/Fe], log10micro, Teff,logg)',
   'ELEM': 'Elemental abundance ratios to iron [elem/Fe]',
   'ELEM_ERR': 'Uncertainties in the elemental abundance ratios to iron',
