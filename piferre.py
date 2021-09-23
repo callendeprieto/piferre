@@ -265,12 +265,24 @@ def mknml(conf,root,nthreads=1,libpath='.',path='.'):
         nml['SYNTHFILE('+str(i+1)+')'] = "'"+os.path.join(libpath,synthfiles[i])+"'"
 
       #extensions provided in yaml for input/output files are not supplemented with root
-      nml['pfile'] = "'"+root+'.'+nml['pfile']+"'"
-      nml['ffile'] = "'"+root+'.'+nml['ffile']+"'"
-      nml['erfile'] = "'"+root+'.'+nml['erfile']+"'"
-      nml['opfile'] = "'"+root+'.'+nml['opfile']+"'"
-      nml['offile'] = "'"+root+'.'+nml['offile']+"'"
-      nml['sffile'] = "'"+root+'.'+nml['sffile']+"'"
+      if nml['pfile']: 
+        nml['pfile'] = "'"+root+'.'+nml['pfile']+"'"
+      else: nml['pfile'] = "'"+nml['pfile']+"'"
+      if nml['ffile']: 
+        nml['ffile'] = "'"+root+'.'+nml['ffile']+"'"
+      else: nml['ffile'] = "'"+nml['ffile']+"'"
+      if nml['erfile']: 
+        nml['erfile'] = "'"+root+'.'+nml['erfile']+"'"
+      else: nml['erfile'] = "'"+nml['erfile']+"'"
+      if nml['opfile']:  
+        nml['opfile'] = "'"+root+'.'+nml['opfile']+"'"
+      else: nml['opfile'] = "'"+nml['opfile']+"'"
+      if nml['offile']: 
+        nml['offile'] = "'"+root+'.'+nml['offile']+"'"
+      else: nml['offile'] = "'"+nml['offile']+"'"
+      if nml['sffile']: 
+        nml['sffile'] = "'"+root+'.'+nml['sffile']+"'"
+      else: nml['sffile'] = "'"+nml['sffile']+"'"
 
       #make sure tmp 'sort' files are stored in $SCRATCH for cori
       if host[:4] == 'cori':
