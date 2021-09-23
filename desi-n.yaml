@@ -30,9 +30,11 @@ n_rdesi1:
        nthreads: 1
        pfile: 'opf1'
        offile: 'mdl1'
+       sffile: ''
    Ca: 
        nov: 1
        indv: 1
+       nthreads: 1
        pfile: 'opf1'
        opfile: 'oca1'
        offile: 'mca1'
@@ -58,6 +60,7 @@ n_rdesi2:
        nthreads: 1
        pfile: 'opf2'
        offile: 'mdl2'
+       sffile: ''
 n_rdesi3:
    param:
        ndim: 3
@@ -78,6 +81,7 @@ n_rdesi3:
        nthreads: 1
        pfile: 'opf3'
        offile: 'mdl3'
+       sffile: ''
 n_rdesi4:
    param:
        ndim: 3
@@ -98,6 +102,7 @@ n_rdesi4:
        nthreads: 1
        pfile: 'opf4'
        offile: 'mdl4'
+       sffile: ''
 n_rdesi5:
    param:
        ndim: 3
@@ -118,6 +123,7 @@ n_rdesi5:
        nthreads: 1
        pfile: 'opf5'
        offile: 'mdl5'
+       sffile: ''
 n_rdesi6:
    param:
        ndim: 2
@@ -138,6 +144,7 @@ n_rdesi6:
        nthreads: 1
        pfile: 'opf6'
        offile: 'mdl6'
+       sffile: ''
 n_rdesi7:
    param:
        ndim: 2
@@ -158,6 +165,7 @@ n_rdesi7:
        nthreads: 1
        pfile: 'opf7'
        offile: 'mdl7'
+       sffile: ''
 n_rdesi8:
    param:
        ndim: 2
@@ -178,6 +186,7 @@ n_rdesi8:
        nthreads: 1
        pfile: 'opf8'
        offile: 'mdl8'
+       sffile: ''
 n_rdesi9:
    param:
        ndim: 2
@@ -198,3 +207,4 @@ n_rdesi9:
        nthreads: 1
        pfile: 'opf9'
        offile: 'mdl9'
+       sffile: ''
