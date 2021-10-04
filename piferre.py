@@ -1380,19 +1380,16 @@ def packfits(input="*.fits",output="output.fits"):
   return(None)
 
 #inspector
-def inspector(*args,sym='.',rvrange=(-1e32,1e32),
+def inspector(sptabfile,sym='.',rvrange=(-1e32,1e32),
                rarange=(0.,360.), decrange=(-90,90),  
                pmrarange=(-1e32,1e32), pmdecrange=(-1e32,1e32),
                parallaxrange=(-10000,10000),
                fehrange=(-100,100), teffrange=[0,100000],loggrange=[-100,100],
                chisq_totrange=(0.0,1e32),snr_medrange=(0,1e32),
-               title='',fig=''):
+               title='',fig='',plot=True):
 
-  for entry in args:
-    file = os.path.split(entry)[-1]
-    print('entry=',entry,' filename=',file)
-    if file[:5] == 'sptab':
-      sph=fits.open(entry)
+    if sptabfile[:5] == 'sptab':
+      sph=fits.open(sptabfile)
       spt=sph['SPTAB'].data
       fbm=sph['FIBERMAP'].data
       w=( (spt['rv_adop'] >= rvrange[0])  
@@ -1422,56 +1419,56 @@ def inspector(*args,sym='.',rvrange=(-1e32,1e32),
       fbm=fbm[w]
       n=where(w)[0]
 
-      plt.figure()
-      plt.ion()
+      if plot:
+        plt.figure()
+        plt.ion()
 
-      plt.subplot(3,2,1)
-      plt.plot(spt['feh'],spt['alphafe'],sym)
-      plt.xlabel('[Fe/H]')
-      plt.ylabel('[a/Fe]')
-      plt.title(file)
+        plt.subplot(3,2,1)
+        plt.plot(spt['feh'],spt['alphafe'],sym)
+        plt.xlabel('[Fe/H]')
+        plt.ylabel('[a/Fe]')
+        plt.title(sptabfile)
 
-      plt.subplot(3,2,2)
-      plt.hist(spt['teff'],bins=50)
-      plt.xlabel('Teff')
-      plt.ylabel('N')
-      plt.title(title)
+        plt.subplot(3,2,2)
+        plt.hist(spt['teff'],bins=50)
+        plt.xlabel('Teff')
+        plt.ylabel('N')
+        plt.title(title)
 
-      plt.subplot(3,2,3)
-      plt.plot(spt['teff'],spt['logg'],sym)
-      plt.xlabel('Teff')
-      plt.ylabel('logg')
-      plt.xlim([8000.,2000])
-      plt.ylim([5.5,-0.5])
+        plt.subplot(3,2,3)
+        plt.plot(spt['teff'],spt['logg'],sym)
+        plt.xlabel('Teff')
+        plt.ylabel('logg')
+        plt.xlim([8000.,2000])
+        plt.ylim([5.5,-0.5])
 
-      plt.subplot(3,2,4)
-      plt.plot(spt['teff'],spt['feh'],sym)
-      plt.xlabel('Teff')
-      plt.ylabel('[Fe/H]')
-      plt.xlim([8000.,2000])
-      plt.ylim([-5,1])
-
-
-      plt.subplot(3,2,5)
-      plt.hist(spt['rv_adop'],bins=50)
-      plt.xlabel('RV')
-      plt.ylabel('N')
+        plt.subplot(3,2,4)
+        plt.plot(spt['teff'],spt['feh'],sym)
+        plt.xlabel('Teff')
+        plt.ylabel('[Fe/H]')
+        plt.xlim([8000.,2000])
+        plt.ylim([-5,1])
 
 
-      plt.subplot(3,2,6)
-      plt.hist(spt['feh'],bins=50)
-      plt.xlabel('[Fe/H]')
-      plt.ylabel('N')
-      plt.text(median(spt['feh'])-0.3, 1, r'$\mu=$'+"{:5.2f}".format(mean(spt['feh'])) )
-      plt.text(median(spt['feh']), 1, r'$\sigma=$'+"{:5.2f}".format(std(spt['feh'])) )
+        plt.subplot(3,2,5)
+        plt.hist(spt['rv_adop'],bins=50)
+        plt.xlabel('RV')
+        plt.ylabel('N')
 
-      #plt.xlim([-5,1])
 
-      if fig != '': plt.savefig(fig)
+        plt.subplot(3,2,6)
+        plt.hist(spt['feh'],bins=50)
+        plt.xlabel('[Fe/H]')
+        plt.ylabel('N')
+        plt.text(median(spt['feh'])-0.3, 1, r'$\mu=$'+"{:5.2f}".format(mean(spt['feh'])) )
+        plt.text(median(spt['feh']), 1, r'$\sigma=$'+"{:5.2f}".format(std(spt['feh'])) )
 
-      plt.show()
 
-  return (mean(spt['feh']),std(spt['feh']),mean(sqrt(spt['covar'][:,0,0])), std(sqrt(spt['covar'][:,0,0])), mean(spt['alphafe']),std(spt['alphafe']), mean(sqrt(spt['covar'][:,0,0])), std(sqrt(spt['covar'][:,0,0])) )
+        if fig != '': plt.savefig(fig)
+
+        plt.show()
+
+    return (spt,fbm)
 
 #process a single pixel
 def do(path, pixel, sdir='', truth=None, nthreads=1,minutes=120, rvpath=None, 
