@@ -1388,11 +1388,10 @@ def inspector(sptabfile,sym='.',rvrange=(-1e32,1e32),
                chisq_totrange=(0.0,1e32),snr_medrange=(0,1e32),
                title='',fig='',plot=True):
 
-    if sptabfile[:5] == 'sptab':
-      sph=fits.open(sptabfile)
-      spt=sph['SPTAB'].data
-      fbm=sph['FIBERMAP'].data
-      w=( (spt['rv_adop'] >= rvrange[0])  
+    sph=fits.open(sptabfile)
+    spt=sph['SPTAB'].data
+    fbm=sph['FIBERMAP'].data
+    w=( (spt['rv_adop'] >= rvrange[0])  
         & (spt['rv_adop'] <= rvrange[1])   
         & (spt['feh'] >= fehrange[0])
         & (spt['feh'] <= fehrange[1]) 
@@ -1415,11 +1414,11 @@ def inspector(sptabfile,sym='.',rvrange=(-1e32,1e32),
         & (fbm['pmdec'] >= pmdecrange[0])
         & (fbm['pmdec'] <= pmdecrange[1]) )
 
-      spt=spt[w]
-      fbm=fbm[w]
-      n=where(w)[0]
+    spt=spt[w]
+    fbm=fbm[w]
+    n=where(w)[0]
 
-      if plot:
+    if plot:
         plt.figure()
         plt.ion()
 
