@@ -1344,8 +1344,9 @@ def packfits(input="*.fits",output="output.fits"):
 
   print('reading ... ',f[0])
   hdul1 = fits.open(f[0])
-  hdulist = [ hdul1[0] ]
-  for entry in f[1:]:       
+  hdu0 = hdul1[0]
+  for entry in f[1:]:
+    hdulist = [hdu0]       
     print('reading ... ',entry)
     hdul2 = fits.open(entry)
     for i in arange(len(hdul1)-1)+1:
