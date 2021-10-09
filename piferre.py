@@ -1344,7 +1344,7 @@ def packfits(input="*.fits",output="output.fits"):
 
   print('reading ... ',f[0])
   hdul1 = fits.open(f[0])
-  hdu0 = hdul1[0]
+  hdulist = [ hdul1[0] ]
   for entry in f[1:]:       
     print('reading ... ',entry)
     hdul2 = fits.open(entry)
@@ -1368,12 +1368,9 @@ def packfits(input="*.fits",output="output.fits"):
         hdu = fits.PrimaryHDU(vstack( (hdul1[i].data, hdul2[i].data) ))
         hdu.header['EXTNAME'] = hdul1[i].header['EXTNAME']
 
-      if i == 1: 
-        hdu1 = hdu 
-      else: 
-        hdu2 = hdu 
+      hdulist.append(hdu) 
 
-    hdul1 = fits.HDUList([hdu0,hdu1,hdu2])
+    hdul1 = fits.HDUList(hdulist)
 
   hdul1.writeto(output)
 
