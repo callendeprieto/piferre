@@ -4,7 +4,7 @@
 '''
 Interface to use FERRE from python for DESI/BOSS data
 
-use: piferre -sp path-to-spectra [-rv rvpath -l libpath -spt sptype -rvt rvtype -c config -n nthreads -m minutes  -t truthfile ]
+use: piferre -sp path-to-spectra [-rv rvpath -l libpath -spt sptype -rvt rvtype -c config -n nthreads -m minutes_per_spectrum  -t truthfile ]
 
 e.g. piferre -sp /data/spectro/redux/dc17a2/spectra-64 
 
@@ -82,7 +82,7 @@ def read_synth(synthfile):
     return header,data
 
 #create a slurm script for a given pixel
-def write_slurm(root,nthreads=1,minutes=288,path=None,ngrids=None, 
+def write_slurm(root,nthreads=1,minutes=102,path=None,ngrids=None, 
 config='desi-n.yaml'):
     ferre=os.environ['HOME']+"/ferre/src/a.out"
     python_path=os.environ['HOME']+"/piferre"
@@ -1472,7 +1472,7 @@ def inspector(sptabfile,sym='.',rvrange=(-1e32,1e32),
     return (spt,fbm)
 
 #process a single pixel
-def do(path, pixel, sdir='', truth=None, nthreads=1,minutes=120, rvpath=None, 
+def do(path, pixel, sdir='', truth=None, nthreads=1, minutes_per_spectrum=0.2, rvpath=None, 
 libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
   
   #get input data files
@@ -1690,6 +1690,8 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
       hdu0.writeto(os.path.join(sdir,pixel,fileroot)+'.scr.fits')
 
     write_ferre_input(fileroot,ids,par,yy,eyy,path=os.path.join(sdir,pixel))
+     
+    minutes= 2. + npass*minutes_per_spectrum
 
     #write slurm script
     write_slurm(fileroot,path=os.path.join(sdir,pixel),
@@ -1747,10 +1749,10 @@ def main(args):
                       help='number of threads per FERRE job',
                       default=32)
 
-  parser.add_argument('-m','--minutes',
+  parser.add_argument('-m','--minutes_per_spectrum',
                       type=int,
-                      help='requested CPU time in minutes per FERRE job',
-                      default=120)
+                      help='requested CPU time in minutes per spectrum',
+                      default=0.2)
                       
   parser.add_argument('-t','--truthfile',
                       type=str,
@@ -1770,7 +1772,7 @@ def main(args):
 
   config=args.config
   nthreads=args.nthreads
-  minutes=args.minutes
+  minutes_per_spectrum=args.minutes_per_spectrum
 
   truthfile=args.truthfile
   if (truthfile is not None):  truthtuple=read_truth(truthfile)
@@ -1794,13 +1796,13 @@ def main(args):
     if not os.path.exists(os.path.join(sdir,pixel)): 
       os.mkdir(os.path.join(sdir,pixel))
 
-    pararr = [sppath,pixel,sdir,truthtuple,nthreads, minutes, 
+    pararr = [sppath,pixel,sdir,truthtuple,nthreads, minutes_per_spectrum, 
        rvpath, libpath, sptype, rvtype, config]
 
     #do(sppath,pixel,sdir=sdir,truth=truthtuple, 
     #   rvpath=rvpath, libpath=libpath, 
     #   sptype=sptype, rvtype=rvtype,
-    #   nthreads=nthreads, minutes=minutes, config=config)
+    #   nthreads=nthreads, minutes_per_spectrum=minutes_per_spectrum, config=config)
 
     #run(pixel,path=os.path.join(sdir,pixel))
 
