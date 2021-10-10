@@ -1380,7 +1380,7 @@ def packfits(input="*.fits",output="output.fits"):
 #inspector
 def inspector(sptabfile,sym='.',rvrange=(-1e32,1e32),
                rarange=(0.,360.), decrange=(-90,90),  
-               pmrarange=(-1e32,1e32), pmdecrange=(-1e32,1e32),
+               pmrarange=(-1e10,1e10), pmdecrange=(-1e10,1e10),
                parallaxrange=(-10000,10000),
                fehrange=(-100,100), teffrange=[0,100000],loggrange=[-100,100],
                chisq_totrange=(0.0,1e32),snr_medrange=(0,1e32),
@@ -1457,8 +1457,11 @@ def inspector(sptabfile,sym='.',rvrange=(-1e32,1e32),
         plt.hist(spt['feh'],bins=50)
         plt.xlabel('[Fe/H]')
         plt.ylabel('N')
-        plt.text(median(spt['feh'])-0.3, 1, r'$\mu=$'+"{:5.2f}".format(mean(spt['feh'])) )
-        plt.text(median(spt['feh']), 1, r'$\sigma=$'+"{:5.2f}".format(std(spt['feh'])) )
+        me = median(spt['feh'])
+        mm = mean(spt['feh'])
+        ss = std(spt['feh'])
+        plt.text(me-2*ss, 1, r'$\mu=$'+"{:5.2f}".format(mm) )
+        plt.text(me+2*ss, 1, r'$\sigma=$'+"{:5.2f}".format(ss) )
 
 
         if fig != '': plt.savefig(fig)
