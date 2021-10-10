@@ -1418,30 +1418,31 @@ def inspector(sptabfile,sym='.',rvrange=(-1e32,1e32),
 
     if plot:
         plt.figure()
+        plt.tight_layout()
         plt.ion()
 
         plt.subplot(3,2,1)
         plt.plot(spt['feh'],spt['alphafe'],sym)
-        plt.xlabel('[Fe/H]')
+        plt.xlabel('[Fe/H]',labelpad=0)
         plt.ylabel('[a/Fe]')
         plt.title(sptabfile)
 
         plt.subplot(3,2,2)
         plt.hist(spt['teff'],bins=50)
-        plt.xlabel('Teff')
+        plt.xlabel('Teff',labelpad=0)
         plt.ylabel('N')
         plt.title(title)
 
         plt.subplot(3,2,3)
         plt.plot(spt['teff'],spt['logg'],sym)
-        plt.xlabel('Teff')
+        plt.xlabel('Teff',labelpad=0)
         plt.ylabel('logg')
         plt.xlim([8000.,2000])
         plt.ylim([5.5,-0.5])
 
         plt.subplot(3,2,4)
         plt.plot(spt['teff'],spt['feh'],sym)
-        plt.xlabel('Teff')
+        plt.xlabel('Teff',labelpad=0)
         plt.ylabel('[Fe/H]')
         plt.xlim([8000.,2000])
         plt.ylim([-5,1])
@@ -1449,13 +1450,13 @@ def inspector(sptabfile,sym='.',rvrange=(-1e32,1e32),
 
         plt.subplot(3,2,5)
         plt.hist(spt['rv_adop'],bins=50)
-        plt.xlabel('RV')
+        plt.xlabel('RV',labelpad=0)
         plt.ylabel('N')
 
 
         plt.subplot(3,2,6)
         plt.hist(spt['feh'],bins=50)
-        plt.xlabel('[Fe/H]')
+        plt.xlabel('[Fe/H]',labelpad=0)
         plt.ylabel('N')
         me = median(spt['feh'])
         mm = mean(spt['feh'])
