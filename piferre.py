@@ -4,7 +4,7 @@
 '''
 Interface to use FERRE from python for DESI/BOSS data
 
-use: piferre -sp path-to-spectra [-rv rvpath -l libpath -spt sptype -rvt rvtype -c config -n nthreads -m minutes_per_spectrum  -t truthfile ]
+use: piferre -sp path-to-spectra [-rv rvpath -l libpath -spt sptype -rvt rvtype -c config -n nthreads -t time_per_spectrum  -t truthfile ]
 
 e.g. piferre -sp /data/spectro/redux/dc17a2/spectra-64 
 
@@ -13,6 +13,7 @@ Author C. Allende Prieto
 import pdb
 import sys
 import os
+import platform
 import glob
 import re
 import importlib
@@ -99,7 +100,7 @@ config='desi-n.yaml'):
     f.write("#!/bin/bash \n")
     f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
     f.write("#This script was written by piferre.py on "+now+" \n") 
-    f.write("#SBATCH --time="+str(minutes)+"\n") #minutes
+    f.write("#SBATCH --time="+str(int(minutes)+1)+"\n") #minutes
     f.write("#SBATCH --ntasks=1" + "\n")
     if host[:4] == 'cori':
       f.write("#SBATCH --qos=regular" + "\n")
@@ -703,6 +704,50 @@ def get_versions():
 
   return(ver)
 
+#get the maximum value of 'ellapsed time' (wall time) in all ferre std. output (log_*) files
+def get_ferre_timings(proot):
+
+  seconds = 0.
+  logfiles=glob.glob(proot+'.log_*')
+  for entry in logfiles:
+    f=open(entry, 'rb')
+    f.seek(-2, os.SEEK_END)
+    while f.read(1) != b'\n':
+      f.seek(-2, os.SEEK_CUR)
+    last_line = f.readline().decode()
+    flds = last_line.split()
+    if float(flds[2]) > seconds: seconds=float(flds[2])
+
+  return(seconds)
+
+#get the time assigned in slurm for the calculation 
+def get_slurm_timings(proot):
+
+  seconds = nan
+  f=open(proot+'.slurm','r')
+  for line in f:
+    if '--time' in line:
+      entries = line.split()
+      minutes = float(entries[1][7:])
+      seconds = minutes*60.
+      break
+
+  return(seconds)
+
+#get the number of threads assigned in slurm for the calculation 
+def get_slurm_threads(proot):
+
+  nthreads = nan
+  f=open(proot+'.slurm','r')
+  for line in f:
+    if '--cpus-per-task' in line:
+      entries = line.split()
+      nthreads = int(entries[1][16:])
+      break
+
+  return(nthreads)
+  
+
 #write piferre param. output
 def write_tab_fits(root, path=None, config='desi-n.yaml'):
   
@@ -828,6 +873,28 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   hdu0.header['DATE'] = nowstr
   hdu0.header['FCONFIG'] = config
 
+  #find out host machine and add info to header
+  try:
+    host=os.environ['HOST']
+  except:
+    host='Unknown'
+  hdu0.header['HOST'] = host
+  #find out OS name/platform
+  osname = os.name 
+  platf = platform.system() + ' '+ platform.release()
+  hdu0.header['OS'] = osname
+  hdu0.header['PLATFORM'] = platf
+
+  #keep track of the number of targets processed and the time it took
+  nspec = len(targetid)
+  hdu0.header['NSPEC'] = nspec
+  ftiming = get_ferre_timings(proot)
+  hdu0.header['FTIME'] = ftiming
+  stiming = get_slurm_timings(proot)
+  hdu0.header['STIME'] = stiming
+  nthreads = get_slurm_threads(proot)
+  hdu0.header['NTHREADS'] = nthreads
+
   #get versions and enter then in primary header
   ver = get_versions()
   for entry in ver.keys(): hdu0.header[entry] = ver[entry]
@@ -899,7 +966,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   hdul.writeto('sptab_'+root+'.fits')
   
   return None
-  
+
 #write piferre spec. output  
 def write_mod_fits(root, path=None, config='desi-n.yaml'):  
   
@@ -946,6 +1013,28 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
   nowstr = nowstr[:nowstr.rfind('.')]
   hdu0.header['DATE'] = nowstr
   hdu0.header['FCONFIG'] = config
+
+  #find out host machine and add info to header
+  try:
+    host=os.environ['HOST']
+  except:
+    host='Unknown'
+  hdu0.header['HOST'] = host
+  #find out OS name/platform
+  osname = os.name 
+  platf = platform.system() + ' '+ platform.release()
+  hdu0.header['OS'] = osname
+  hdu0.header['PLATFORM'] = platf
+
+  #keep track of the number of targets processed and the time it took
+  nspec = len(mdata)
+  hdu0.header['NSPEC'] = nspec
+  ftiming = get_ferre_timings(proot)
+  hdu0.header['FTIME'] = ftiming
+  stiming = get_slurm_timings(proot)
+  hdu0.header['STIME'] = stiming
+  nthreads = get_slurm_threads(proot)
+  hdu0.header['NTHREADS'] = nthreads
 
   #get versions and enter then in primary header
   ver = get_versions()
@@ -1472,7 +1561,7 @@ def inspector(sptabfile,sym='.',rvrange=(-1e32,1e32),
     return (spt,fbm)
 
 #process a single pixel
-def do(path, pixel, sdir='', truth=None, nthreads=1, minutes_per_spectrum=0.2, rvpath=None, 
+def do(path, pixel, sdir='', truth=None, nthreads=1, seconds_per_spectrum=10., rvpath=None, 
 libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
   
   #get input data files
@@ -1691,7 +1780,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
 
     write_ferre_input(fileroot,ids,par,yy,eyy,path=os.path.join(sdir,pixel))
      
-    minutes= 2. + npass*minutes_per_spectrum
+    minutes= 2. + npass*seconds_per_spectrum/60.
 
     #write slurm script
     write_slurm(fileroot,path=os.path.join(sdir,pixel),
@@ -1749,10 +1838,10 @@ def main(args):
                       help='number of threads per FERRE job',
                       default=32)
 
-  parser.add_argument('-m','--minutes_per_spectrum',
+  parser.add_argument('-s','--seconds_per_spectrum',
                       type=int,
-                      help='requested CPU time in minutes per spectrum',
-                      default=0.2)
+                      help='requested CPU time in seconds per spectrum',
+                      default=10.)
                       
   parser.add_argument('-t','--truthfile',
                       type=str,
@@ -1772,7 +1861,7 @@ def main(args):
 
   config=args.config
   nthreads=args.nthreads
-  minutes_per_spectrum=args.minutes_per_spectrum
+  seconds_per_spectrum=args.seconds_per_spectrum
 
   truthfile=args.truthfile
   if (truthfile is not None):  truthtuple=read_truth(truthfile)
@@ -1796,13 +1885,13 @@ def main(args):
     if not os.path.exists(os.path.join(sdir,pixel)): 
       os.mkdir(os.path.join(sdir,pixel))
 
-    pararr = [sppath,pixel,sdir,truthtuple,nthreads, minutes_per_spectrum, 
+    pararr = [sppath,pixel,sdir,truthtuple,nthreads, seconds_per_spectrum, 
        rvpath, libpath, sptype, rvtype, config]
 
     #do(sppath,pixel,sdir=sdir,truth=truthtuple, 
     #   rvpath=rvpath, libpath=libpath, 
     #   sptype=sptype, rvtype=rvtype,
-    #   nthreads=nthreads, minutes_per_spectrum=minutes_per_spectrum, config=config)
+    #   nthreads=nthreads, seconds_per_spectrum=seconds_per_spectrum, config=config)
 
     #run(pixel,path=os.path.join(sdir,pixel))
 
