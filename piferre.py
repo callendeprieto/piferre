@@ -891,6 +891,12 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   hdu0.header['STIME'] = stiming
   ncores = get_slurm_cores(proot)
   hdu0.header['NCORES'] = ncores
+  #gather config. info
+  ydir = os.path.dirname(os.path.realpath(__file__))
+  yfile=open(os.path.join(ydir,config),'r')
+  #conf=yaml.full_load(yfile)
+  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
+  yfile.close()
   global_conf=dict(conf['global'])
   hdu0.header['NTHREADS'] = global_conf['nthreads']
 
@@ -1034,6 +1040,12 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
   hdu0.header['STIME'] = stiming
   ncores = get_slurm_cores(proot)
   hdu0.header['NCORES'] = ncores
+  #gather config. info
+  ydir = os.path.dirname(os.path.realpath(__file__))
+  yfile=open(os.path.join(ydir,config),'r')
+  #conf=yaml.full_load(yfile)
+  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
+  yfile.close()
   global_conf=dict(conf['global'])
   hdu0.header['NTHREADS'] = global_conf['nthreads']
 
