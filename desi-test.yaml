@@ -1,5 +1,6 @@
 bands: ['b', 'r', 'z']
 grids: ['n_rdesi1', 'n_rdesi2', 'n_rdesi3', 'n_rdesi4', 'n_rdesi5', 'n_rdesi6', 'n_rdesi7', 'n_rdesi8', 'n_rdesi9']
+seconds_per_spectrum: 1.
 global:
     algor: 3
     f_format: 1
@@ -28,6 +29,7 @@ n_rdesi1:
        ndim: 3
        nov: 1
        indv:  2
+       indi: 1 2 3
        cont: 3
        ncont: 100
        nthreads: 1

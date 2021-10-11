@@ -1,5 +1,6 @@
 bands: ['b', 'r', 'z']
 grids: ['m_rdesi1', 'm_rdesi2', 'm_rdesi3', 'm_rdesi4', 'm_rdesi5', 'm_rdesi6', 'm_rdesi7', 'm_rdesi8', 'm_rdesi9']
+seconds_per_spectrum: 10.
 global:
     algor: 3
     f_format: 1

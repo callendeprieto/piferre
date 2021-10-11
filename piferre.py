@@ -4,7 +4,7 @@
 '''
 Interface to use FERRE from python for DESI/BOSS data
 
-use: piferre -sp path-to-spectra [-rv rvpath -l libpath -spt sptype -rvt rvtype -c config -n nthreads -t time_per_spectrum  -t truthfile ]
+use: piferre -sp path-to-spectra [-rv rvpath -l libpath -spt sptype -rvt rvtype -c config -n cores  -t truthfile ]
 
 e.g. piferre -sp /data/spectro/redux/dc17a2/spectra-64 
 
@@ -83,7 +83,7 @@ def read_synth(synthfile):
     return header,data
 
 #create a slurm script for a given pixel
-def write_slurm(root,nthreads=1,minutes=102,path=None,ngrids=None, 
+def write_slurm(root,ncores=1,minutes=102,path=None,ngrids=None, 
 config='desi-n.yaml'):
     ferre=os.environ['HOME']+"/ferre/src/a.out"
     python_path=os.environ['HOME']+"/piferre"
@@ -107,20 +107,18 @@ config='desi-n.yaml'):
       f.write("#SBATCH --constraint=haswell" + "\n")
       #f.write("#SBATCH --time="+str(minutes)+"\n") #minutes
       #f.write("#SBATCH --ntasks=1" + "\n")
-      f.write("#SBATCH --cpus-per-task="+str(nthreads*2)+"\n")
+      f.write("#SBATCH --cpus-per-task="+str(ncores*2)+"\n")
       f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
-      #f.write("export OMP_NUM_THREADS="+str(nthreads*2)+"\n")
     else:
       #f.write("#SBATCH  -J "+str(root)+" \n")
       #f.write("#SBATCH  -o "+str(root)+"_%j.out"+" \n")
       #f.write("#SBATCH  -e "+str(root)+"_%j.err"+" \n")
-      f.write("#SBATCH --cpus-per-task="+str(nthreads)+"\n")
+      f.write("#SBATCH --cpus-per-task="+str(ncores)+"\n")
       #hours2 = int(minutes/60) 
       #minutes2 = minutes%60
       #f.write("#SBATCH  -t "+"{:02d}".format(hours2)+":"+"{:02d}".format(minutes2)+":00"+"\n") #hh:mm:ss
       #f.write("#SBATCH  -D "+os.path.abspath(path)+" \n")    
       f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
-      #f.write("export OMP_NUM_THREADS="+str(nthreads)+"\n")
  
     f.write("cd "+os.path.abspath(path)+"\n")
     for i in range(ngrids):
@@ -216,7 +214,7 @@ def cleanup(root):
   return
   
 #create a FERRE control hash (content for a ferre input.nml file)
-def mknml(conf,root,nthreads=1,libpath='.',path='.'):
+def mknml(conf,root,libpath='.',path='.'):
 
   try: 
     host=os.environ['HOST']
@@ -258,9 +256,8 @@ def mknml(conf,root,nthreads=1,libpath='.',path='.'):
       #check that inter is feasible with this particular grid
       if 'inter' in nml:
         if (min(n_p)-1 < nml['inter']): nml['inter']=min(n_p)-1
-      #nthreads from command line is for the slurm job, the ferre omp nthreads should come from the config yaml file
-      #nml['nthreads']=nthreads
-      #from the actual grid
+      #ncores from command line is for the slurm job, 
+      #the ferre omp nthreads should come from the config yaml file
       nml['ndim']=ndim
       for i in range(len(synthfiles)): 
         nml['SYNTHFILE('+str(i+1)+')'] = "'"+os.path.join(libpath,synthfiles[i])+"'"
@@ -734,18 +731,18 @@ def get_slurm_timings(proot):
 
   return(seconds)
 
-#get the number of threads assigned in slurm for the calculation 
-def get_slurm_threads(proot):
+#get the number of cores assigned in slurm for the calculation 
+def get_slurm_cores(proot):
 
-  nthreads = nan
+  ncores = nan
   f=open(proot+'.slurm','r')
   for line in f:
     if '--cpus-per-task' in line:
       entries = line.split()
-      nthreads = int(entries[1][16:])
+      ncores = int(entries[1][16:])
       break
 
-  return(nthreads)
+  return(ncores)
   
 
 #write piferre param. output
@@ -892,8 +889,10 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   hdu0.header['FTIME'] = ftiming
   stiming = get_slurm_timings(proot)
   hdu0.header['STIME'] = stiming
-  nthreads = get_slurm_threads(proot)
-  hdu0.header['NTHREADS'] = nthreads
+  ncores = get_slurm_cores(proot)
+  hdu0.header['NCORES'] = ncores
+  global_conf=dict(conf['global'])
+  hdu0.header['NTHREADS'] = global_conf['nthreads']
 
   #get versions and enter then in primary header
   ver = get_versions()
@@ -1033,8 +1032,10 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
   hdu0.header['FTIME'] = ftiming
   stiming = get_slurm_timings(proot)
   hdu0.header['STIME'] = stiming
-  nthreads = get_slurm_threads(proot)
-  hdu0.header['NTHREADS'] = nthreads
+  ncores = get_slurm_cores(proot)
+  hdu0.header['NCORES'] = ncores
+  global_conf=dict(conf['global'])
+  hdu0.header['NTHREADS'] = global_conf['nthreads']
 
   #get versions and enter then in primary header
   ver = get_versions()
@@ -1561,7 +1562,7 @@ def inspector(sptabfile,sym='.',rvrange=(-1e32,1e32),
     return (spt,fbm)
 
 #process a single pixel
-def do(path, pixel, sdir='', truth=None, nthreads=1, seconds_per_spectrum=10., rvpath=None, 
+def do(path, pixel, sdir='', truth=None, ncores=1, rvpath=None, 
 libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
   
   #get input data files
@@ -1595,6 +1596,10 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
   grids=conf['grids']
   #print('grids=',grids)
   bands=conf['bands']
+  if conf['seconds_per_spectrum']: 
+    seconds_per_spectrum=conf['seconds_per_spectrum']
+  else:
+    seconds_per_spectrum=10.
 
 
   #loop over possible multiple data files in the same pixel
@@ -1784,11 +1789,11 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
 
     #write slurm script
     write_slurm(fileroot,path=os.path.join(sdir,pixel),
-            ngrids=len(grids),nthreads=nthreads, minutes=minutes, config=config)
+            ngrids=len(grids),ncores=ncores, minutes=minutes, config=config)
 
 
     #loop over all grids
-    mknml(conf,fileroot,nthreads=nthreads,libpath=libpath,path=os.path.join(sdir,pixel))
+    mknml(conf,fileroot,libpath=libpath,path=os.path.join(sdir,pixel))
 
     #run ferre
     #ferrerun(path=os.path.join(sdir,pixel))
@@ -1833,15 +1838,10 @@ def main(args):
                       help='yaml configuration file for FERRE runs',
                       default='desi-n.yaml')
 
-  parser.add_argument('-n','--nthreads',
+  parser.add_argument('-n','--ncores',
                       type=int,
-                      help='number of threads per FERRE job',
+                      help='number of cores per slurm job',
                       default=32)
-
-  parser.add_argument('-s','--seconds_per_spectrum',
-                      type=int,
-                      help='requested CPU time in seconds per spectrum',
-                      default=10.)
                       
   parser.add_argument('-t','--truthfile',
                       type=str,
@@ -1860,8 +1860,7 @@ def main(args):
   rvtype=args.rvtype
 
   config=args.config
-  nthreads=args.nthreads
-  seconds_per_spectrum=args.seconds_per_spectrum
+  ncores=args.ncores
 
   truthfile=args.truthfile
   if (truthfile is not None):  truthtuple=read_truth(truthfile)
@@ -1885,13 +1884,13 @@ def main(args):
     if not os.path.exists(os.path.join(sdir,pixel)): 
       os.mkdir(os.path.join(sdir,pixel))
 
-    pararr = [sppath,pixel,sdir,truthtuple,nthreads, seconds_per_spectrum, 
+    pararr = [sppath,pixel,sdir,truthtuple,ncores, 
        rvpath, libpath, sptype, rvtype, config]
 
     #do(sppath,pixel,sdir=sdir,truth=truthtuple, 
     #   rvpath=rvpath, libpath=libpath, 
     #   sptype=sptype, rvtype=rvtype,
-    #   nthreads=nthreads, seconds_per_spectrum=seconds_per_spectrum, config=config)
+    #   ncores=ncores,  config=config)
 
     #run(pixel,path=os.path.join(sdir,pixel))
 
