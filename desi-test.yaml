@@ -26,20 +26,12 @@ n_rdesi1:
        llimits: -5. 3500. 0.0
        steps:  0.5  500.  1.0
    teff:
-       ndim: 3
        nov: 1
        indv:  2
-       indi: 1 2 3
-       cont: 3
-       ncont: 100
+       indi: 2 3 1 
        nthreads: 1
        pfile: 'opt1'
        opfile: 'opf1'
-       offile: 'ndl1'
-       sffile: 'nrd1'
-       labels:  ['[Fe/H]',  'Teff',  'logg']
-       llimits: -5. 3500. 0.0
-       steps:  0.5  500.  1.0
    cal: 
        nov: 0
        cont: 0
@@ -64,12 +56,19 @@ n_rdesi2:
        cont: 3
        ncont: 100
        pfile: 'vrd'
-       opfile: 'opf2'
+       opfile: 'opt2'
        offile: 'ndl2'
        sffile: 'nrd2'
        labels:  ['[Fe/H]',  'Teff',  'logg']
        llimits:  -5.  5500.  1.0
        steps: 0.5 500. 1.0
+   teff:
+        nov: 1 
+        indv:  2
+        ini: 2 3 1
+        nthreads: 1
+        pfile: 'opt2'
+        opfile: 'opf2'
    cal: 
        nov: 0
        cont: 0
@@ -85,12 +84,19 @@ n_rdesi3:
        cont: 3
        ncont: 100
        pfile: 'vrd'
-       opfile: 'opf3'
+       opfile: 'opt3'
        offile: 'ndl3'
        sffile: 'nrd3'
        labels:  ['[Fe/H]',  'Teff',  'logg']
        llimits: -5.  7000.  2.0
        steps: 0.5 1000. 1.0
+   teff:
+       nov: 1
+       indv: 2
+       ini: 2 3 1
+       nthreads: 1
+       pfile: 'opt3'
+       opfile: 'opf3'
    cal: 
        nov: 0
        cont: 0
@@ -106,12 +112,19 @@ n_rdesi4:
        cont: 3
        ncont: 100
        pfile: 'vrd'
-       opfile: 'opf4'
+       opfile: 'opt4'
        offile: 'ndl4'
        sffile: 'nrd4'
        labels:  ['[Fe/H]',  'Teff',  'logg']
        llimits: -5. 10000. 3.0
        steps: 0.5  2000. 1.0
+   teff: 
+       nov: 1
+       indv: 2
+       ini: 2 3 1
+       nthreads: 1
+       pfile: 'opt4'
+       opfile: 'opf4'
    cal: 
        nov: 0
        cont: 0
@@ -127,12 +140,19 @@ n_rdesi5:
        cont: 3
        ncont: 100
        pfile: 'vrd'
-       opfile: 'opf5'
+       opfile: 'opt5'
        offile: 'ndl5'
        sffile: 'nrd5'
        labels: [ '[Fe/H]',  'Teff', 'logg']
        llimits: -5. 20000. 4.0
        steps: 0.5 5000. 1.0
+   teff: 
+        nov: 1
+        indv: 2
+        ini: 2 3 1
+        nthreads: 1
+        pfile: 'opt5'
+        opfile: 'opf5'
    cal: 
        nov: 0
        cont: 0

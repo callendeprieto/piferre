@@ -189,6 +189,7 @@ def cleanup(root):
   vrdfiles = glob.glob(root+'*vrd')
   wavefiles = glob.glob(root+'*wav')
   opffiles = glob.glob(root+'*opf*')
+  optfiles = glob.glob(root+'*opt*')
   nmlfiles = glob.glob('input.nml-'+root+'*')
   lstfiles = glob.glob('input.lst-'+root+'*')
   errfiles = glob.glob(root+'*err')
@@ -201,7 +202,7 @@ def cleanup(root):
   logfiles = glob.glob(root+'.log*')
   slurmfiles = glob.glob(root+'*slurm')
   abufiles = glob.glob(root+'*.?ca?')
-  allfiles = vrdfiles + wavefiles + opffiles + nmlfiles + lstfiles + \
+  allfiles = vrdfiles + wavefiles + opffiles + optfiles + nmlfiles + lstfiles + \
               errfiles + frdfiles + nrdfiles + mdlfiles + ndlfiles + \
               fmpfiles + scrfiles + logfiles + slurmfiles + abufiles
 
