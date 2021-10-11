@@ -9,6 +9,7 @@ global:
     inter: 3
     ffile: 'frd'
     erfile: 'err'   
+    nthreads: 4
 n_rdesi1:
    param:
        ndim: 3
@@ -17,8 +18,21 @@ n_rdesi1:
        cont: 3
        ncont: 100
        pfile: 'vrd'
+       opfile: 'opt1'
+       offile: 'ndl1'
+       sffile: 'nrd1'
+       labels:  ['[Fe/H]',  'Teff',  'logg']
+       llimits: -5. 3500. 0.0
+       steps:  0.5  500.  1.0
+   teff:
+       ndim: 3
+       nov: 1
+       indv:  2
+       cont: 3
+       ncont: 100
+       pfile: 'opt1'
        opfile: 'opf1'
-       offile: 'mdl1'
+       offile: 'ndl1'
        sffile: 'nrd1'
        labels:  ['[Fe/H]',  'Teff',  'logg']
        llimits: -5. 3500. 0.0
@@ -26,8 +40,19 @@ n_rdesi1:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf1'
        offile: 'mdl1'
+       sffile: ''
+   Ca: 
+       nov: 1
+       indv: 1
+       nthreads: 1
+       pfile: 'opf1'
+       opfile: 'oca1'
+       offile: 'mca1'
+       sffile: 'nca1'
+       labels:  ['[Ca/H]',  'Teff',  'logg']
 n_rdesi2:
    param:
        ndim: 3
@@ -37,7 +62,7 @@ n_rdesi2:
        ncont: 100
        pfile: 'vrd'
        opfile: 'opf2'
-       offile: 'mdl2'
+       offile: 'ndl2'
        sffile: 'nrd2'
        labels:  ['[Fe/H]',  'Teff',  'logg']
        llimits:  -5.  5500.  1.0
@@ -45,8 +70,10 @@ n_rdesi2:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf2'
        offile: 'mdl2'
+       sffile: ''
 n_rdesi3:
    param:
        ndim: 3
@@ -56,7 +83,7 @@ n_rdesi3:
        ncont: 100
        pfile: 'vrd'
        opfile: 'opf3'
-       offile: 'mdl3'
+       offile: 'ndl3'
        sffile: 'nrd3'
        labels:  ['[Fe/H]',  'Teff',  'logg']
        llimits: -5.  7000.  2.0
@@ -64,8 +91,10 @@ n_rdesi3:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf3'
        offile: 'mdl3'
+       sffile: ''
 n_rdesi4:
    param:
        ndim: 3
@@ -75,7 +104,7 @@ n_rdesi4:
        ncont: 100
        pfile: 'vrd'
        opfile: 'opf4'
-       offile: 'mdl4'
+       offile: 'ndl4'
        sffile: 'nrd4'
        labels:  ['[Fe/H]',  'Teff',  'logg']
        llimits: -5. 10000. 3.0
@@ -83,8 +112,10 @@ n_rdesi4:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf4'
        offile: 'mdl4'
+       sffile: ''
 n_rdesi5:
    param:
        ndim: 3
@@ -94,7 +125,7 @@ n_rdesi5:
        ncont: 100
        pfile: 'vrd'
        opfile: 'opf5'
-       offile: 'mdl5'
+       offile: 'ndl5'
        sffile: 'nrd5'
        labels: [ '[Fe/H]',  'Teff', 'logg']
        llimits: -5. 20000. 4.0
@@ -102,8 +133,10 @@ n_rdesi5:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf5'
        offile: 'mdl5'
+       sffile: ''
 n_rdesi6:
    param:
        ndim: 2
@@ -113,7 +146,7 @@ n_rdesi6:
        ncont: 300
        pfile: 'vrd'
        opfile: 'opf6'
-       offile: 'mdl6'
+       offile: 'ndl6'
        sffile: 'nrd6'
        labels: ['Teff' ,'logg']
        llimits: 6000.00      7.00000
@@ -121,8 +154,10 @@ n_rdesi6:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf6'
        offile: 'mdl6'
+       sffile: ''
 n_rdesi7:
    param:
        ndim: 2
@@ -132,7 +167,7 @@ n_rdesi7:
        ncont: 300
        pfile: 'vrd'
        opfile: 'opf7'
-       offile: 'mdl7'
+       offile: 'ndl7'
        sffile: 'nrd7'
        labels: ['Teff', 'logg']
        llimits: 10000.00       7.00000
@@ -140,8 +175,10 @@ n_rdesi7:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf7'
        offile: 'mdl7'
+       sffile: ''
 n_rdesi8:
    param:
        ndim: 2
@@ -151,7 +188,7 @@ n_rdesi8:
        ncont: 300
        pfile: 'vrd'
        opfile: 'opf8'
-       offile: 'mdl8'
+       offile: 'ndl8'
        sffile: 'nrd8'
        labels: ['Teff', 'logg']
        llimits: 10000.00       7.00000
@@ -159,8 +196,10 @@ n_rdesi8:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf8'
        offile: 'mdl8'
+       sffile: ''
 n_rdesi9:
    param:
        ndim: 2
@@ -170,7 +209,7 @@ n_rdesi9:
        ncont: 300
        pfile: 'vrd'
        opfile: 'opf9'
-       offile: 'mdl9'
+       offile: 'ndl9'
        sffile: 'nrd9'
        labels: [ 'Teff', 'logg']
        llimits:  15000.00       7.00000
@@ -178,5 +217,7 @@ n_rdesi9:
    cal: 
        nov: 0
        cont: 0
+       nthreads: 1
        pfile: 'opf9'
        offile: 'mdl9'
+       sffile: ''
