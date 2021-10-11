@@ -30,6 +30,7 @@ n_rdesi1:
        indv:  2
        cont: 3
        ncont: 100
+       nthreads: 1
        pfile: 'opt1'
        opfile: 'opf1'
        offile: 'ndl1'
