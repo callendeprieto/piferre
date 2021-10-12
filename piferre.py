@@ -712,11 +712,9 @@ def get_ferre_timings(proot):
     f.seek(-2, os.SEEK_END)
     last_line = ''
     while not 'ellapsed' in last_line:
-      print(last_line)
-      f.seek(-1, os.SEEK_CUR)
-      while f.read(1) != b'\n':
-        f.seek(-1, os.SEEK_CUR)
+      f.seek(-100, os.SEEK_CUR)
       last_line = f.readline().decode()
+      print(last_line)
     flds = last_line.split()
     if float(flds[2]) > seconds: seconds=float(flds[2])
 
