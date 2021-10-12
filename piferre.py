@@ -705,20 +705,50 @@ def get_versions():
 #get the maximum value of 'ellapsed time' (wall time) in all ferre std. output (log_*) files
 def get_ferre_timings(proot):
 
-  seconds = 0.
+  seconds = np.nan
   logfiles=glob.glob(proot+'.log_*')
   for entry in logfiles:
-    f=open(entry, 'rb')
-    f.seek(-2, os.SEEK_END)
-    last_line = ''
-    while not 'ellapsed' in last_line:
-      f.seek(-100, os.SEEK_CUR)
-      last_line = f.readline().decode()
-      print(last_line)
-    flds = last_line.split()
-    if float(flds[2]) > seconds: seconds=float(flds[2])
+    lines = tail(entry,100)
+    for line in lines:
+      if 'ellapsed' in lines:
+        flds = line.split()
+        val = float(flds[2])
+    if val > seconds: seconds=val
 
   return(seconds)
+
+def tail(f, lines=1, _buffer=4098):
+#copied from https://stackoverflow.com/users/1889809/glenbot
+    """Tail a file and get X lines from the end"""
+    # place holder for the lines found
+    lines_found = []
+
+    # block counter will be multiplied by buffer
+    # to get the block size from the end
+    block_counter = -1
+
+    # loop until we find X lines
+    while len(lines_found) < lines:
+        try:
+            f.seek(block_counter * _buffer, os.SEEK_END)
+        except IOError:  # either file is too small, or too many lines requested
+            f.seek(0)
+            lines_found = f.readlines()
+            break
+
+        lines_found = f.readlines()
+
+        # we found enough lines, get out
+        # Removed this line because it was redundant the while will catch
+        # it, I left it for history
+        # if len(lines_found) > lines:
+        #    break
+
+        # decrement the block counter to get the
+        # next X bytes
+        block_counter -= 1
+
+    return lines_found[-lines:]
 
 #get the time assigned in slurm for the calculation 
 def get_slurm_timings(proot):
