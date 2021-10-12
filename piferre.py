@@ -710,8 +710,8 @@ def get_ferre_timings(proot):
   for entry in logfiles:
     f=open(entry, 'rb')
     f.seek(-2, os.SEEK_END)
-    flds=['','','','']
-    while flds[3] != 's':
+    last_line = ''
+    while 'ellapsed' not in last_line:
       while f.read(1) != b'\n':
         f.seek(-2, os.SEEK_CUR)
       last_line = f.readline().decode()
