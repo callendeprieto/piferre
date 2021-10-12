@@ -709,7 +709,7 @@ def get_ferre_timings(proot):
   val = 0.
   logfiles=glob.glob(proot+'.log_*')
   for entry in logfiles:
-    f=open(entry,'rb')
+    f=open(entry,'r')
     lines = tail(f,100)
     for line in lines:
       if 'ellapsed' in line:
