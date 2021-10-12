@@ -16,7 +16,7 @@ m_rdesi1:
        ndim: 5
        nov: 5
        indv:  1  2  3  4  5
-       indi: 5 2 1 4 3
+       indi:  5  4  3  2  1
        cont: 3
        ncont: 100
        pfile: 'vrd'
@@ -38,7 +38,7 @@ m_rdesi2:
        ndim: 5
        nov: 5
        indv:  1  2  3  4  5
-       indi: 5 2 1 4 3
+       indi:  5  4  3  2  1
        cont: 3
        ncont: 100
        pfile: 'vrd'
@@ -60,7 +60,7 @@ m_rdesi3:
        ndim: 5
        nov: 5
        indv:  1  2  3  4  5
-       indi: 5 2 1 4 3
+       indi:  5  4  3  2  1
        cont: 3
        ncont: 100
        pfile: 'vrd'
@@ -82,7 +82,7 @@ m_rdesi4:
        ndim: 5
        nov: 5
        indv:  1  2  3  4  5
-       indi: 5 2 1 4 3
+       indi:  5  4  3  2  1
        cont: 3
        ncont: 100
        pfile: 'vrd'
@@ -104,7 +104,7 @@ m_rdesi5:
        ndim: 5
        nov: 5
        indv:  1  2  3  4  5
-       indi: 5 2 1 4 3
+       indi:  5  4  3  2  1
        cont: 3
        ncont: 100
        pfile: 'vrd'
