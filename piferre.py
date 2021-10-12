@@ -708,12 +708,14 @@ def get_ferre_timings(proot):
   seconds = nan
   logfiles=glob.glob(proot+'.log_*')
   for entry in logfiles:
-    lines = tail(entry,100)
+    f=open(entry,'rb')
+    lines = tail(f,100)
     for line in lines:
       if 'ellapsed' in lines:
         flds = line.split()
         val = float(flds[2])
     if val > seconds: seconds=val
+    f.close()
 
   return(seconds)
 
