@@ -710,10 +710,12 @@ def get_ferre_timings(proot):
   for entry in logfiles:
     f=open(entry, 'rb')
     f.seek(-2, os.SEEK_END)
-    while f.read(1) != b'\n':
-      f.seek(-2, os.SEEK_CUR)
-    last_line = f.readline().decode()
-    flds = last_line.split()
+    flds=['','','','']
+    while flds[3] != 's':
+      while f.read(1) != b'\n':
+        f.seek(-2, os.SEEK_CUR)
+      last_line = f.readline().decode()
+      flds = last_line.split()
     if float(flds[2]) > seconds: seconds=float(flds[2])
 
   return(seconds)
