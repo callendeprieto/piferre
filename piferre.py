@@ -705,7 +705,8 @@ def get_versions():
 #get the maximum value of 'ellapsed time' (wall time) in all ferre std. output (log_*) files
 def get_ferre_timings(proot):
 
-  seconds = nan
+  seconds = 0.0
+  val = 0.
   logfiles=glob.glob(proot+'.log_*')
   for entry in logfiles:
     f=open(entry,'rb')
