@@ -712,7 +712,7 @@ def get_ferre_timings(proot):
     f=open(entry,'rb')
     lines = tail(f,100)
     for line in lines:
-      if 'ellapsed' in lines:
+      if 'ellapsed' in line:
         flds = line.split()
         val = float(flds[2])
     if val > seconds: seconds=val
