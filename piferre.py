@@ -1516,7 +1516,7 @@ def packfits(input="*.fits",output="output.fits"):
   return(None)
 
 #inspector
-def inspector(sptabfile,sym='.',rvrange=(-1e32,1e32),
+def inspect(sptabfile,sym='.',rvrange=(-1e32,1e32),
                rarange=(0.,360.), decrange=(-90,90),  
                pmrarange=(-1e10,1e10), pmdecrange=(-1e10,1e10),
                parallaxrange=(-10000,10000),
@@ -1608,6 +1608,50 @@ def inspector(sptabfile,sym='.',rvrange=(-1e32,1e32),
         plt.show()
 
     return (spt,fbm)
+
+
+# pick-up metal-poor star candidates
+def mpcandidates(sptabfile,sym='.'):
+
+  s,f,h = read_sptab(sptabfile)
+
+  w = (s['teff'] > 4000.) & (s['teff'] < 7000.) & (s['feh'] > -4.9) & (s['snr_med'] > 30.) & (s['chisq_tot'] < 4.) & (s['feh'] < -4.0)
+
+  plt.figure()
+  plt.ion()
+  plt.plot(s['teff'][w],s['logg'][w],sym)
+  plt.xlabel('Teff (K)')
+  plt.ylabel('logg (K)')
+  plt.ylim([5.5,-1.0])
+  plt.xlim([7000.,4000.])
+  plt.show()
+
+  ws = where(w)[0]
+  print('  targetid          Teff   logg [Fe/H] [a/Fe] snr_med chisq    ra        dec      Gmag')
+  for i in ws:
+    print('{:16}  {:7.2}  {:4.2}  {:5.2}  {:6.1}  {:6.1} {:4.2} {:10.8} {:10.8} {:4.3}'.format(s['targetid'][i],s['teff'][i],s['logg'][i],s['feh'][i], s['alphafe'][i],s['snr_med'][i],s['chisq_tot'][i],f['target_ra'][i],f['target_dec'][i],f['GAIA_PHOT_G_MEAN_MAG'][i]))
+
+#peruse a spectrum
+def peruse(targetid,sptabfile):
+
+  s,f, h = read_sptab(sptabfile)
+  w = where(s['targetid'] == targetid)[0]
+  spmodfile = sptabfile.replace('sptab','spmod')
+  print(sptabfile,spmodfile)
+  bx,by, rx,ry, zx,zy, hm = read_spmod(spmodfile)
+  
+  plt.figure()
+  plt.ion()
+  plt.plot(bx,by['obs'][w[0],:],rx,ry['obs'][w[0],:],zx,zy['obs'][w[0],:])
+  plt.plot(bx,by['fit'][w[0],:],rx,ry['fit'][w[0],:],zx,zy['fit'][w[0],:])
+  plt.xlabel('Wavelength (A)')
+  plt.ylabel('normalized flux')
+  plt.title(targetid)
+  plt.text(rx[0],mean(ry['obs'][w])/2,'Teff='+str(s['teff'][w[0]]))
+  plt.text(rx[0],mean(ry['obs'][w])/2.5,'logg='+str(s['logg'][w[0]]))
+  plt.text(rx[0],mean(ry['obs'][w])/3,'[Fe/H]='+str(s['feh'][w[0]]))
+  plt.text(rx[0],mean(ry['obs'][w])/3.5,'median(S/N)='+str(s['snr_med'][w[0]]))
+  plt.show()
 
 #process a single pixel
 def do(path, pixel, sdir='', truth=None, ncores=1, rvpath=None, 
