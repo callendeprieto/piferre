@@ -74,7 +74,7 @@ def read_synth(synthfile):
         v=part[1].strip()
         header[k]=v
         nlines+=1
-        print(nlines)
+        #print(nlines)
     file.close()
 
     data=loadtxt(synthfile, skiprows=nlines+1, dtype=float)
