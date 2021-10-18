@@ -77,7 +77,10 @@ def read_synth(synthfile):
         #print(nlines)
     file.close()
 
+    n_p = tuple(array(header['N_P'].split(),dtype=int)) + (-1,)
     data=loadtxt(synthfile, skiprows=nlines+1, dtype=float)
+    data = reshape( data, n_p)
+    
 
     return header,data
 
