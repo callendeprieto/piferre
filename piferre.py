@@ -17,9 +17,10 @@ import platform
 import glob
 import re
 import importlib
-from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, log10, median, std, mean, pi
-from astropy.io import fits
+from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, log10, median, std, mean, pi, intersect1d
 from scipy.signal import savgol_filter
+from astropy.io import fits
+from astropy.coordinates import SkyCoord
 import astropy.table as tbl
 import astropy.units as units
 import matplotlib.pyplot as plt
@@ -1653,6 +1654,78 @@ def peruse(targetid,sptabfile):
   plt.text(rx[0],mean(ry['obs'][w])/2.5,'logg='+str(s['logg'][w[0]]))
   plt.text(rx[0],mean(ry['obs'][w])/3,'[Fe/H]='+str(s['feh'][w[0]]))
   plt.text(rx[0],mean(ry['obs'][w])/3.5,'median(S/N)='+str(s['snr_med'][w[0]]))
+  plt.show()
+
+#rv vs sp comparison
+def rvspcomp(rvtabfile,sptabfile, clean=True):
+
+  r, f1, h1 = read_rvtab(rvtabfile)
+  s, f2, h2 = read_sptab(sptabfile)
+
+  rs, i1, i2 = intersect1d( r['targetid'], s['targetid'], return_indices=True)
+
+  if clean:
+    w=(r['teff'][i1] > 4000.) & (r['teff'][i1] < 7000.) & (r['feh'][i1] > -4.9) & (s['teff'][i2] > 4000.) & (s['teff'][i2] < 7000.) & (s['feh'][i2] > -4.9)  & (s['snr_med'][i2] > 10.) & (s['chisq_tot'][i2] < 4)  
+
+    ww = where(w)[0]
+    i1 = i1[ww]
+    i2 = i2[ww]
+
+  par = ['teff','logg','feh','alphafe']
+
+  j = 1
+  print(' SP - RV:  median  mean   std')
+  for p in par:
+    plt.subplot(2,2,j)
+    plt.plot(r[p][i1],s[p][i2],',')
+    plt.plot(r[p][i1],r[p][i1])
+    plt.xlabel('rv '+p)
+    plt.ylabel('sp '+p)
+    print(p,median(s[p][i2]-r[p][i1]),mean(s[p][i2]-r[p][i1]),std(s[p][i2]-r[p][i1]))
+    j = j + 1
+
+  plt.show()
+
+def apogeecomp(allstarfile,sptabfile,clean=True):
+  
+  allstar = fits.open(allstarfile)
+  a = allstar[1].data
+  s, f, h = read_sptab(sptabfile)
+
+  apo = SkyCoord(ra=a['ra']*units.degree, dec=a['dec']*units.degree)
+  desi = SkyCoord(ra=f['target_ra']*units.degree, dec=f['target_dec']*units.degree)
+  
+  max_sep = 1.0* units.arcsec
+  idx, d2d, d3d = apo.match_to_catalog_sky(desi)
+  i1 = d2d < max_sep
+  i2 = idx[i1]
+  ww = where(i1)[0]
+  i1 = ww
+
+  print(i1)
+
+  if clean:
+    w=(a['teff'][i1] > 4000.) & (a['teff'][i1] < 7000.) & (a['m_h'][i1] > -4.9) & (s['teff'][i2] > 4000.) & (s['teff'][i2] < 7000.) & (s['feh'][i2] > -4.9)  & (s['snr_med'][i2] > 10.) & (s['chisq_tot'][i2] < 4)  
+
+    ww = where(w)[0]
+    i1 = i1[ww]
+    i2 = i2[ww]
+
+  par = ['teff','logg','feh','alphafe']
+  apopar = ['teff', 'logg', 'm_h','alpha_m']
+
+  j = 1
+  print(' SP - APOGEE:  median  mean   std')
+  for p in par:
+    print(len(i1),len(i2),len(a[apopar[j-1]]),len(s[p]))
+    plt.subplot(2,2,j)
+    plt.plot(a[apopar[j-1]][i1],s[p][i2],'.')
+    plt.plot(a[apopar[j-1]][i1],a[apopar[j-1]][i1])
+    plt.xlabel('APOGEE '+apopar[j-1])
+    plt.ylabel('sp '+p)
+    print(p,median(s[p][i2]-a[apopar[j-1]][i1]),mean(s[p][i2]-a[apopar[j-1]][i1]),std(s[p][i2]-a[apopar[j-1]][i1]))
+    j = j + 1
+
   plt.show()
 
 #process a single pixel
