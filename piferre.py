@@ -20,7 +20,6 @@ import importlib
 from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, log10, median, std, mean, pi
 from astropy.io import fits
 from scipy.signal import savgol_filter
-from pandas import read_csv
 import astropy.table as tbl
 import astropy.units as units
 import matplotlib.pyplot as plt
@@ -78,7 +77,7 @@ def read_synth(synthfile):
         print(nlines)
     file.close()
 
-    data=read_csv(synthfile, skiprows=nlines+1, header=None, dtype=float).to_numpy()
+    data=loadtxt(synthfile, skiprows=nlines+1, dtype=float)
 
     return header,data
 
