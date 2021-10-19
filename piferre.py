@@ -1612,6 +1612,98 @@ def inspect(sptabfile,sym='.',rvrange=(-1e32,1e32),
 
     return (spt,fbm)
 
+#inspector
+def inspect2(sptabfile,sym='.',rvrange=(-1e32,1e32),
+               rarange=(0.,360.), decrange=(-90,90),  
+               pmrarange=(-1e10,1e10), pmdecrange=(-1e10,1e10),
+               parallaxrange=(-10000,10000),
+               fehrange=(-100,100), teffrange=[0,100000],loggrange=[-100,100],
+               chisq_totrange=(0.0,1e32),
+               title='',fig='',plot=True):
+
+    sph=fits.open(sptabfile)
+    spt=sph['RVTAB'].data
+    fbm=sph['FIBERMAP'].data
+    w=( (spt['vrad'] >= rvrange[0])  
+        & (spt['vrad'] <= rvrange[1])   
+        & (spt['feh'] >= fehrange[0])
+        & (spt['feh'] <= fehrange[1]) 
+        & (spt['teff'] >= teffrange[0]) 
+        & (spt['teff'] <= teffrange[1])
+        & (spt['logg'] >= loggrange[0])
+        & (spt['logg'] <= loggrange[1]) 
+        & (spt['chisq_tot'] >= chisq_totrange[0])
+        & (spt['chisq_tot'] <= chisq_totrange[1]) 
+        & (fbm['target_ra'] >= rarange[0])      
+        & (fbm['target_ra'] <= rarange[1])
+        & (fbm['target_dec'] >= decrange[0]) 
+        & (fbm['target_dec'] <= decrange[1]) 
+        & (fbm['parallax'] >= parallaxrange[0])
+        & (fbm['parallax'] <= parallaxrange[1]) 
+        & (fbm['pmra'] >= pmrarange[0])
+        & (fbm['pmra'] <= pmrarange[1]) 
+        & (fbm['pmdec'] >= pmdecrange[0])
+        & (fbm['pmdec'] <= pmdecrange[1]) )
+
+    spt=spt[w]
+    fbm=fbm[w]
+    n=where(w)[0]
+
+    if plot:
+        plt.figure()
+        plt.tight_layout()
+        plt.ion()
+
+        plt.subplot(3,2,1)
+        plt.plot(spt['feh'],spt['alphafe'],sym)
+        plt.xlabel('[Fe/H]',labelpad=0)
+        plt.ylabel('[a/Fe]')
+        plt.title(sptabfile)
+
+        plt.subplot(3,2,2)
+        plt.hist(spt['teff'],bins=50)
+        plt.xlabel('Teff',labelpad=0)
+        plt.ylabel('N')
+        plt.title(title)
+
+        plt.subplot(3,2,3)
+        plt.plot(spt['teff'],spt['logg'],sym)
+        plt.xlabel('Teff',labelpad=0)
+        plt.ylabel('logg')
+        plt.xlim([8000.,2000])
+        plt.ylim([5.5,-0.5])
+
+        plt.subplot(3,2,4)
+        plt.plot(spt['teff'],spt['feh'],sym)
+        plt.xlabel('Teff',labelpad=0)
+        plt.ylabel('[Fe/H]')
+        plt.xlim([8000.,2000])
+        plt.ylim([-5,1])
+
+
+        plt.subplot(3,2,5)
+        plt.hist(spt['vrad'],bins=50)
+        plt.xlabel('RV',labelpad=0)
+        plt.ylabel('N')
+
+
+        plt.subplot(3,2,6)
+        plt.hist(spt['feh'],bins=50)
+        plt.xlabel('[Fe/H]',labelpad=0)
+        plt.ylabel('N')
+        me = median(spt['feh'])
+        mm = mean(spt['feh'])
+        ss = std(spt['feh'])
+        plt.text(me-2*ss, 1, r'$\mu=$'+"{:5.2f}".format(mm) )
+        plt.text(me+2*ss, 1, r'$\sigma=$'+"{:5.2f}".format(ss) )
+
+
+        if fig != '': plt.savefig(fig)
+
+        plt.show()
+
+    return (spt,fbm)
+
 
 # pick-up metal-poor star candidates
 def mpcandidates(sptabfile,sym='.'):
