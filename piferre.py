@@ -1218,6 +1218,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   m=sorted(glob.glob(proot+".mdl?"))
   n=sorted(glob.glob(proot+".nrd?"))
   l=sorted(glob.glob(proot+".ndl?"))
+  t=sorted(glob.glob(proot+".opt?"))
  
 
   llimit=[] # lower limits for Teff
@@ -1252,6 +1253,10 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
     if ngrid != len(l):  
       print("there are different number of opf? and ndl? arrays")
       return(0)
+  if (len(t) > 0):
+    if ngrid != len(t):  
+      print("there are different number of opf? and opt? arrays")
+      return(0)
 
 
   #open input files
@@ -1259,11 +1264,13 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   mf=[]
   if len(n) > 0: nf=[]
   if len(l) > 0: lf=[]
+  if len(t) > 0: tf=[]
   for i in range(len(o)):
     of.append(open(o[i],'r'))
     mf.append(open(m[i],'r'))
     if len(n) > 0: nf.append(open(n[i],'r'))
     if len(l) > 0: lf.append(open(l[i],'r'))
+    if len(t) > 0: tf.append(open(t[i],'r'))
   print(o)
   print(of)
   #open output files
@@ -1271,6 +1278,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   mo=open(proot+'.mdl','w')
   if len(n) > 0: no=open(proot+'.nrd','w')
   if len(l) > 0: lo=open(proot+'.ndl','w')
+  if len(t) > 0: to=open(proot+'.opt','w')
  
   for line in of[0]: 
     tmparr=line.split()
@@ -1280,11 +1288,13 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
     min_mline=mf[0].readline()
     if len(n) > 0: min_nline=nf[0].readline()
     if len(l) > 0: min_lline=lf[0].readline()
+    if len(t) > 0: min_tline=tf[0].readline()
     for i in range(len(o)-1):
       oline=of[i+1].readline()
       mline=mf[i+1].readline()
       if len(n) > 0: nline=nf[i+1].readline()
       if len(l) > 0: lline=lf[i+1].readline()
+      if len(t) > 0: tline=tf[i+1].readline()
       tmparr=oline.split()
       #print(len(tmparr))
       #print(tmparr)
@@ -1296,12 +1306,14 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
         min_mline=mline
         if len(n) > 0: min_nline=nline
         if len(l) > 0: min_lline=lline
+        if len(t) > 0: min_tline=tline
     
     #print(min_chi,min_oline)
     oo.write(min_oline)
     mo.write(min_mline)
     if len(n) > 0: no.write(min_nline)
     if len(l) > 0: lo.write(min_lline)
+    if len(t) > 0: to.write(min_tline)
   
   #close input files
   for i in range(len(o)):
@@ -1310,12 +1322,14 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
     mf[i].close
     if len(n) > 0: nf[i].close
     if len(l) > 0: lf[i].close
+    if len(t) > 0: tf[i].close
 
   #close output files
   oo.close
   mo.close
   if len(n) > 0: no.close
   if len(l) > 0: lo.close
+  if len(t) > 0: to.close
   
   return None
 
