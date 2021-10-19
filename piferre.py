@@ -1686,6 +1686,8 @@ def rvspcomp(rvtabfile,sptabfile, clean=True):
 
   plt.show()
 
+  return None
+
 def apogeecomp(allstarfile,sptabfile,clean=True):
   
   allstar = fits.open(allstarfile)
@@ -1702,7 +1704,6 @@ def apogeecomp(allstarfile,sptabfile,clean=True):
   ww = where(i1)[0]
   i1 = ww
 
-  print(i1)
 
   if clean:
     w=(a['teff'][i1] > 4000.) & (a['teff'][i1] < 7000.) & (a['m_h'][i1] > -4.9) & (s['teff'][i2] > 4000.) & (s['teff'][i2] < 7000.) & (s['feh'][i2] > -4.9)  & (s['snr_med'][i2] > 10.) & (s['chisq_tot'][i2] < 4)  
@@ -1727,6 +1728,55 @@ def apogeecomp(allstarfile,sptabfile,clean=True):
     j = j + 1
 
   plt.show()
+
+  return None
+
+def ssppcomp(ssppfile,sptabfile,clean=True):
+  
+  allstar = fits.open(ssppfile)
+  a = allstar[1].data
+  s, f, h = read_sptab(sptabfile)
+
+  #cleanup missing decs
+  w = a['dec'] > -90.
+  a = a[w]
+
+  apo = SkyCoord(ra=a['ra']*units.degree, dec=a['dec']*units.degree)
+  desi = SkyCoord(ra=f['target_ra']*units.degree, dec=f['target_dec']*units.degree)
+  
+  max_sep = 1.0* units.arcsec
+  idx, d2d, d3d = apo.match_to_catalog_sky(desi)
+  i1 = d2d < max_sep
+  i2 = idx[i1]
+  ww = where(i1)[0]
+  i1 = ww
+
+
+  if clean:
+    w=(a['teff_adop'][i1] > 4000.) & (a['teff_adop'][i1] < 7000.) & (a['feh_adop'][i1] > -4.9) & (s['teff'][i2] > 4000.) & (s['teff'][i2] < 7000.) & (s['feh'][i2] > -4.9)  & (s['snr_med'][i2] > 10.) & (s['chisq_tot'][i2] < 4)  
+
+    ww = where(w)[0]
+    i1 = i1[ww]
+    i2 = i2[ww]
+
+  par = ['teff','logg','feh','rv_adop']
+  apopar = ['teff_adop', 'logg_adop', 'feh_adop','rv_adop']
+
+  j = 1
+  print(' SP - SEGUE/SSPP:  median  mean   std')
+  for p in par:
+    print(len(i1),len(i2),len(a[apopar[j-1]]),len(s[p]))
+    plt.subplot(2,2,j)
+    plt.plot(a[apopar[j-1]][i1],s[p][i2],',')
+    plt.plot(a[apopar[j-1]][i1],a[apopar[j-1]][i1])
+    plt.xlabel('SSPP '+apopar[j-1])
+    plt.ylabel('sp '+p)
+    print(p,median(s[p][i2]-a[apopar[j-1]][i1]),mean(s[p][i2]-a[apopar[j-1]][i1]),std(s[p][i2]-a[apopar[j-1]][i1]))
+    j = j + 1
+
+  plt.show()
+
+  return None
 
 #process a single pixel
 def do(path, pixel, sdir='', truth=None, ncores=1, rvpath=None, 
