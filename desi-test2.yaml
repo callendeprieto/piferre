@@ -1,0 +1,270 @@
+bands: ['b', 'r', 'z']
+grids: ['m_rdesi1', 'm_rdesi2', 'm_rdesi3', 'm_rdesi4', 'm_rdesi5', 'm_rdesi6', 'm_rdesi7', 'm_rdesi8', 'm_rdesi9']
+seconds_per_spectrum: 10.
+global:
+    algor: 3
+    f_format: 1
+    f_access: 0
+    errbar: 1
+    covprint: 1
+    inter: 3
+    ffile: 'frd'
+    erfile: 'err'   
+    nthreads: 8
+m_rdesi1:
+   param:
+       ndim: 5
+       nov: 5
+       indv:  1  2  3  4  5
+       indi:  5  4  3  2  1
+       cont: 3
+       ncont: 500
+       pfile: 'vrd'
+       opfile: 'opf1'
+       offile: 'ndl1'
+       sffile: 'nrd1'
+       labels:  ['[Fe/H]', '[a/Fe]', 'log10micro', 'Teff',  'logg']
+       llimits: -5. -1.  -0.301029995663981 3500. 0.0
+       steps:  0.25  0.25 0.301029995663981  250. 0.5
+   teff: 
+       nov: 1
+       indv: 4
+       inter: 2
+       nthreads: 1
+       pfile: 'opf1'
+       opfile: 'opt1'
+   cal: 
+       nov: 0
+       cont: 0
+       nthreads: 1
+       pfile: 'opf1'
+       offile: 'mdl1'
+       sffile: ''
+m_rdesi2:
+   param:
+       ndim: 5
+       nov: 5
+       indv:  1  2  3  4  5
+       indi:  5  4  3  2  1
+       cont: 3
+       ncont: 500
+       pfile: 'vrd'
+       opfile: 'opf2'
+       offile: 'ndl2'
+       sffile: 'nrd2'
+       labels:  ['[Fe/H]', '[a/Fe]', 'log10micro', 'Teff',  'logg']
+       llimits:  -5. -1.  -0.301029995663981 5750. 1.0
+       steps:   0.25  0.25 0.301029995663981  250. 0.5
+   teff:
+       nov: 1
+       indv: 4
+       inter: 2
+       nthreads: 1
+       pfile: 'opf2'
+       opfile: 'opt2'
+   cal: 
+       nov: 0
+       cont: 0
+       nthreads: 1
+       pfile: 'opf2'
+       offile: 'mdl2'
+       sffile: ''
+m_rdesi3:
+   param:
+       ndim: 5
+       nov: 5
+       indv:  1  2  3  4  5
+       indi:  5  4  3  2  1
+       cont: 3
+       ncont: 500
+       pfile: 'vrd'
+       opfile: 'opf3'
+       offile: 'ndl3'
+       sffile: 'nrd3'
+       labels:  ['[Fe/H]', '[a/Fe]', 'log10micro', 'Teff',  'logg']
+       llimits: -5.   -1. -0.301029995663981 7000. 2.0
+       steps:   0.25 0.25  0.301029995663981  500. 0.5
+   teff:
+       nov: 1
+       indv: 4
+       inter: 2
+       nthreads: 1
+       pfile: 'opf3'
+       opfile: 'opt3'
+   cal: 
+       nov: 0
+       cont: 0
+       nthreads: 1
+       pfile: 'opf3'
+       offile: 'mdl3'
+       sffile: ''
+m_rdesi4:
+   param:
+       ndim: 5
+       nov: 5
+       indv:  1  2  3  4  5
+       indi:  5  4  3  2  1
+       cont: 3
+       ncont: 500
+       pfile: 'vrd'
+       opfile: 'opf4'
+       offile: 'ndl4'
+       sffile: 'nrd4'
+       labels:  ['[Fe/H]', '[a/Fe]', 'log10micro', 'Teff',  'logg']
+       llimits: -5. -1.  -0.301029995663981 10000. 3.0
+       steps:  0.25  0.25 0.301029995663981  1000. 0.5
+   teff:
+       nov: 1
+       indv: 4
+       inter: 2
+       nthreads: 1
+       pfile: 'opf4'
+       opfile: 'opt4'
+   cal: 
+       nov: 0
+       cont: 0
+       nthreads: 1
+       pfile: 'opf4'
+       offile: 'mdl4'
+       sffile: ''
+m_rdesi5:
+   param:
+       ndim: 5
+       nov: 5
+       indv:  1  2  3  4  5
+       indi:  5  4  3  2  1
+       cont: 3
+       ncont: 500
+       pfile: 'vrd'
+       opfile: 'opf5'
+       offile: 'ndl5'
+       sffile: 'nrd5'
+       labels: ['[Fe/H]', '[a/Fe]', 'log10micro', 'Teff',  'logg']
+       llimits: -5. -1.  -0.301029995663981 20000. 4.0
+       steps:  0.25  0.25 0.301029995663981  1000. 0.5
+   teff:
+       nov: 1
+       indv: 4
+       inter: 2
+       nthreads: 1
+       pfile: 'opf5'
+       opfile: 'opt5'
+   cal: 
+       nov: 0
+       cont: 0
+       nthreads: 1
+       pfile: 'opf5'
+       offile: 'mdl5'
+       sffile: ''
+m_rdesi6:
+   param:
+       ndim: 2
+       nov: 2
+       indv: 1 2
+       cont: 3
+       ncont: 500
+       pfile: 'vrd'
+       opfile: 'opf6'
+       offile: 'ndl6'
+       sffile: 'nrd6'
+       labels: ['Teff' ,'logg']
+       llimits: 6000.00      7.00000
+       steps:    250. 0.25
+   teff:
+       nov: 1
+       indv: 1
+       inter: 2
+       nthreads: 1
+       pfile: 'opf6'
+       opfile: 'opt6'
+   cal: 
+       nov: 0
+       cont: 0
+       nthreads: 1
+       pfile: 'opf6'
+       offile: 'mdl6'
+       sffile: ''
+m_rdesi7:
+   param:
+       ndim: 2
+       nov: 2
+       indv: 1 2
+       cont: 3
+       ncont: 500
+       pfile: 'vrd'
+       opfile: 'opf7'
+       offile: 'ndl7'
+       sffile: 'nrd7'
+       labels: ['Teff', 'logg']
+       llimits: 19000.0       7.00000
+       steps:    1000. 0.25
+   teff:
+       nov: 1
+       indv: 1
+       inter: 2
+       nthreads: 1
+       pfile: 'opf7'
+       opfile: 'opt7'
+   cal: 
+       nov: 0
+       cont: 0
+       nthreads: 1
+       pfile: 'opf7'
+       offile: 'mdl7'
+       sffile: ''
+m_rdesi8:
+   param:
+       ndim: 2
+       nov: 2
+       indv: 1 2
+       cont: 3
+       ncont: 500
+       pfile: 'vrd'
+       opfile: 'opf8'
+       offile: 'ndl8'
+       sffile: 'nrd8'
+       labels: ['Teff', 'logg']
+       llimits: 10000.00       7.00000
+       steps: 1000.  0.25
+   teff:
+       nov: 1
+       indv: 1
+       inter: 2
+       nthreads: 1
+       pfile: 'opf8'
+       opfile: 'opt8'
+   cal: 
+       nov: 0
+       cont: 0
+       nthreads: 1
+       pfile: 'opf8'
+       offile: 'mdl8'
+       sffile: ''
+m_rdesi9:
+   param:
+       ndim: 2
+       nov: 2
+       indv:  1 2
+       cont: 3
+       ncont: 500
+       pfile: 'vrd'
+       opfile: 'opf9'
+       offile: 'ndl9'
+       sffile: 'nrd9'
+       labels: [ 'Teff', 'logg']
+       llimits:  15000.00       7.00000
+       steps: 5000. 0.25
+   teff:
+       nov: 1
+       indv: 1
+       inter: 2
+       nthreads: 1
+       pfile: 'opf9'
+       opfile: 'opt9'
+   cal: 
+       nov: 0
+       cont: 0
+       nthreads: 1
+       pfile: 'opf9'
+       offile: 'mdl9'
+       sffile: ''
