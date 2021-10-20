@@ -443,7 +443,7 @@ def read_spmod(file):
   zy=d['z_model'].data
 
   return(bx,by,rx,ry,zx,zy,h)
-
+ 
 
 #read  rvtab file, returning rvtab, fibermap and primary header (r,f,p)
 def read_rvtab(file):
