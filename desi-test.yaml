@@ -29,6 +29,7 @@ m_rdesi1:
    teff: 
        nov: 1
        indv: 4
+       inter: 2
        nthreads: 1
        pfile: 'opf1'
        opfile: 'opt1'
@@ -57,6 +58,7 @@ m_rdesi2:
    teff:
        nov: 1
        indv: 4
+       inter: 2
        nthreads: 1
        pfile: 'opf2'
        opfile: 'opt2'
@@ -85,6 +87,7 @@ m_rdesi3:
    teff:
        nov: 1
        indv: 4
+       inter: 2
        nthreads: 1
        pfile: 'opf3'
        opfile: 'opt3'
@@ -113,6 +116,7 @@ m_rdesi4:
    teff:
        nov: 1
        indv: 4
+       inter: 2
        nthreads: 1
        pfile: 'opf4'
        opfile: 'opt4'
@@ -141,6 +145,7 @@ m_rdesi5:
    teff:
        nov: 1
        indv: 4
+       inter: 2
        nthreads: 1
        pfile: 'opf5'
        opfile: 'opt5'
@@ -168,6 +173,7 @@ m_rdesi6:
    teff:
        nov: 1
        indv: 1
+       inter: 2
        nthreads: 1
        pfile: 'opf6'
        opfile: 'opt6'
@@ -195,6 +201,7 @@ m_rdesi7:
    teff:
        nov: 1
        indv: 1
+       inter: 2
        nthreads: 1
        pfile: 'opf7'
        opfile: 'opt7'
@@ -222,6 +229,7 @@ m_rdesi8:
    teff:
        nov: 1
        indv: 1
+       inter: 2
        nthreads: 1
        pfile: 'opf8'
        opfile: 'opt8'
@@ -249,6 +257,7 @@ m_rdesi9:
    teff:
        nov: 1
        indv: 1
+       inter: 2
        nthreads: 1
        pfile: 'opf9'
        opfile: 'opt9'

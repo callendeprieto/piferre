@@ -791,6 +791,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   proot=os.path.join(path,root)
   v=glob.glob(proot+".vrd")
   o=glob.glob(proot+".opf")
+  t=glob.glob(proot+".opt")
   #m=glob.glob(proot+".mdl")
   #n=glob.glob(proot+".nrd")
   fmp=glob.glob(proot+".fmp.fits")
@@ -798,6 +799,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   
   success=[]
   targetid=[]
+  srcfile=[]
   fiber=[]
   teff=[]
   logg=[]
@@ -812,6 +814,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   rv_adop=[]
   vf=open(v[0],'r')
   of=open(o[0],'r')
+  if len(t) > 0: tf=open(t[0],'r')
   for line in of:
     cells=line.split()
     #for N dim (since COVPRINT=1 in FERRE), there are m= 4 + N*(2+N) cells
@@ -824,10 +827,17 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
     line = vf.readline()
     vcells=line.split()
 
+    if len(t) > 0: 
+      line = tf.readline()
+      tcells=line.split()
+
     if (ndim == 2):
       #white dwarfs 2 dimensions: id, 2 par, 2err, 0., med_snr, lchi, 2x2 cov
       feh.append(-10.)
-      teff.append(float(cells[1]))
+      if len(t) > 0:
+        teff.append(float(tcells[1]))
+      else:
+        teff.append(float(cells[1]))
       logg.append(float(cells[2]))
       alphafe.append(nan)
       micro.append(nan)
@@ -842,7 +852,10 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       #Kurucz grids with 3 dimensions: id, 3 par, 3 err, 0., med_snr, lchi, 3x3 cov
       #see Allende Prieto et al. (2018, A&A)
       feh.append(float(cells[1]))
-      teff.append(float(cells[2]))
+      if len(t) > 0:
+        teff.append(float(tcells[2]))
+      else:
+        teff.append(float(cells[2]))
       logg.append(float(cells[3]))
       alphafe.append(nan)
       micro.append(nan)
@@ -859,7 +872,10 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
     elif (ndim == 4):
       #Phoenix grid from Sergey or MARCS grid, with 4 dimensions: id, 4 par, 4err, 0., med_snr, lchi, 4x4 cov
       feh.append(float(cells[2]))
-      teff.append(float(cells[3]))
+      if len(t) > 0:
+        teff.append(float(tcells[3]))
+      else:
+        teff.append(float(cells[3]))
       logg.append(float(cells[4]))
       alphafe.append(float(cells[1]))
       micro.append(nan)
@@ -878,7 +894,10 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       #Kurucz grids with 5 dimensions: id, 5 par, 5 err, 0., med_snr, lchi, 5x5 cov
       #see Allende Prieto et al. (2018, A&A)
       feh.append(float(cells[1]))
-      teff.append(float(cells[4]))
+      if len(t) > 0:
+        teff.append(float(tcells[4]))
+      else:
+        teff.append(float(cells[4]))
       logg.append(float(cells[5]))
       alphafe.append(float(cells[2]))
       micro.append(float(cells[3]))
@@ -895,6 +914,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
     else: success.append(0)
     tmp = cells[0].split('_')
     targetid.append(int64(tmp[0]))
+    srcfile.append(root)
     fiber.append(int32(tmp[1]))
     elem.append([nan,nan])
     elem_err.append([nan,nan])
@@ -949,6 +969,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   cols = {}
   cols['SUCCESS'] = success
   cols['TARGETID'] = targetid
+  cols['SRCFILE'] = srcfile
   cols['FIBER'] = fiber
   cols['TEFF'] = array(teff)*units.K
   cols['LOGG'] = array(logg)
@@ -966,6 +987,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   colcomm = {
   'success': 'Bit indicating whether the code has likely produced useful results',
   'TARGETID': 'DESI targetid',
+  'SRCFILE': 'DESI data file',
   'FIBER': 'DESI fiber',
   'TEFF': 'Effective temperature (K)',
   'LOGG': 'Surface gravity (g in cm/s**2)',
