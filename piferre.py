@@ -1932,15 +1932,18 @@ def create_filters(modelfile,config='desi-n.yaml',libpath='.'):
 
   """
 
-  from synple import mkflt
+  from synple import elements, mkflt
 
   ydir = os.path.dirname(os.path.realpath(__file__))
   yfile=open(os.path.join(ydir,config),'r')
   conf=yaml.load(yfile, Loader=yaml.SafeLoader)
   yfile.close()
 
+  symbol, mass, sol = elements()
+
   grids = conf['grids']
   bands = conf['bands']
+
   for g in grids:
     for b in bands:
       gridfile = os.path.join(libpath,g+'-'+b+'.dat')
@@ -1949,17 +1952,17 @@ def create_filters(modelfile,config='desi-n.yaml',libpath='.'):
       res = float(hd['RESOLUTION'])
       fwhm = 299792.458 / res # km/s
       print(g,b,gridfile,hd['RESOLUTION'],fwhm)
-      mkflt(modelfile+'.dlt', x, fwhm=fwhm)
       tmpdir = g+'-'+b
       try:
         os.mkdir(tmpdir)
       except OSError:
         print( "cannot create folder %s " % (tmpdir) )
-      flts = glob.glob('*flt')
-      for file in flts: os.rename(file,os.path.join('./'+g+'-'+b,file))
+      mkflt(modelfile+'.dlt', x, fwhm=fwhm, outdir=tmpdir)
+
     
   
-    for file in flts:
+    for entry in symbol:
+      file = entry+'.flt'
       print(g,file,g+'.'+file)
       f = open(g+'.'+file,'w')
       j = 0
