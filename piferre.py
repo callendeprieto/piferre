@@ -1906,6 +1906,73 @@ def ssppcomp(ssppfile,sptabfile,clean=True):
 
   return None
 
+
+def create_filters(modelfile,config='desi-n.yaml',libpath='.'):
+  """Creates filter files from a dltfile (modelfile.dlt) and a config yaml file. 
+  This is a very high level routine, meant to call synple's mkflt on each of the grids/bands
+  involved in a particular configuration file.
+
+  The complete process to produce the flt files is as follows:
+
+   from synple import elements, polydelta, collectdelta
+
+  a) get the first 99 chemical elements from elements()
+   symbol, mass, sol = elements()
+
+  b) setup spectral synthesis calculations for a model atmosphere and then 99 additional calculations for 0.2 dex changes in the abundances, e.g.
+   polydelta('ksun.mod', (3000., 10000.), symbol)
+   
+  c) run those calculations by executing the 99 hyd*job files inside the hyd* folders
+
+  d) collect the results in a 'dlt' file, e.g.
+   collectdelta('ksun.mod', (3000.,10000.), symbol)
+
+  e) smooth and resample the spectra in the dlt file, computing the response for each element. This is done from the derivatives, taking into account that lines overlap (for a given element we subtract the derivatives from all other). The flt files are obtained for each grid and band, and then bands are combined, e.g.
+   create_filters('ksun.mod',config='desi-n.yaml',libpath='../grids')
+
+  """
+
+  from synple import mkflt
+
+  ydir = os.path.dirname(os.path.realpath(__file__))
+  yfile=open(os.path.join(ydir,config),'r')
+  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
+  yfile.close()
+
+  grids = conf['grids']
+  bands = conf['bands']
+  for g in grids:
+    for b in bands:
+      gridfile = os.path.join(libpath,g+'-'+b+'.dat')
+      x = lambda_synth(gridfile)
+      hd = head_synth(gridfile)
+      res = float(hd['RESOLUTION'])
+      fwhm = 299792.458 / res # km/s
+      print(g,b,gridfile,hd['RESOLUTION'],fwhm)
+      mkflt(modelfile+'.dlt', x, fwhm=fwhm)
+      tmpdir = g+'-'+b
+      try:
+        os.mkdir(tmpdir)
+      except OSError:
+        print( "cannot create folder %s " % (tmpdir) )
+      flts = glob.glob('./*flt')
+      for file in flts: os.rename(file,os.path.join('./'+g+'-'+b,file))
+    
+  
+    for file in flts:
+      print(g,file,g+'.'+file)
+      f = open(g+'.'+file,'w')
+      res = []
+      for b in bands:
+        tmpdir = g+'-'+b
+        data = loadtxt(os.path.join(tmpdir,file))
+        res.append(data)
+      savetxt(f,res, fmt='%12.5e')
+      f.close()
+
+  return None
+
+
 #process a single pixel
 def do(path, pixel, sdir='', truth=None, ncores=1, rvpath=None, 
 libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
