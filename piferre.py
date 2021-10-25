@@ -1976,6 +1976,14 @@ def create_filters(modelfile,config='desi-n.yaml',libpath='.'):
 
   return None
 
+#transform equatorial to galactic coordinates
+def radec2lb(ra,dec):
+
+  sk = SkyCoord(ra=ra*units.degree, dec=dec*units.degree)
+  gc = sk.transform_to('galactic')
+
+  return(gc.l,gc.b)
+
 
 #process a single pixel
 def do(path, pixel, sdir='', truth=None, ncores=1, rvpath=None, 
