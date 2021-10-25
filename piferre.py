@@ -1955,18 +1955,22 @@ def create_filters(modelfile,config='desi-n.yaml',libpath='.'):
         os.mkdir(tmpdir)
       except OSError:
         print( "cannot create folder %s " % (tmpdir) )
-      flts = glob.glob('./*flt')
+      flts = glob.glob('*flt')
       for file in flts: os.rename(file,os.path.join('./'+g+'-'+b,file))
     
   
     for file in flts:
       print(g,file,g+'.'+file)
       f = open(g+'.'+file,'w')
-      res = []
+      j = 0
       for b in bands:
         tmpdir = g+'-'+b
         data = loadtxt(os.path.join(tmpdir,file))
-        res.append(data)
+        if j == 0:
+          res = data[:]
+        else:
+          res = concatenate((res,data))
+        j = j + 1
       savetxt(f,res, fmt='%12.5e')
       f.close()
 
