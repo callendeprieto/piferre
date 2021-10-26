@@ -248,56 +248,133 @@ def mknml(conf,root,libpath='.',path='.'):
     ndim=int(header['N_OF_DIM'])
     n_p=tuple(array(header['N_P'].split(),dtype=int))
 
-    lst=open(os.path.join(path,'input.lst-'+root+'_'+str(k)),'w')
-    for run in conf[synth]: #loop over all runs (param + elements)
+    lst=open(os.path.join(path,'input.lst-'+root+'_'+str(k+1)),'w')
+    for run in conf[synth]: #loop over all runs (param and any other one)
+
       #global keywords in yaml adopted first
       nml=dict(conf['global'])
+
       #adding/override with param keywords in yaml
       if 'param' in conf[synth]:
         for key in conf[synth]['param'].keys(): nml[key]=conf[synth]['param'][key]
+
       #adding/override with run keywords in yaml
-      for key in conf[synth][run].keys(): nml[key]=conf[synth][run][key]
+      for key in conf[synth][run].keys(): 
+        content = str(conf[synth][run][key])
+        if '$i' in content: content = content.replace('$i',str(k+1))
+        if '$synth' in content: content = content.replace('$synth',synth)
+        i = 1
+        for entry in nml['labels']:
+          ss = '$'+entry
+          if ss in content: content = content.replace(ss,str(i))
+          i = i + 1
+        nml[key] = content
+
+
+      #adding/override with run keywords in yaml
+      #for key in conf[synth][run].keys(): nml[key]=conf[synth][run][key]
+
       #check that inter is feasible with this particular grid
       if 'inter' in nml:
-        if (min(n_p)-1 < nml['inter']): nml['inter']=min(n_p)-1
+        if (min(n_p)-1 < int(nml['inter'])): nml['inter']=min(n_p)-1
       #ncores from command line is for the slurm job, 
       #the ferre omp nthreads should come from the config yaml file
       nml['ndim']=ndim
       for i in range(len(synthfiles)): 
         nml['SYNTHFILE('+str(i+1)+')'] = "'"+os.path.join(libpath,synthfiles[i])+"'"
 
-      #extensions provided in yaml for input/output files are not supplemented with root
-      if nml['pfile']: 
-        nml['pfile'] = "'"+root+'.'+nml['pfile']+"'"
-      else: nml['pfile'] = "'"+nml['pfile']+"'"
-      if nml['ffile']: 
-        nml['ffile'] = "'"+root+'.'+nml['ffile']+"'"
-      else: nml['ffile'] = "'"+nml['ffile']+"'"
-      if nml['erfile']: 
-        nml['erfile'] = "'"+root+'.'+nml['erfile']+"'"
-      else: nml['erfile'] = "'"+nml['erfile']+"'"
-      if nml['opfile']:  
-        nml['opfile'] = "'"+root+'.'+nml['opfile']+"'"
-      else: nml['opfile'] = "'"+nml['opfile']+"'"
-      if nml['offile']: 
-        nml['offile'] = "'"+root+'.'+nml['offile']+"'"
-      else: nml['offile'] = "'"+nml['offile']+"'"
-      if nml['sffile']: 
-        nml['sffile'] = "'"+root+'.'+nml['sffile']+"'"
-      else: nml['sffile'] = "'"+nml['sffile']+"'"
+      #extensions provided in yaml for input/output files are now supplemented with root
+      files = ['pfile', 'ffile', 'erfile','opfile','offile','sffile']
+      for entry in files:
+        if entry in nml: nml[entry] = "'"+root+'.'+nml[entry]+"'"
+      if 'filterfile' in nml: nml['filterfile'] = "'"+nml['filterfile']+"'"
+
+
+      #make sure tmp 'sort' files are stored in $SCRATCH for cori
+      if host[:4] == 'cori':
+        nml['scratch'] = "'"+scratch+"'"
+
+      #get rid of keywords in yaml that are not for the nml file, but for opfmerge 
+      #or write_tab
+      if 'labels' in nml: del nml['labels']
+      if 'llimits' in nml: del nml['llimits']
+      if 'steps' in nml: del nml['steps']
+
+      nmlfile='input.nml-'+root+'_'+str(k+1)+run
+      lst.write(nmlfile+'\n')
+      write_nml(nml,nmlfile=nmlfile,path=path)
+
+    for run in conf['extensions']: #loop over all extensions 
+      #extensions are like runs to be applied to all grids
+
+      #global keywords in yaml adopted first
+      nml=dict(conf['global'])
+
+      #adding/override with param keywords in yaml
+      if 'param' in conf[synth]:
+        for key in conf[synth]['param'].keys(): nml[key]=conf[synth]['param'][key]
+
+      #adding/override with run keywords in yaml
+      for key in conf['extensions'][run].keys(): 
+        content = str(conf['extensions'][run][key])
+        if '$i' in content: content = content.replace('$i',str(k+1))
+        if '$synth' in content: content = content.replace('$synth',synth)
+        i = 1
+        for entry in nml['labels']:
+          ss = '$'+entry
+          if ss in content: content = content.replace(ss,str(i))
+          i = i + 1
+        nml[key] = content
+
+      #check that inter is feasible with this particular grid
+      if 'inter' in nml:
+        if (min(n_p)-1 < int(nml['inter'])): nml['inter']=min(n_p)-1
+      #ncores from command line is for the slurm job, 
+      #the ferre omp nthreads should come from the config yaml file
+      nml['ndim']=ndim
+      for i in range(len(synthfiles)): 
+        nml['SYNTHFILE('+str(i+1)+')'] = "'"+os.path.join(libpath,synthfiles[i])+"'"
+
+      #extensions provided in yaml for input/output files are now supplemented with root
+      files = ['pfile', 'ffile', 'erfile','opfile','offile','sffile']
+      for entry in files:
+        if entry in nml: nml[entry] = "'"+root+'.'+nml[entry]+"'"
+      if 'filterfile' in nml: nml['filterfile'] = "'"+nml['filterfile']+"'"
+
 
       #make sure tmp 'sort' files are stored in $SCRATCH for cori
       if host[:4] == 'cori':
         nml['scratch'] = "'"+scratch+"'"
 
       #get rid of keywords in yaml that are not for the nml file, but for opfmerge or write_tab
+      labels = nml['labels']
       if 'labels' in nml: del nml['labels']
       if 'llimits' in nml: del nml['llimits']
       if 'steps' in nml: del nml['steps']
 
-      nmlfile='input.nml-'+root+'_'+str(k)+run
-      lst.write(nmlfile+'\n')
-      write_nml(nml,nmlfile=nmlfile,path=path)
+      if run == "abund":
+        proxies = zeros(len(conf['proxy']),dtype=int)
+        for entry in conf['proxy']:
+          i = 0
+          for entry2 in labels:
+            if entry == entry2: proxies[i] = i
+            i = i + 1
+
+        for i in range(len(conf['elem'])):
+          nml1 = dict(nml)
+          for key in nml1: 
+            content = str(nml[key])
+            if '$elem' in content: content = content.replace('$elem',str(conf['elem'][i]))
+            if '$proxy' in content: content = content.replace('$proxy',str(proxies[i]))
+            nml1[key] = content
+
+          nmlfile='input.nml-'+root+'_'+str(k+1)+conf['elem'][i]
+          lst.write(nmlfile+'\n')
+          write_nml(nml1,nmlfile=nmlfile,path=path)
+      else:
+        nmlfile='input.nml-'+root+'_'+str(k+1)+run
+        lst.write(nmlfile+'\n')
+        write_nml(nml,nmlfile=nmlfile,path=path)
 
     lst.close()
 

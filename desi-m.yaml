@@ -11,6 +11,15 @@ global:
     ffile: 'frd'
     erfile: 'err'   
     nthreads: 8
+extensions:
+   cal:
+       nov: 0
+       cont: 0
+       pfile: 'opf$i'
+       sffile: ''
+   rteff: 
+       nov: 1
+       indv: $
 m_rdesi1:
    param:
        ndim: 5
