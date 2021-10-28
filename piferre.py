@@ -220,7 +220,7 @@ def cleanup(root):
 
   return
   
-#create a FERRE control hash (content for a ferre input.nml file)
+#create a FERRE control hash (content for a ferre input.nml file) and write it to disk
 def mknml(conf,root,libpath='.',path='.'):
 
   try: 
@@ -235,6 +235,7 @@ def mknml(conf,root,libpath='.',path='.'):
 
 
   grids=conf['grids']
+  if 'abund_grids' in conf: abund_grids=conf['abund_grids']
 
   for k in range(len(grids)): #loop over all grids
     synth=grids[k]
@@ -261,21 +262,9 @@ def mknml(conf,root,libpath='.',path='.'):
       if 'param' in conf[synth]:
         for key in conf[synth]['param'].keys(): nml[key]=conf[synth]['param'][key]
 
-      #adding/override with run keywords in yaml
+      #adding/override with run keywords in yaml (expanding abbreviations)
       for key in conf[synth][run].keys(): 
-        content = str(conf[synth][run][key])
-        if '$i' in content: content = content.replace('$i',str(k+1))
-        if '$synth' in content: content = content.replace('$synth',synth)
-        i = 1
-        for entry in nml['labels']:
-          ss = '$'+entry
-          if ss in content: content = content.replace(ss,str(i))
-          i = i + 1
-        nml[key] = content
-
-
-      #adding/override with run keywords in yaml
-      #for key in conf[synth][run].keys(): nml[key]=conf[synth][run][key]
+        nml[key] = nml_key_expansion(str(conf[synth][run][key]),k,synth,nml['labels'])
 
       #check that inter is feasible with this particular grid
       if 'inter' in nml:
@@ -317,17 +306,10 @@ def mknml(conf,root,libpath='.',path='.'):
       if 'param' in conf[synth]:
         for key in conf[synth]['param'].keys(): nml[key]=conf[synth]['param'][key]
 
-      #adding/override with run keywords in yaml
+      #adding/override with run keywords in yaml (expanding abbreviations)
       for key in conf['extensions'][run].keys(): 
-        content = str(conf['extensions'][run][key])
-        if '$i' in content: content = content.replace('$i',str(k+1))
-        if '$synth' in content: content = content.replace('$synth',synth)
-        i = 1
-        for entry in nml['labels']:
-          ss = '$'+entry
-          if ss in content: content = content.replace(ss,str(i))
-          i = i + 1
-        nml[key] = content
+        nml[key] = nml_key_expansion(str(conf['extensions'][run][key]),k,synth,nml['labels'])
+
 
       #check that inter is feasible with this particular grid
       if 'inter' in nml:
@@ -356,12 +338,15 @@ def mknml(conf,root,libpath='.',path='.'):
       if 'steps' in nml: del nml['steps']
 
       if run == "abund":
+        if synth not in abund_grids: continue #skip abundances for grids not in abund_grids
         proxies = zeros(len(conf['proxy']),dtype=int)
+        j = 0
         for entry in conf['proxy']:
-          i = 0
+          i = 1
           for entry2 in labels:
-            if entry == entry2: proxies[i] = i
+            if entry == entry2: proxies[j] = i
             i = i + 1
+          j = j + 1
 
         for i in range(len(conf['elem'])):
           nml1 = dict(nml)
@@ -382,6 +367,17 @@ def mknml(conf,root,libpath='.',path='.'):
     lst.close()
 
   return None
+
+def nml_key_expansion(content,k,synth,labels):
+    if '$i' in content: content = content.replace('$i',str(k+1))
+    if '$synth' in content: content = content.replace('$synth',synth)
+    i = 1
+    for entry in labels:
+      ss = '$'+entry
+      if ss in content: content = content.replace(ss,str(i))
+      i = i + 1
+
+    return content
 
 #write out a FERRE control hash to an input.nml file
 def write_nml(nml,nmlfile='input.nml',path=None):
@@ -1031,7 +1027,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   ncores = get_slurm_cores(proot)
   hdu0.header['NCORES'] = ncores
   #gather config. info
-  yfile=open(os.path.join(configdir,config),'r')
+  yfile=open(os.path.join(confdir,config),'r')
   #conf=yaml.full_load(yfile)
   conf=yaml.load(yfile, Loader=yaml.SafeLoader)
   yfile.close()
@@ -1181,7 +1177,7 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
   ncores = get_slurm_cores(proot)
   hdu0.header['NCORES'] = ncores
   #gather config. info
-  yfile=open(os.path.join(configdir,config),'r')
+  yfile=open(os.path.join(confdir,config),'r')
   #conf=yaml.full_load(yfile)
   conf=yaml.load(yfile, Loader=yaml.SafeLoader)
   yfile.close()
@@ -1324,7 +1320,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   llimit=[] # lower limits for Teff
   iteff=[]  # column for Teff in opf
   ilchi=[]  # column for log10(red. chi**2) in opf
-  yfile=open(os.path.join(configdir,config),'r')
+  yfile=open(os.path.join(confdir,config),'r')
   #conf=yaml.full_load(yfile)
   conf=yaml.load(yfile, Loader=yaml.SafeLoader)
   yfile.close()
@@ -2011,7 +2007,7 @@ def create_filters(modelfile,config='desi-n.yaml',libpath='.'):
 
   from synple import elements, mkflt
 
-  yfile=open(os.path.join(configdir,config),'r')
+  yfile=open(os.path.join(confdir,config),'r')
   conf=yaml.load(yfile, Loader=yaml.SafeLoader)
   yfile.close()
 
@@ -2090,7 +2086,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
     source='boss'
 
   #gather config. info
-  yfile=open(os.path.join(configdir,config),'r')
+  yfile=open(os.path.join(confdir,config),'r')
   #conf=yaml.full_load(yfile)
   conf=yaml.load(yfile, Loader=yaml.SafeLoader)
   yfile.close()
