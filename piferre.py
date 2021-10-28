@@ -30,9 +30,12 @@ import argparse
 import yaml
 from multiprocessing import Pool,cpu_count
 
-version = '0.1.0'
-hplanck=6.62607015e-34 # J s
-clight=299792458.0 #/s
+version = '0.2.0'
+hplanck = 6.62607015e-34 # J s
+clight = 299792458.0 #/s
+piferredir = os.path.dirname(os.path.realpath(__file__))
+confdir = os.path.join(piferredir,'config')
+filterdir = os.path.join(piferredir,'filter')
 
 #extract the header of a synthfile
 def head_synth(synthfile):
@@ -287,7 +290,7 @@ def mknml(conf,root,libpath='.',path='.'):
       files = ['pfile', 'ffile', 'erfile','opfile','offile','sffile']
       for entry in files:
         if entry in nml: nml[entry] = "'"+root+'.'+nml[entry]+"'"
-      if 'filterfile' in nml: nml['filterfile'] = "'"+nml['filterfile']+"'"
+      if 'filterfile' in nml: nml['filterfile'] = "'"+os.path.join(filterdir,nml['filterfile'])+"'"
 
 
       #make sure tmp 'sort' files are stored in $SCRATCH for cori
@@ -339,7 +342,7 @@ def mknml(conf,root,libpath='.',path='.'):
       files = ['pfile', 'ffile', 'erfile','opfile','offile','sffile']
       for entry in files:
         if entry in nml: nml[entry] = "'"+root+'.'+nml[entry]+"'"
-      if 'filterfile' in nml: nml['filterfile'] = "'"+nml['filterfile']+"'"
+      if 'filterfile' in nml: nml['filterfile'] = "'"+os.path.join(filterdir,nml['filterfile'])+"'"
 
 
       #make sure tmp 'sort' files are stored in $SCRATCH for cori
@@ -1028,8 +1031,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   ncores = get_slurm_cores(proot)
   hdu0.header['NCORES'] = ncores
   #gather config. info
-  ydir = os.path.dirname(os.path.realpath(__file__))
-  yfile=open(os.path.join(ydir,config),'r')
+  yfile=open(os.path.join(configdir,config),'r')
   #conf=yaml.full_load(yfile)
   conf=yaml.load(yfile, Loader=yaml.SafeLoader)
   yfile.close()
@@ -1179,8 +1181,7 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
   ncores = get_slurm_cores(proot)
   hdu0.header['NCORES'] = ncores
   #gather config. info
-  ydir = os.path.dirname(os.path.realpath(__file__))
-  yfile=open(os.path.join(ydir,config),'r')
+  yfile=open(os.path.join(configdir,config),'r')
   #conf=yaml.full_load(yfile)
   conf=yaml.load(yfile, Loader=yaml.SafeLoader)
   yfile.close()
@@ -1323,8 +1324,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   llimit=[] # lower limits for Teff
   iteff=[]  # column for Teff in opf
   ilchi=[]  # column for log10(red. chi**2) in opf
-  ydir = os.path.dirname(os.path.realpath(__file__))
-  yfile=open(os.path.join(ydir,config),'r')
+  yfile=open(os.path.join(configdir,config),'r')
   #conf=yaml.full_load(yfile)
   conf=yaml.load(yfile, Loader=yaml.SafeLoader)
   yfile.close()
@@ -2011,8 +2011,7 @@ def create_filters(modelfile,config='desi-n.yaml',libpath='.'):
 
   from synple import elements, mkflt
 
-  ydir = os.path.dirname(os.path.realpath(__file__))
-  yfile=open(os.path.join(ydir,config),'r')
+  yfile=open(os.path.join(configdir,config),'r')
   conf=yaml.load(yfile, Loader=yaml.SafeLoader)
   yfile.close()
 
@@ -2091,8 +2090,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
     source='boss'
 
   #gather config. info
-  ydir = os.path.dirname(os.path.realpath(__file__))
-  yfile=open(os.path.join(ydir,config),'r')
+  yfile=open(os.path.join(configdir,config),'r')
   #conf=yaml.full_load(yfile)
   conf=yaml.load(yfile, Loader=yaml.SafeLoader)
   yfile.close()
