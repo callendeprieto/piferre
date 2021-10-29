@@ -129,8 +129,8 @@ config='desi-n.yaml'):
     f.write("cd "+os.path.abspath(path)+"\n")
     for i in range(ngrids):
       #f.write("cp input.nml-"+root+"_"+str(i)+" input.nml \n")
-      f.write("(  time "+ferre+" -l input.lst-"+root+"_"+str(i)+" >& "+root+".log_"+str(i))
-      f.write(" ; echo FERRE job " + str(i) + " ) & \n")
+      f.write("(  time "+ferre+" -l input.lst-"+root+"_"+str(i+1)+" >& "+root+".log_"+str(i+1))
+      f.write(" ; echo FERRE job " + str(i+1) + " ) & \n")
     f.write("wait \n")
     f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
             "'); from piferre import opfmerge, write_tab_fits, write_mod_fits, cleanup; opfmerge(\'"+\
@@ -863,8 +863,16 @@ def get_slurm_cores(proot):
 #write piferre param. output
 def write_tab_fits(root, path=None, config='desi-n.yaml'):
   
+
+  #gather config. info
+  yfile=open(os.path.join(confdir,config),'r')
+  #conf=yaml.full_load(yfile)
+  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
+  yfile.close()
+
   if path is None: path=""
   proot=os.path.join(path,root)
+  grids=conf['grids']
   v=glob.glob(proot+".vrd")
   o=glob.glob(proot+".opf")
   t=glob.glob(proot+".opt")
@@ -876,6 +884,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   success=[]
   targetid=[]
   srcfile=[]
+  bestgrid=[]
   fiber=[]
   teff=[]
   logg=[]
@@ -893,6 +902,9 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   if len(t) > 0: tf=open(t[0],'r')
   for line in of:
     cells=line.split()
+    k = int(cells[0])  # the very first line gives the index for the successful grid
+    bestgrid.append(grids[k])
+    cells = cells[1:]
     #for N dim (since COVPRINT=1 in FERRE), there are m= 4 + N*(2+N) cells
     #and likewise we can calculate N = sqrt(m-3)-1
     m=len(cells)
@@ -1026,11 +1038,6 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   hdu0.header['STIME'] = stiming
   ncores = get_slurm_cores(proot)
   hdu0.header['NCORES'] = ncores
-  #gather config. info
-  yfile=open(os.path.join(confdir,config),'r')
-  #conf=yaml.full_load(yfile)
-  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
-  yfile.close()
   global_conf=dict(conf['global'])
   hdu0.header['NTHREADS'] = global_conf['nthreads']
 
@@ -1045,6 +1052,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   cols['SUCCESS'] = success
   cols['TARGETID'] = targetid
   cols['SRCFILE'] = srcfile
+  cols['BESTGRID'] = bestgrid
   cols['FIBER'] = fiber
   cols['TEFF'] = array(teff)*units.K
   cols['LOGG'] = array(logg)
@@ -1063,6 +1071,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   'success': 'Bit indicating whether the code has likely produced useful results',
   'TARGETID': 'DESI targetid',
   'SRCFILE': 'DESI data file',
+  'BESTGRID': 'Model grid that produced the best fit',
   'FIBER': 'DESI fiber',
   'TEFF': 'Effective temperature (K)',
   'LOGG': 'Surface gravity (g in cm/s**2)',
@@ -1384,6 +1393,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
     if len(n) > 0: min_nline=nf[0].readline()
     if len(l) > 0: min_lline=lf[0].readline()
     if len(t) > 0: min_tline=tf[0].readline()
+    k = 0
     for i in range(len(o)-1):
       oline=of[i+1].readline()
       mline=mf[i+1].readline()
@@ -1402,9 +1412,10 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
         if len(n) > 0: min_nline=nline
         if len(l) > 0: min_lline=lline
         if len(t) > 0: min_tline=tline
+        k = i + 1
     
     #print(min_chi,min_oline)
-    oo.write(min_oline)
+    oo.write(str(k)+' '+min_oline)
     mo.write(min_mline)
     if len(n) > 0: no.write(min_nline)
     if len(l) > 0: lo.write(min_lline)
@@ -1427,6 +1438,93 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   if len(t) > 0: to.close
   
   return None
+
+def oafmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
+
+  if path is None: path="./"
+  proot=os.path.join(path,root)
+
+  #setup a line to includ in the oaf files when no abundance has
+  #been derived for the winning grid
+  bads=zeros(10,dtype=int)
+  bads[:]=nan
+  badline=' '.join(map(str,bads))+'\n'
+
+  if wait_on_sorted:
+    a=sorted(glob.glob(proot+".oaf*_sorted"))  
+    while (len(o) > 0):
+      time.sleep(5)
+      a=sorted(glob.glob(proot+".oaf*_sorted"))
+      
+
+  yfile=open(os.path.join(confdir,config),'r')
+  #conf=yaml.full_load(yfile)
+  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
+  yfile.close()
+
+  #set the set of grids to be used
+  grids=conf['grids']
+  elem=conf['elem']
+  abund_grids=conf['abund_grids']
+  indices=[]
+  for agr in abund_grids:
+    i=1
+    for gr in grids:
+      if gr == agr: indices.append(i)
+      i = i + 1
+
+  for el in elem:
+    a=[]
+    for en in indices:
+      a.append(proot+".oaf."+el+str(en))
+
+    #open input files
+    of=open(proot+".opf")
+    af=[]
+    df=[]
+    lf=[]
+    for i in range(len(a)):
+      print(a[i],a[i].replace('oaf','nad'))
+      af.append(open(a[i],'r'))
+      df.append(open(a[i].replace('oaf','nad'),'r'))
+      lf.append(open(a[i].replace('oaf','nal'),'r'))
+    #open output files
+    ao=open(proot+'.oaf.'+el,'w')
+    do=open(proot+'.nad.'+el,'w')
+    lo=open(proot+'.nal.'+el,'w')
+ 
+    for line in of: 
+      tmparr=line.split()
+      k = int(tmparr[0])
+      gotit=False         
+      for i in range(len(a)):
+        aline=af[i].readline()
+        dline=df[i].readline()
+        lline=lf[i].readline()
+        if (k == indices[i]): 
+          gotit=True
+          ao.write(aline)
+          do.write(dline)
+          lo.write(lline)
+      if not gotit: 
+          ao.write(badline)
+          do.write(badline)
+          lo.write(badline) 
+ 
+    #close input files
+    of.close()
+    for i in range(len(a)):
+      af[i].close()
+      df[i].close()
+      lf[i].close()
+
+    #close output files
+    ao.close()
+    do.close()
+    lo.close()
+  
+  return None
+
 
 #get names of extensions from a FITS file
 def extnames(hdu):
