@@ -133,7 +133,7 @@ config='desi-n.yaml'):
       f.write(" ; echo FERRE job " + str(i+1) + " ) & \n")
     f.write("wait \n")
     f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
-            "'); from piferre import opfmerge, write_tab_fits, write_mod_fits, cleanup; opfmerge(\'"+\
+            "'); from piferre import opfmerge, oafmerge, write_tab_fits, write_mod_fits, cleanup; opfmerge(\'"+\
             str(root)+"\',config='"+config+"\'); oafmerge(\'"+\
             str(root)+"\',config='"+config+"\'); write_tab_fits(\'"+\
             str(root)+"\',config='"+config+"\'); write_mod_fits(\'"+\
@@ -765,19 +765,19 @@ def get_versions():
 
   ver = get_dep_versions()
   ver['piferre'] = version
-  log0file = glob.glob("*.log_0")
-  if len(log0file) < 1:
-    print("Warning: cannot find any *.log_0 file in the working directory")
+  log1file = glob.glob("*.log_1")
+  if len(log1file) < 1:
+    print("Warning: cannot find any *.log_1 file in the working directory")
     fversion = 'unknown'
   else:
-    l0 = open(log0file[0],'r')
+    l1 = open(log1file[0],'r')
     while 1:
-      line = l0.readline()
+      line = l1.readline()
       if 'f e r r e' in line:
         entries = line.split()
         fversion = entries[-1][1:]
         break
-    l0.close()
+    l1.close()
     ver['ferre'] = fversion
 
   return(ver)
