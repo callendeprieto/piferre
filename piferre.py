@@ -879,6 +879,11 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   t=glob.glob(proot+".opt")
   #m=glob.glob(proot+".mdl")
   #n=glob.glob(proot+".nrd")
+  if 'elem' in conf: 
+    a=[]
+    for entry in conf['elem']:
+      a.append(proot+".oaf."+entry)
+
   fmp=glob.glob(proot+".fmp.fits")
   scr=glob.glob(proot+".scr.fits")
   
@@ -901,6 +906,10 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   vf=open(v[0],'r')
   of=open(o[0],'r')
   if len(t) > 0: tf=open(t[0],'r')
+  if 'elem' in conf:
+    af=[]
+    for entry in conf['elem']: af.append(open(proot+".oaf."+entry,'r')
+
   for line in of:
     cells=line.split()
     k = int(cells[0])  # the very first line gives the index for the successful grid
@@ -1007,7 +1016,9 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
     fiber.append(int32(tmp[1]))
     elem.append([nan,nan])
     elem_err.append([nan,nan])
-
+    if 'elem' in conf:
+      for entry in conf['elem']:
+        pass
 
   hdu0=fits.PrimaryHDU()
 
@@ -1445,12 +1456,6 @@ def oafmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   if path is None: path="./"
   proot=os.path.join(path,root)
 
-  #setup a line to includ in the oaf files when no abundance has
-  #been derived for the winning grid
-  bads=zeros(10,dtype=int)
-  bads[:]=nan
-  badline=' '.join(map(str,bads))+'\n'
-
   if wait_on_sorted:
     a=sorted(glob.glob(proot+".oaf*_sorted"))  
     while (len(o) > 0):
@@ -1463,6 +1468,8 @@ def oafmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   conf=yaml.load(yfile, Loader=yaml.SafeLoader)
   yfile.close()
 
+  if 'elem' not in conf: return None
+
   #set the set of grids to be used
   grids=conf['grids']
   elem=conf['elem']
@@ -1473,6 +1480,27 @@ def oafmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
     for gr in grids:
       if gr == agr: indices.append(i)
       i = i + 1
+
+  #setup a line to includ in the oaf files when no abundance has
+  #been derived for the winning grid
+  of=open(proot+'.opf')
+  line=of.readline()
+  of.close()
+  cols=line.split()
+  ncol=len(cols)
+  bads=zeros(ncol,dtype=int)
+  bads[:]=nan
+  badline=' '.join(map(str,bads))+'\n'
+  of=open(proot+'.frd')
+  line=of.readline()
+  of.close()
+  cols=line.split()
+  ncol=len(cols)
+  bads=zeros(ncol,dtype=int)
+  bads[:]=nan
+  longbadline=' '.join(map(str,bads))+'\n'
+  
+
 
   for el in elem:
     a=[]
@@ -1509,8 +1537,8 @@ def oafmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
           lo.write(lline)
       if not gotit: 
           ao.write(badline)
-          do.write(badline)
-          lo.write(badline) 
+          do.write(longbadline)
+          lo.write(longbadline) 
  
     #close input files
     of.close()
