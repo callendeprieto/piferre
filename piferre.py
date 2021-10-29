@@ -908,7 +908,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   if len(t) > 0: tf=open(t[0],'r')
   if 'elem' in conf:
     af=[]
-    for entry in conf['elem']: af.append(open(proot+".oaf."+entry,'r')
+    for entry in conf['elem']: af.append(open(proot+".oaf."+entry,'r'))
 
   for line in of:
     cells=line.split()
