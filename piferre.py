@@ -17,7 +17,7 @@ import platform
 import glob
 import re
 import importlib
-from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, log10, median, std, mean, pi, intersect1d
+from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, log10, median, std, mean, pi, intersect1d, isfinite
 from scipy.signal import savgol_filter
 from astropy.io import fits
 from astropy.coordinates import SkyCoord
@@ -263,9 +263,9 @@ def mknml(conf,root,libpath='.',path='.'):
       if 'param' in conf[synth]:
         for key in conf[synth]['param'].keys(): nml[key]=conf[synth]['param'][key]
 
-      #adding/override with run keywords in yaml (expanding abbreviations)
+      #adding/override with run keywords in yaml 
       for key in conf[synth][run].keys(): 
-        nml[key] = nml_key_expansion(str(conf[synth][run][key]),k,synth,nml['labels'])
+        nml[key] = str(conf[synth][run][key])
 
       #check that inter is feasible with this particular grid
       if 'inter' in nml:
@@ -289,9 +289,16 @@ def mknml(conf,root,libpath='.',path='.'):
 
       #get rid of keywords in yaml that are not for the nml file, but for opfmerge 
       #or write_tab
+      labels = nml['labels']
       if 'labels' in nml: del nml['labels']
       if 'llimits' in nml: del nml['llimits']
       if 'steps' in nml: del nml['steps']
+
+      #expanding abbreviations $i -> synth number, $synth -> grid name
+      # $Teff -> index of Teff variable, etc.
+      for key in nml:
+        nml[key] = nml_key_expansion(str(nml[key]),k,synth,labels)
+
 
       nmlfile='input.nml-'+root+'_'+str(k+1)+run
       lst.write(nmlfile+'\n')
@@ -307,10 +314,9 @@ def mknml(conf,root,libpath='.',path='.'):
       if 'param' in conf[synth]:
         for key in conf[synth]['param'].keys(): nml[key]=conf[synth]['param'][key]
 
-      #adding/override with run keywords in yaml (expanding abbreviations)
+      #adding/override with run keywords in yaml 
       for key in conf['extensions'][run].keys(): 
-        nml[key] = nml_key_expansion(str(conf['extensions'][run][key]),k,synth,nml['labels'])
-
+        nml[key] = str(conf['extensions'][run][key])
 
       #check that inter is feasible with this particular grid
       if 'inter' in nml:
@@ -338,8 +344,16 @@ def mknml(conf,root,libpath='.',path='.'):
       if 'llimits' in nml: del nml['llimits']
       if 'steps' in nml: del nml['steps']
 
+      #expanding abbreviations $i -> synth number, $synth -> grid name
+      # $Teff -> index of Teff variable, etc.
+      for key in nml:
+        nml[key] = nml_key_expansion(str(nml[key]),k,synth,labels)
+
       if run == "abund":
         if synth not in abund_grids: continue #skip abundances for grids not in abund_grids
+
+        #replacing $elem -> element symbol
+        #          $proxy -> index of the proxy variable for the element in the grid
         proxies = zeros(len(conf['proxy']),dtype=int)
         j = 0
         for entry in conf['proxy']:
@@ -884,6 +898,20 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
     for entry in conf['elem']:
       a.append(proot+".oaf."+entry)
 
+    prox=[]
+    for synth in grids:
+      labels=conf[synth]['param']['labels']
+      proxies = zeros(len(conf['proxy']),dtype=int)
+      j = 0
+      for entry in conf['proxy']:
+        i = 1
+        for entry2 in labels:
+          if entry == entry2: proxies[j] = i
+          i = i + 1
+        j = j + 1
+      prox.append(proxies)
+
+
   fmp=glob.glob(proot+".fmp.fits")
   scr=glob.glob(proot+".scr.fits")
   
@@ -906,14 +934,20 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   vf=open(v[0],'r')
   of=open(o[0],'r')
   if len(t) > 0: tf=open(t[0],'r')
+
+  #set the stage for extracting abundances from oaf files
   if 'elem' in conf:
     af=[]
-    for entry in conf['elem']: af.append(open(proot+".oaf."+entry,'r'))
+    i = 0
+    for entry in conf['elem']: 
+      af.append(open(a[i],'r'))
+      i = i + 1
+
 
   for line in of:
     cells=line.split()
-    k = int(cells[0])  # the very first line gives the index for the successful grid
-    bestgrid.append(grids[k])
+    k = int(cells[0])  # the very first line gives the index (1,2...) for the successful grid
+    bestgrid.append(grids[k-1])
     cells = cells[1:]
     #for N dim (since COVPRINT=1 in FERRE), there are m= 4 + N*(2+N) cells
     #and likewise we can calculate N = sqrt(m-3)-1
@@ -1014,11 +1048,22 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
     targetid.append(int64(tmp[0]))
     srcfile.append(root)
     fiber.append(int32(tmp[1]))
-    elem.append([nan,nan])
-    elem_err.append([nan,nan])
+    #elem.append([nan,nan])
+    #elem_err.append([nan,nan])
     if 'elem' in conf:
+      proxies=prox[k-1]
+      batch=[]
+      batch_err=[]
+      i = 0 
       for entry in conf['elem']:
-        pass
+        line = af[i].readline()
+        acells = line.split() 
+        batch.append(float(acells[proxies[i]]))
+        batch_err.append(float(acells[proxies[i]+ndim]))
+        i = i + 1
+      elem.append(batch)
+      elem_err.append(batch_err)
+
 
   hdu0=fits.PrimaryHDU()
 
@@ -1405,7 +1450,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
     if len(n) > 0: min_nline=nf[0].readline()
     if len(l) > 0: min_lline=lf[0].readline()
     if len(t) > 0: min_tline=tf[0].readline()
-    k = 0
+    k = 1
     for i in range(len(o)-1):
       oline=of[i+1].readline()
       mline=mf[i+1].readline()
@@ -1424,7 +1469,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
         if len(n) > 0: min_nline=nline
         if len(l) > 0: min_lline=lline
         if len(t) > 0: min_tline=tline
-        k = i + 1
+        k = i + 2
     
     #print(min_chi,min_oline)
     oo.write(str(k)+' '+min_oline)
@@ -1488,7 +1533,7 @@ def oafmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   of.close()
   cols=line.split()
   ncol=len(cols)
-  bads=zeros(ncol,dtype=int)
+  bads=zeros(ncol)
   bads[:]=nan
   badline=' '.join(map(str,bads))+'\n'
   of=open(proot+'.frd')
@@ -1496,7 +1541,7 @@ def oafmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   of.close()
   cols=line.split()
   ncol=len(cols)
-  bads=zeros(ncol,dtype=int)
+  bads=zeros(ncol)
   bads[:]=nan
   longbadline=' '.join(map(str,bads))+'\n'
   
@@ -1539,7 +1584,8 @@ def oafmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
           ao.write(badline)
           do.write(longbadline)
           lo.write(longbadline) 
- 
+     
+
     #close input files
     of.close()
     for i in range(len(a)):
