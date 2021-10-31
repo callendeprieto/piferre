@@ -916,12 +916,24 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
 
   fmp=glob.glob(proot+".fmp.fits")
   scr=glob.glob(proot+".scr.fits")
-  
+ 
+
+  if len(fmp) > 0:
+    ff=fits.open(fmp[0])
+    fibermap=ff[1]
+
+  if len(scr) > 0:
+    fs=fits.open(scr[0])
+    scores=fs[1]
+ 
   success=[]
   targetid=[]
+  target_ra=[]
+  target_dec=[]
+  ref_id=[]
+  ref_cat=[]
   srcfile=[]
   bestgrid=[]
-  fiber=[]
   teff=[]
   logg=[]
   feh=[]
@@ -1048,8 +1060,12 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
     else: success.append(0)
     tmp = cells[0].split('_')
     targetid.append(int64(tmp[0]))
+    target_ra.append(fibermap.data['target_ra'])
+    target_dec.append(fibermap.data['target_dec'])
+    ref_id.append(fibermap.data['ref_id'])
+    ref_cat.append(fibermap.data['ref_cat'])
     srcfile.append(root)
-    fiber.append(int32(tmp[1]))
+    #fiber.append(int32(tmp[1]))
     #elem.append([nan,nan])
     #elem_err.append([nan,nan])
     if 'elem' in conf:
@@ -1110,9 +1126,12 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   cols = {}
   cols['SUCCESS'] = success
   cols['TARGETID'] = targetid
+  cols['TARGET_RA'] = target_ra
+  cols['TARGET_DEC'] = target_dec
+  cols['REF_ID'] = ref_id
+  cols['REF_CAT'] = ref_cat
   cols['SRCFILE'] = srcfile
   cols['BESTGRID'] = bestgrid
-  cols['FIBER'] = fiber
   cols['TEFF'] = array(teff)*units.K
   cols['LOGG'] = array(logg)
   cols['FEH'] = array(feh)
@@ -1129,9 +1148,12 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   colcomm = {
   'success': 'Bit indicating whether the code has likely produced useful results',
   'TARGETID': 'DESI targetid',
+  'TARGET_RA': 'Target Right Ascension (deg) -- details in FIBERMAP',
+  'TARGET_DEC': 'Target Declination (deg) -- details in FIBERMAP',
+  'REF_ID': 'Astrometric cat refID (Gaia SOURCE_ID)',
+  'REF_CAT': 'Astrometry reference catalog',
   'SRCFILE': 'DESI data file',
   'BESTGRID': 'Model grid that produced the best fit',
-  'FIBER': 'DESI fiber',
   'TEFF': 'Effective temperature (K)',
   'LOGG': 'Surface gravity (g in cm/s**2)',
   'FEH': 'Metallicity [Fe/H] = log10(N(Fe)/N(H)) - log10(N(Fe)/N(H))sun' ,
@@ -1159,17 +1181,14 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
 
 
   if len(fmp) > 0:
-    ff=fits.open(fmp[0])
-    fibermap=ff[1]
     hdu=fits.BinTableHDU.from_columns(fibermap, name='FIBERMAP')
     hdulist.append(hdu)
+    ff.close()
 
   if len(scr) > 0:
-    ff=fits.open(scr[0])
-    scores=ff[1]
     hdu=fits.BinTableHDU.from_columns(scores, name='SCORES')
     hdulist.append(hdu)
-
+    fs.close()
 
   hdul=fits.HDUList(hdulist)
   hdul.writeto('sptab_'+root+'.fits')
