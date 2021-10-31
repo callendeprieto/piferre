@@ -208,10 +208,12 @@ def cleanup(root):
   scrfiles = glob.glob(root+'*scr.fits')
   logfiles = glob.glob(root+'.log*')
   slurmfiles = glob.glob(root+'*slurm')
-  abufiles = glob.glob(root+'*.?ca?')
+  oaffiles = glob.glob(root+'*.oaf.*')
+  nadfiles = glob.glob(root+'*.nad.*')
+  nalfiles = glob.glob(root+'*.nal.*')
   allfiles = vrdfiles + wavefiles + opffiles + optfiles + nmlfiles + lstfiles + \
               errfiles + frdfiles + nrdfiles + mdlfiles + ndlfiles + \
-              fmpfiles + scrfiles + logfiles + slurmfiles + abufiles
+              fmpfiles + scrfiles + logfiles + slurmfiles + oaffiles + nadfiles + nalfiles 
 
   print('removing files:',end=' ')
   for entry in allfiles: 
