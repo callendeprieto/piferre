@@ -42,7 +42,7 @@ extensions:
        opfile: 'oaf.$elem$i'
        offile: 'nal.$elem$i'
        sffile: 'nad.$elem$i'
-       filterfile: '$synth.$elem.flt'
+       filterfile: 'n_rdesi1.$elem.flt'
 m_rdesi1:
    param:
        ndim: 5

@@ -1264,16 +1264,22 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
     ldata=loadtxt(l[0])
 
   if ('elem' in conf and len(a) > 0): 
-    filterfile=conf['extensions']['abund']['filterfile']
     i = 0
     for entry in conf['elem']:
-      if '$elem' in entry: entry = entry.replace('$elem',str(entry))
-      if '$synth' in entry: entry = entry.replace('$synth',str('fillmein-please'))
+      filterfile=conf['extensions']['abund']['filterfile']
+      if '$elem' in filterfile: 
+        filterfile = filterfile.replace('$elem',str(entry))
+      #if '$synth' in filterfile: 
+      #  filterfile = filterfile.replace('$synth',str('fillmein-please'))
+      filt=loadtxt(filterfile)
       farr=loadtxt(proot+".nal."+entry)
-      if i == 0: 
-        adata = farr
+      if i == 0:  
+        w=filt < 1e-4
+        adata=farr[:,:]
+        adata[:,w]=0.0
       else:
-        adata = farr
+        w=filt >= 1e-4
+        adata[:,w] = adata[:,w] + farr[:,w]
       i = i + 1
 
 
@@ -1347,7 +1353,14 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
       if ldata.ndim == 2: tdata = ldata[:,j1:j2]
       else: tdata = ldata[j1:j2][None,:]
       cols['fit'] = tdata
-      colcomm['fit'] = 'Best-fitting model'
+      colcomm['fit'] = 'Best-fitting model (atmospheric parameters)'
+    if ('elem' in conf and len(a) > 0):
+      if adata.ndim == 2: tdata = adata[:,j1:j2]
+      else: tdata = adata[j1:j2][None,:]
+      cols['abu'] = tdata
+      colcomm['abu'] = 'Best-fitting model (abundances)'
+      
+      
 
     table = tbl.Table(cols)
     hdu=fits.BinTableHDU(table,name = entry+'_MODEL')
