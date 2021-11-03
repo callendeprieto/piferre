@@ -1200,6 +1200,14 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
   
   if path is None: path=""
   proot=os.path.join(path,root)
+
+  #gather config. info
+  yfile=open(os.path.join(confdir,config),'r')
+  #conf=yaml.full_load(yfile)
+  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
+  yfile.close()
+  global_conf=dict(conf['global'])
+
   
   xbandfiles = sorted(glob.glob(proot+'-*.wav'))
   band = []
@@ -1263,12 +1271,6 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
   hdu0.header['STIME'] = stiming
   ncores = get_slurm_cores(proot)
   hdu0.header['NCORES'] = ncores
-  #gather config. info
-  yfile=open(os.path.join(confdir,config),'r')
-  #conf=yaml.full_load(yfile)
-  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
-  yfile.close()
-  global_conf=dict(conf['global'])
   hdu0.header['NTHREADS'] = global_conf['nthreads']
 
   #get versions and enter then in primary header
@@ -2306,9 +2308,11 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
     #get redshifts
     if (zbestfile.find('best') > -1) or (zbestfile.find('redrock') > -1):
       z=read_zbest(zbestfile)
+      rv_source='zbest'
     else:
       #Koposov pipeline
       z=read_k(zbestfile)
+
   
     #read primary header and  
     #find out if there is FIBERMAP extension
