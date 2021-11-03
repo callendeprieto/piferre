@@ -1,7 +1,8 @@
 bands: ['b', 'r', 'z']
 grids: ['m_rdesi1', 'm_rdesi2', 'm_rdesi3', 'm_rdesi4', 'm_rdesi5', 'm_rdesi6', 'm_rdesi7', 'm_rdesi8', 'm_rdesi9']
-elem:  ['C',      'Mg',     'Ca'     ]
-proxy: ['[Fe/H]', '[a/Fe]', '[a/Fe]' ]
+elem:  [ 'Fe',     'Ca',     'C',       'Mg'   ]
+proxy: ['[Fe/H]', '[a/Fe]', '[Fe/H]', '[a/Fe]' ]
+abund_grids: ['m_rdesi1', 'm_rdesi2']
 seconds_per_spectrum: 10.
 global:
     algor: 3
@@ -10,8 +11,14 @@ global:
     errbar: 1
     covprint: 1
     inter: 3
+    cont: 3
+    ncont: 500
     ffile: 'frd'
-    erfile: 'err'   
+    erfile: 'err'
+    pfile: 'vrd'
+    opfile: 'opf$i'
+    offile: 'ndl$i'
+    sffile: 'nrd$i'
     nthreads: 8
 extensions:
    rteff: 
@@ -32,21 +39,16 @@ extensions:
        nov: 1
        indv: $proxy
        nthreads: 1
-       pfile: 'opt$i'
-       opfile: '$elem$i'
-       offile: 'ndl.$elem$i'
-       sffile: 'nrd.$elem$i'
+       pfile: 'opf$i'
+       opfile: 'oaf.$elem$i'
+       offile: 'nal.$elem$i'
+       sffile: 'nad.$elem$i'
+       filterfile: '$synth.$elem.flt'
 m_rdesi1:
    param:
        ndim: 5
        nov: 5
-       indv:  1  2  3  4  5
-       cont: 3
-       ncont: 500
-       pfile: 'vrd'
-       opfile: 'opf1'
-       offile: 'ndl1'
-       sffile: 'nrd1'
+       indv: 1 2 3 4 5
        labels:  ['[Fe/H]', '[a/Fe]', 'log10micro', 'Teff',  'logg']
        llimits: -5. -1.  -0.301029995663981 3500. 0.0
        steps:  0.25  0.25 0.301029995663981  250. 0.5
@@ -54,13 +56,7 @@ m_rdesi2:
    param:
        ndim: 5
        nov: 5
-       indv:  1  2  3  4  5
-       cont: 3
-       ncont: 500
-       pfile: 'vrd'
-       opfile: 'opf2'
-       offile: 'ndl2'
-       sffile: 'nrd2'
+       indv: 1 2 3 4 5
        labels:  ['[Fe/H]', '[a/Fe]', 'log10micro', 'Teff',  'logg']
        llimits:  -5. -1.  -0.301029995663981 5750. 1.0
        steps:   0.25  0.25 0.301029995663981  250. 0.5
@@ -68,13 +64,7 @@ m_rdesi3:
    param:
        ndim: 5
        nov: 5
-       indv:  1  2  3  4  5
-       cont: 3
-       ncont: 500
-       pfile: 'vrd'
-       opfile: 'opf3'
-       offile: 'ndl3'
-       sffile: 'nrd3'
+       indv: 1 2 3 4 5
        labels:  ['[Fe/H]', '[a/Fe]', 'log10micro', 'Teff',  'logg']
        llimits: -5.   -1. -0.301029995663981 7000. 2.0
        steps:   0.25 0.25  0.301029995663981  500. 0.5
@@ -82,13 +72,7 @@ m_rdesi4:
    param:
        ndim: 5
        nov: 5
-       indv:  1  2  3  4  5
-       cont: 3
-       ncont: 500
-       pfile: 'vrd'
-       opfile: 'opf4'
-       offile: 'ndl4'
-       sffile: 'nrd4'
+       indv: 1 2 3 4 5
        labels:  ['[Fe/H]', '[a/Fe]', 'log10micro', 'Teff',  'logg']
        llimits: -5. -1.  -0.301029995663981 10000. 3.0
        steps:  0.25  0.25 0.301029995663981  1000. 0.5
@@ -96,13 +80,7 @@ m_rdesi5:
    param:
        ndim: 5
        nov: 5
-       indv:  1  2  3  4  5
-       cont: 3
-       ncont: 500
-       pfile: 'vrd'
-       opfile: 'opf5'
-       offile: 'ndl5'
-       sffile: 'nrd5'
+       indv: 1 2 3 4 5
        labels: ['[Fe/H]', '[a/Fe]', 'log10micro', 'Teff',  'logg']
        llimits: -5. -1.  -0.301029995663981 20000. 4.0
        steps:  0.25  0.25 0.301029995663981  1000. 0.5
@@ -111,12 +89,6 @@ m_rdesi6:
        ndim: 2
        nov: 2
        indv: 1 2
-       cont: 3
-       ncont: 500
-       pfile: 'vrd'
-       opfile: 'opf6'
-       offile: 'ndl6'
-       sffile: 'nrd6'
        labels: ['Teff' ,'logg']
        llimits: 6000.00      7.00000
        steps:    250. 0.25
@@ -125,12 +97,6 @@ m_rdesi7:
        ndim: 2
        nov: 2
        indv: 1 2
-       cont: 3
-       ncont: 500
-       pfile: 'vrd'
-       opfile: 'opf7'
-       offile: 'ndl7'
-       sffile: 'nrd7'
        labels: ['Teff', 'logg']
        llimits: 19000.0       7.00000
        steps:    1000. 0.25
@@ -139,12 +105,6 @@ m_rdesi8:
        ndim: 2
        nov: 2
        indv: 1 2
-       cont: 3
-       ncont: 500
-       pfile: 'vrd'
-       opfile: 'opf8'
-       offile: 'ndl8'
-       sffile: 'nrd8'
        labels: ['Teff', 'logg']
        llimits: 10000.00       7.00000
        steps: 1000.  0.25
@@ -153,12 +113,6 @@ m_rdesi9:
        ndim: 2
        nov: 2
        indv:  1 2
-       cont: 3
-       ncont: 500
-       pfile: 'vrd'
-       opfile: 'opf9'
-       offile: 'ndl9'
-       sffile: 'nrd9'
        labels: [ 'Teff', 'logg']
        llimits:  15000.00       7.00000
        steps: 5000. 0.25

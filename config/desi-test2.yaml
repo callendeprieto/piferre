@@ -2,7 +2,7 @@ bands: ['b', 'r', 'z']
 grids: ['n_rdesi1', 'n_rdesi2', 'n_rdesi3', 'n_rdesi4', 'n_rdesi5', 'n_rdesi6', 'n_rdesi7', 'n_rdesi8', 'n_rdesi9']
 elem:  ['Fe', 'Ca', 'C',  'Mg' ]
 proxy: ['[Fe/H]', '[Fe/H]', '[Fe/H]', '[Fe/H]']
-abund_grids: ['n_rdesi1', n_rdesi2']
+abund_grids: ['n_rdesi1', 'n_rdesi2']
 seconds_per_spectrum: 1.
 global:
     algor: 3
