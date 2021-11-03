@@ -1246,6 +1246,7 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
   e=glob.glob(proot+".err")
   n=glob.glob(proot+".nrd")
   l=glob.glob(proot+".ndl")
+  a=glob.glob(proot+".nal.*")
 
   fmp=glob.glob(proot+".fmp.fits")  
   scr=glob.glob(proot+".scr.fits")
@@ -1261,6 +1262,19 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
 
   if (len(l) > 0): 
     ldata=loadtxt(l[0])
+
+  if ('elem' in conf and len(a) > 0): 
+    filterfile=conf['extensions']['abund']['filterfile']
+    i = 0
+    for entry in conf['elem']:
+      if '$elem' in entry: entry = entry.replace('$elem',str(entry))
+      if '$synth' in entry: entry = entry.replace('$synth',str('fillmein-please'))
+      farr=loadtxt(proot+".nal."+entry)
+      if i == 0: 
+        adata = farr
+      else:
+        adata = farr
+      i = i + 1
 
 
   hdu0=fits.PrimaryHDU()
