@@ -24,8 +24,7 @@ extensions:
    rteff: 
        nov: 1
        indv: $Teff
-       inter: 2
-       nthreads: 1
+       inter: 4
        pfile: 'opf$i'
        opfile: 'opt$i'
    calib: 

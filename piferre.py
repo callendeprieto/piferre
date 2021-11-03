@@ -356,12 +356,13 @@ def mknml(conf,root,libpath='.',path='.'):
 
         #replacing $elem -> element symbol
         #          $proxy -> index of the proxy variable for the element in the grid
-        proxies = zeros(len(conf['proxy']),dtype=int)
+        proxies=conf['proxy']
+        indproxies = zeros(len(proxies),dtype=int)
         j = 0
-        for entry in conf['proxy']:
+        for entry in proxies:
           i = 1
           for entry2 in labels:
-            if entry == entry2: proxies[j] = i
+            if entry == entry2: indproxies[j] = i
             i = i + 1
           j = j + 1
 
@@ -370,7 +371,7 @@ def mknml(conf,root,libpath='.',path='.'):
           for key in nml1: 
             content = str(nml[key])
             if '$elem' in content: content = content.replace('$elem',str(conf['elem'][i]))
-            if '$proxy' in content: content = content.replace('$proxy',str(proxies[i]))
+            if '$proxy' in content: content = content.replace('$proxy',str(indproxies[i]))
             nml1[key] = content
 
           nmlfile='input.nml-'+root+'_'+str(k+1)+conf['elem'][i]
@@ -429,12 +430,15 @@ def read_zbest(filename):
     #print(enames)
     if 'ZBEST' in enames:
       zbest=hdu['zbest'].data
+      zerr=zbest['zerr']
       targetid=zbest['targetid'] #array of long integers
     elif 'REDSHIFTS' in enames:
       zbest=hdu['redshifts'].data
+      zerr=zbest['zerr']
       targetid=zbest['targetid'] #array of long integers
     else:
       zbest=hdu[1].data
+      zerr=zbest['z_err']
       plate=zbest['plate']
       mjd=zbest['mjd']
       fiberid=zbest['fiberid']
@@ -445,7 +449,7 @@ def read_zbest(filename):
 
     #print(type(targetid),type(zbest['z']),type(targetid[0]))
     #print(targetid.shape,zbest['z'].shape)
-    z=dict(zip(targetid, zbest['z']))
+    z=dict(zip(targetid, zip(zbest['z'],zerr) ))
   else:
     z=dict()
 
@@ -457,13 +461,14 @@ def read_k(filename):
   if len(hdu) > 1:
     k=hdu['rvtab'].data
     targetid=k['targetid']
+    zerr=k['vrad_err']/clight*1e3
     #targetid=k['fiber']
     #teff=k['teff']
     #logg=k['loog']
     #vsini=k['vsini']
     #feh=k['feh']
     #z=k['vrad']/clight*1e3
-    z=dict(zip(targetid, k['vrad']/clight*1e3))  
+    z=dict(zip(targetid, zip(k['vrad']/clight*1e3, zerr) ))  
     #z_err=dict(zip(k['target_id'], k['vrad_err']/clight*1e3))  
   else:
     z=dict() 
@@ -901,17 +906,18 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       a.append(proot+".oaf."+entry)
 
     prox=[]
+    proxies=conf['proxy']
     for synth in grids:
       labels=conf[synth]['param']['labels']
-      proxies = zeros(len(conf['proxy']),dtype=int)
+      indproxies=zeros(len(proxies),dtype=int)
       j = 0
-      for entry in conf['proxy']:
+      for entry in proxies:
         i = 1
         for entry2 in labels:
-          if entry == entry2: proxies[j] = i
+          if entry == entry2: indproxies[j] = i
           i = i + 1
         j = j + 1
-      prox.append(proxies)
+      prox.append(indproxies)
 
 
   fmp=glob.glob(proot+".fmp.fits")
@@ -945,6 +951,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   snr_med=[]
   chisq_tot=[]
   rv_adop=[]
+  rv_err=[]
   vf=open(v[0],'r')
   of=open(o[0],'r')
   if len(t) > 0: tf=open(t[0],'r')
@@ -990,6 +997,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       chisq_tot.append(10.**float(cells[3+2*ndim]))
       snr_med.append(float(cells[2+2*ndim]))
       rv_adop.append(float(vcells[6])*clight/1e3)
+      rv_err.append(float(vcells[7])*clight/1e3)
       cov[3:,3:] = reshape(array(cells[4+2*ndim:],dtype=float),(2,2))
       covar.append(cov)    
 
@@ -1008,6 +1016,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       chisq_tot.append(10.**float(cells[3+2*ndim]))
       snr_med.append(float(cells[2+2*ndim]))
       rv_adop.append(float(vcells[6])*clight/1e3)
+      rv_err.append(float(vcells[7])*clight/1e3)
       cov[2:,2:] = reshape(array(cells[4+2*ndim:],dtype=float),(3,3))
       cov[0,:] = cov[2,:]
       cov[2,:] = 0.
@@ -1028,6 +1037,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       chisq_tot.append(10.**float(cells[3+2*ndim]))
       snr_med.append(float(cells[2+2*ndim]))
       rv_adop.append(float(vcells[6])*clight/1e3)
+      rv_err.append(float(vcells[7])*clight/1e3)
       cov[1:,1:] = reshape(array(cells[4+2*ndim:],dtype=float),(4,4))
       cov[0,:] = cov[2,:]
       cov[2,:] = 0.
@@ -1050,6 +1060,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       chisq_tot.append(10.**float(cells[3+2*ndim]))
       snr_med.append(float(cells[2+2*ndim]))
       rv_adop.append(float(vcells[6])*clight/1e3)
+      rv_err.append(float(vcells[7])*clight/1e3)
       cov = reshape(array(cells[4+2*ndim:],dtype=float),(5,5))
       covar.append(cov)
      
@@ -1069,15 +1080,22 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
     #elem.append([nan,nan])
     #elem_err.append([nan,nan])
     if 'elem' in conf:
-      proxies=prox[k-1]
+      indproxies=prox[k-1]
       batch=[]
       batch_err=[]
       i = 0 
       for entry in conf['elem']:
         line = af[i].readline()
-        acells = line.split() 
-        batch.append(float(acells[proxies[i]]))
-        batch_err.append(float(acells[proxies[i]+ndim]))
+        acells = line.split()
+        if '/H' in proxies[i]: 
+          value=float(acells[indproxies[i]]) 
+          value_err=float(acells[indproxies[i]+ndim])
+        else:
+          value=float(acells[indproxies[i]]) + feh[-1]
+          value_err=sqrt(float(acells[indproxies[i]+ndim])**2 + covar[0,0] )
+    
+        batch.append(value)
+        batch_err.append(value_err)
         i = i + 1
       elem.append(batch)
       elem_err.append(batch_err)
@@ -1144,6 +1162,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   cols['CHISQ_TOT'] = array(chisq_tot)
   cols['SNR_MED'] = array(snr_med)
   cols['RV_ADOP'] = array(rv_adop)*units.km/units.s
+  cols['RV_ERR'] = array(rv_err)*units.km/units.s
 
   colcomm = {
   'success': 'Bit indicating whether the code has likely produced useful results',
@@ -1161,11 +1180,12 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   'LOG10MICRO': 'Log10 of Microturbulence (km/s)',
   'PARAM': 'Array of atmospheric parameters ([Fe/H], [a/Fe], log10micro, Teff,logg)',
   'COVAR': 'Covariance matrix for ([Fe/H], [a/Fe], log10micro, Teff,logg)',
-  'ELEM': 'Elemental abundance ratios to iron [elem/Fe]',
-  'ELEM_ERR': 'Uncertainties in the elemental abundance ratios to iron',
+  'ELEM': 'Elemental abundance ratios to hydrogen [elem/H]',
+  'ELEM_ERR': 'Uncertainties in the elemental abundance ratios',
   'CHISQ_TOT': 'Total chi**2',
   'SNR_MED': 'Median signal-to-ratio',
-  'RV_ADOP': 'Adopted Radial Velocity (km/s)'
+  'RV_ADOP': 'Adopted Radial Velocity (km/s)',
+  'RV_ERR': 'Uncertainty in the adopted Radial Velocity (km/s)'
   }      
 
   
@@ -1367,7 +1387,7 @@ def write_ferre_input(root,ids,par,y,ey,path=None):
     ppar=[ids[i]]
     for item in par[ids[i]]: ppar.append(item)
     #vrd.write(' '.join(map(str,ppar))
-    vrd.write("%30s %6.2f %10.2f %6.2f %6.2f %12.9f %12.9f %12.9f %12.9f\n" % 
+    vrd.write("%30s %6.2f %10.2f %6.2f %6.2f %12.9f %12.9f %12.9f %12.9f %12.9f\n" % 
 tuple(ppar) )    
     #ppar.tofile(ppar,sep=" ",format="%s")
     #vrd.write("\n")
@@ -2308,11 +2328,9 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
     #get redshifts
     if (zbestfile.find('best') > -1) or (zbestfile.find('redrock') > -1):
       z=read_zbest(zbestfile)
-      rv_source='zbest'
     else:
       #Koposov pipeline
       z=read_k(zbestfile)
-
   
     #read primary header and  
     #find out if there is FIBERMAP extension
@@ -2376,7 +2394,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
     process_target = zeros(nspec, dtype=bool)
     for i in range(nspec):
       if z.get(targetid[i],-1) != -1:
-        if (abs(z[targetid[i]]) < 0.01) & (abs(z[targetid[i]]) >= 0.): process_target[i]= True
+        if (abs(z[targetid[i]][0]) < 0.01) & (abs(z[targetid[i]][0]) >= 0.): process_target[i]= True
 
     
     #skip the rest of the code if there are no targets 
@@ -2408,7 +2426,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
           ids.append(id)
           par[id]=[true_feh[targetid[k]],true_teff[targetid[k]],
                          true_logg[targetid[k]],true_rmag[targetid[k]],
-			 true_z[targetid[k]],z[targetid[k]],
+			 true_z[targetid[k]],z[targetid[k]][0],z[targetid[k]][1],
                          ra[k],dec[k]]
           #stop
     else:
@@ -2419,7 +2437,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
           ids.append(id)
           #we patch the redshift here to handle missing redshifts for comm. data from Sergey
           #z[targetid[k]]=0.0
-          par[id]=[0.0,0.0,0.0,mag[k][2],0.0,z[targetid[k]],ra[k],dec[k]]
+          par[id]=[0.0,0.0,0.0,mag[k][2],0.0,z[targetid[k]][0],z[targetid[k]][1],ra[k],dec[k]]
           #stop        
 
     #collect data for each band
@@ -2455,8 +2473,8 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
       #print('nspec,len(z),npass,len(x1)=',nspec,len(z),npass,len(x1))
       for i in range(nspec):
         if process_target[i]:
-          y2[k,:]=interp(x1,x*(1.-z[targetid[i]]),y[i,:])
-          ey2[k,:]=interp(x1,x*(1-z[targetid[i]]),ey[i,:])
+          y2[k,:]=interp(x1,x*(1.-z[targetid[i]][0]),y[i,:])
+          ey2[k,:]=interp(x1,x*(1-z[targetid[i]][0]),ey[i,:])
           k=k+1
 
       if (j==0):
