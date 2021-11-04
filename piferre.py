@@ -1100,7 +1100,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       elem.append(batch)
       elem_err.append(batch_err)
 
-
+  #primary extension
   hdu0=fits.PrimaryHDU()
 
   #find out processing date and add it to primary header
@@ -1140,7 +1140,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   
   hdulist = [hdu0]
 
-
+  #sptab extension
   cols = {}
   cols['SUCCESS'] = success
   cols['TARGETID'] = targetid
@@ -1199,16 +1199,44 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
     k+=1
   hdulist.append(hdu)
 
-
+  #fibermap extension
   if len(fmp) > 0:
     hdu=fits.BinTableHDU.from_columns(fibermap, name='FIBERMAP')
     hdulist.append(hdu)
     ff.close()
 
+  #scores extension
   if len(scr) > 0:
     hdu=fits.BinTableHDU.from_columns(scores, name='SCORES')
     hdulist.append(hdu)
     fs.close()
+
+  #aux extension
+  p = ['[Fe/H]','[a/Fe]','log10micro','Teff','logg']
+  if 'elem' in conf: e = conf['elem']
+  cols = {}
+  colcomm = {}
+  cols['p'] = [p]
+  colcomm['p'] = 'PARAM tags'
+  if 'elem' in conf:
+    cols['e'] = [e]
+    colcomm['e']= 'ELEM tags'
+  #cols['ip']= [dict(zip(p,arange(len(p))))]
+  #colcomm['ip']= 'Indices for PARAM tags'
+  #if 'elem' in conf:
+  #  cols['ie']= [dict(zip(e,arange(len(e))))]
+  #  colcomm['ie']= 'Indices for ELEM tags'
+  
+  table = tbl.Table(cols)
+  hdu=fits.BinTableHDU(table,name = 'AUX')
+
+  k = 0
+  for entry in colcomm.keys():
+    print(entry) 
+    hdu.header['TCOMM'+str(k+1)] = colcomm[entry]
+    k+=1
+  hdulist.append(hdu)
+
 
   hdul=fits.HDUList(hdulist)
   hdul.writeto('sptab_'+root+'.fits')
@@ -1275,11 +1303,18 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
       farr=loadtxt(proot+".nal."+entry)
       if i == 0:  
         w=filt < 1e-4
-        adata=farr[:,:]
-        adata[:,w]=0.0
+        if farr.ndim == 2:
+          adata=farr[:,:]
+          adata[:,w]=0.0
+        else:
+          adata=farr[:]
+          adata[w]=0.0
       else:
         w=filt >= 1e-4
-        adata[:,w] = adata[:,w] + farr[:,w]
+        if farr.ndim == 2:
+          adata[:,w] = adata[:,w] + farr[:,w]
+        else:
+          adata[w] = adata[w] + farr[w]
       i = i + 1
 
 
@@ -1385,6 +1420,32 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
     scores=ff[1]
     hdu=fits.BinTableHDU.from_columns(scores, name='SCORES')
     hdulist.append(hdu)
+
+  #FILTER extension
+  if 'elem' in conf:
+    e = conf['elem']
+    cols = {}
+    colcomm = {}
+    for entry in e:
+      filterfile=conf['extensions']['abund']['filterfile']
+      if '$elem' in filterfile: 
+        filterfile = filterfile.replace('$elem',str(entry))
+      #if '$synth' in filterfile: 
+      #  filterfile = filterfile.replace('$synth',str('fillmein-please'))
+      filt=loadtxt(os.path.join(filterdir,filterfile))
+      cols[entry] = filt
+      colcomm[entry] = entry+' FILTER'
+  
+    table = tbl.Table(cols)
+    hdu=fits.BinTableHDU(table,name = 'FILTER')
+
+    k = 0
+    for entry in colcomm.keys():
+      print(entry) 
+      hdu.header['TCOMM'+str(k+1)] = colcomm[entry]
+      k+=1
+    hdulist.append(hdu)
+
 
   hdul=fits.HDUList(hdulist)
   hdul.writeto('spmod_'+root+'.fits')
