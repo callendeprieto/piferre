@@ -1271,7 +1271,7 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
         filterfile = filterfile.replace('$elem',str(entry))
       #if '$synth' in filterfile: 
       #  filterfile = filterfile.replace('$synth',str('fillmein-please'))
-      filt=loadtxt(filterfile)
+      filt=loadtxt(os.path.join(filterdir,filterfile))
       farr=loadtxt(proot+".nal."+entry)
       if i == 0:  
         w=filt < 1e-4
