@@ -1535,7 +1535,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
 
 
   ngrid=len(o)
-  if len(m) > 0):
+  if (len(m) > 0):
     if ngrid != len(m): 
       print("there are different number of opf? and mdl? arrays")
       return(0)
