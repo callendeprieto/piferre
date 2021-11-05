@@ -306,81 +306,82 @@ def mknml(conf,root,libpath='.',path='.'):
       lst.write(nmlfile+'\n')
       write_nml(nml,nmlfile=nmlfile,path=path)
 
-    for run in conf['extensions']: #loop over all extensions 
-      #extensions are like runs to be applied to all grids
+    if 'extensions' in conf:
+      for run in conf['extensions']: #loop over all extensions 
+        #extensions are like runs to be applied to all grids
 
-      #global keywords in yaml adopted first
-      nml=dict(conf['global'])
+        #global keywords in yaml adopted first
+        nml=dict(conf['global'])
 
-      #adding/override with param keywords in yaml
-      if 'param' in conf[synth]:
-        for key in conf[synth]['param'].keys(): nml[key]=conf[synth]['param'][key]
+        #adding/override with param keywords in yaml
+        if 'param' in conf[synth]:
+          for key in conf[synth]['param'].keys(): nml[key]=conf[synth]['param'][key]
 
-      #adding/override with run keywords in yaml 
-      for key in conf['extensions'][run].keys(): 
+        #adding/override with run keywords in yaml 
+        for key in conf['extensions'][run].keys(): 
         nml[key] = str(conf['extensions'][run][key])
 
-      #check that inter is feasible with this particular grid
-      if 'inter' in nml:
-        if (min(n_p)-1 < int(nml['inter'])): nml['inter']=min(n_p)-1
-      #ncores from command line is for the slurm job, 
-      #the ferre omp nthreads should come from the config yaml file
-      nml['ndim']=ndim
-      for i in range(len(synthfiles)): 
-        nml['SYNTHFILE('+str(i+1)+')'] = "'"+os.path.join(libpath,synthfiles[i])+"'"
+        #check that inter is feasible with this particular grid
+        if 'inter' in nml:
+          if (min(n_p)-1 < int(nml['inter'])): nml['inter']=min(n_p)-1
+        #ncores from command line is for the slurm job, 
+        #the ferre omp nthreads should come from the config yaml file
+        nml['ndim']=ndim
+        for i in range(len(synthfiles)): 
+          nml['SYNTHFILE('+str(i+1)+')'] = "'"+os.path.join(libpath,synthfiles[i])+"'"
 
-      #extensions provided in yaml for input/output files are now supplemented with root
-      files = ['pfile', 'ffile', 'erfile','opfile','offile','sffile']
-      for entry in files:
-        if entry in nml: nml[entry] = "'"+root+'.'+nml[entry]+"'"
-      if 'filterfile' in nml: nml['filterfile'] = "'"+os.path.join(filterdir,nml['filterfile'])+"'"
+        #extensions provided in yaml for input/output files are now supplemented with root
+        files = ['pfile', 'ffile', 'erfile','opfile','offile','sffile']
+        for entry in files:
+          if entry in nml: nml[entry] = "'"+root+'.'+nml[entry]+"'"
+        if 'filterfile' in nml: nml['filterfile'] = "'"+os.path.join(filterdir,nml['filterfile'])+"'"
 
 
-      #make sure tmp 'sort' files are stored in $SCRATCH for cori
-      if host[:4] == 'cori':
-        nml['scratch'] = "'"+scratch+"'"
+        #make sure tmp 'sort' files are stored in $SCRATCH for cori
+        if host[:4] == 'cori':
+          nml['scratch'] = "'"+scratch+"'"
 
-      #get rid of keywords in yaml that are not for the nml file, but for opfmerge or write_tab
-      labels = nml['labels']
-      if 'labels' in nml: del nml['labels']
-      if 'llimits' in nml: del nml['llimits']
-      if 'steps' in nml: del nml['steps']
+        #get rid of keywords in yaml that are not for the nml file, but for opfmerge or write_tab
+        labels = nml['labels']
+        if 'labels' in nml: del nml['labels']
+        if 'llimits' in nml: del nml['llimits']
+        if 'steps' in nml: del nml['steps']
 
-      #expanding abbreviations $i -> synth number, $synth -> grid name
-      # $Teff -> index of Teff variable, etc.
-      for key in nml:
-        nml[key] = nml_key_expansion(str(nml[key]),k,synth,labels)
+        #expanding abbreviations $i -> synth number, $synth -> grid name
+        # $Teff -> index of Teff variable, etc.
+        for key in nml:
+          nml[key] = nml_key_expansion(str(nml[key]),k,synth,labels)
 
-      if run == "abund":
-        if synth not in abund_grids: continue #skip abundances for grids not in abund_grids
+        if run == "abund":
+          if synth not in abund_grids: continue #skip abundances for grids not in abund_grids
 
-        #replacing $elem -> element symbol
-        #          $proxy -> index of the proxy variable for the element in the grid
-        proxies=conf['proxy']
-        indproxies = zeros(len(proxies),dtype=int)
-        j = 0
-        for entry in proxies:
-          i = 1
-          for entry2 in labels:
-            if entry == entry2: indproxies[j] = i
-            i = i + 1
-          j = j + 1
+          #replacing $elem -> element symbol
+          #          $proxy -> index of the proxy variable for the element in the grid
+          proxies=conf['proxy']
+          indproxies = zeros(len(proxies),dtype=int)
+          j = 0
+          for entry in proxies:
+            i = 1
+            for entry2 in labels:
+              if entry == entry2: indproxies[j] = i
+              i = i + 1
+            j = j + 1
 
-        for i in range(len(conf['elem'])):
-          nml1 = dict(nml)
-          for key in nml1: 
-            content = str(nml[key])
-            if '$elem' in content: content = content.replace('$elem',str(conf['elem'][i]))
-            if '$proxy' in content: content = content.replace('$proxy',str(indproxies[i]))
-            nml1[key] = content
+          for i in range(len(conf['elem'])):
+            nml1 = dict(nml)
+            for key in nml1: 
+              content = str(nml[key])
+              if '$elem' in content: content = content.replace('$elem',str(conf['elem'][i]))
+              if '$proxy' in content: content = content.replace('$proxy',str(indproxies[i]))
+              nml1[key] = content
 
-          nmlfile='input.nml-'+root+'_'+str(k+1)+conf['elem'][i]
+            nmlfile='input.nml-'+root+'_'+str(k+1)+conf['elem'][i]
+            lst.write(nmlfile+'\n')
+            write_nml(nml1,nmlfile=nmlfile,path=path)
+        else:
+          nmlfile='input.nml-'+root+'_'+str(k+1)+run
           lst.write(nmlfile+'\n')
-          write_nml(nml1,nmlfile=nmlfile,path=path)
-      else:
-        nmlfile='input.nml-'+root+'_'+str(k+1)+run
-        lst.write(nmlfile+'\n')
-        write_nml(nml,nmlfile=nmlfile,path=path)
+          write_nml(nml,nmlfile=nmlfile,path=path)
 
     lst.close()
 
@@ -1553,13 +1554,13 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
 
   #open input files
   of=[]
-  mf=[]
+  if len(m) > 0: mf=[]
   if len(n) > 0: nf=[]
   if len(l) > 0: lf=[]
   if len(t) > 0: tf=[]
   for i in range(len(o)):
     of.append(open(o[i],'r'))
-    mf.append(open(m[i],'r'))
+    if len(m) > 0: mf.append(open(m[i],'r'))
     if len(n) > 0: nf.append(open(n[i],'r'))
     if len(l) > 0: lf.append(open(l[i],'r'))
     if len(t) > 0: tf.append(open(t[i],'r'))
@@ -1567,7 +1568,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   print(of)
   #open output files
   oo=open(proot+'.opf','w')
-  mo=open(proot+'.mdl','w')
+  if len(m) > 0: mo=open(proot+'.mdl','w')
   if len(n) > 0: no=open(proot+'.nrd','w')
   if len(l) > 0: lo=open(proot+'.ndl','w')
   if len(t) > 0: to=open(proot+'.opt','w')
@@ -1577,14 +1578,14 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
     min_chi=float(tmparr[ilchi[0]])
     min_oline=line
     print(min_chi,min_oline)
-    min_mline=mf[0].readline()
+    if len(m) > 0: min_mline=mf[0].readline()
     if len(n) > 0: min_nline=nf[0].readline()
     if len(l) > 0: min_lline=lf[0].readline()
     if len(t) > 0: min_tline=tf[0].readline()
     k = 1
     for i in range(len(o)-1):
       oline=of[i+1].readline()
-      mline=mf[i+1].readline()
+      if len(m) > 0: mline=mf[i+1].readline()
       if len(n) > 0: nline=nf[i+1].readline()
       if len(l) > 0: lline=lf[i+1].readline()
       if len(t) > 0: tline=tf[i+1].readline()
@@ -1596,7 +1597,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
       if float(tmparr[ilchi[i+1]]) < min_chi and float(tmparr[iteff[i+1]]) > llimit[i+1]*1.01: 
         min_chi=float(tmparr[ilchi[i+1]])
         min_oline=oline
-        min_mline=mline
+        if len(m) > 0: min_mline=mline
         if len(n) > 0: min_nline=nline
         if len(l) > 0: min_lline=lline
         if len(t) > 0: min_tline=tline
@@ -1604,7 +1605,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
     
     #print(min_chi,min_oline)
     oo.write(str(k)+' '+min_oline)
-    mo.write(min_mline)
+    if len(m) > 0: mo.write(min_mline)
     if len(n) > 0: no.write(min_nline)
     if len(l) > 0: lo.write(min_lline)
     if len(t) > 0: to.write(min_tline)
@@ -1613,14 +1614,14 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   for i in range(len(o)):
     #print(o[i],m[i])
     of[i].close
-    mf[i].close
+    if len(m) > 0: mf[i].close
     if len(n) > 0: nf[i].close
     if len(l) > 0: lf[i].close
     if len(t) > 0: tf[i].close
 
   #close output files
   oo.close
-  mo.close
+  if len(m) > 0: mo.close
   if len(n) > 0: no.close
   if len(l) > 0: lo.close
   if len(t) > 0: to.close
