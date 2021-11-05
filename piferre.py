@@ -1078,8 +1078,6 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
     ref_cat.append(fibermap.data['ref_cat'])
     srcfile.append(root)
     #fiber.append(int32(tmp[1]))
-    #elem.append([nan,nan])
-    #elem_err.append([nan,nan])
     if 'elem' in conf:
       indproxies=prox[k-1]
       batch=[]
@@ -1100,6 +1098,10 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
         i = i + 1
       elem.append(batch)
       elem_err.append(batch_err)
+    else:
+      elem.append([nan,nan])
+      elem_err.append([nan,nan])
+
 
   #primary extension
   hdu0=fits.PrimaryHDU()
