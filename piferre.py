@@ -1281,8 +1281,9 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
 
   fmp=glob.glob(proot+".fmp.fits")  
   scr=glob.glob(proot+".scr.fits")
-  mdata=loadtxt(m[0])
   edata=loadtxt(e[0])
+  if (len(m) > 0): 
+    mdata=loadtxt(m[0])
   if (len(n) > 0): 
     odata=loadtxt(n[0])
     f=glob.glob(proot+".frd")
@@ -1341,7 +1342,7 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
   hdu0.header['PLATFORM'] = platf
 
   #keep track of the number of targets processed and the time it took
-  nspec = len(mdata)
+  nspec = len(odata)
   hdu0.header['NSPEC'] = nspec
   ftiming = get_ferre_timings(proot)
   hdu0.header['FTIME'] = ftiming
