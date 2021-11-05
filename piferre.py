@@ -319,7 +319,7 @@ def mknml(conf,root,libpath='.',path='.'):
 
         #adding/override with run keywords in yaml 
         for key in conf['extensions'][run].keys(): 
-        nml[key] = str(conf['extensions'][run][key])
+          nml[key] = str(conf['extensions'][run][key])
 
         #check that inter is feasible with this particular grid
         if 'inter' in nml:
