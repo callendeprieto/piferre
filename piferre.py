@@ -1540,7 +1540,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
       print("there are different number of opf? and mdl? arrays")
       return(0)
   if (len(n) > 0):
-    if ngrid != len(m):  
+    if ngrid != len(n):  
       print("there are different number of opf? and nrd? arrays")
       return(0)
   if (len(l) > 0):
