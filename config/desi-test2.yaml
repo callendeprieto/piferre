@@ -1,8 +1,5 @@
 bands: ['b', 'r', 'z']
 grids: ['n_rdesi1', 'n_rdesi2', 'n_rdesi3', 'n_rdesi4', 'n_rdesi5', 'n_rdesi6', 'n_rdesi7', 'n_rdesi8', 'n_rdesi9']
-elem:  ['Fe', 'Ca', 'C',  'Mg' ]
-proxy: ['[Fe/H]', '[Fe/H]', '[Fe/H]', '[Fe/H]']
-abund_grids: ['n_rdesi1', 'n_rdesi2']
 seconds_per_spectrum: 1.
 global:
     algor: 3
@@ -14,30 +11,6 @@ global:
     ffile: 'frd'
     erfile: 'err'   
     nthreads: 4
-extensions:
-   rteff: 
-       nov: 1
-       indv: $Teff
-       inter: 2
-       nthreads: 1
-       pfile: 'opf$i'
-       opfile: 'opt$i'
-   calib: 
-       nov: 0
-       cont: 0
-       nthreads: 1
-       pfile: 'opf$i'
-       offile: 'mdl$i'
-       sffile: ''
-   abund:
-       nov: 1
-       indv: $proxy
-       nthreads: 1
-       pfile: 'opt$i'
-       opfile: 'oaf.$elem$i'
-       offile: 'nal.$elem$i'
-       sffile: 'nad.$elem$i'
-       filterfile: 'n_rdesi1.$elem.flt'
 n_rdesi1:
    param:
        ndim: 3

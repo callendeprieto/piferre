@@ -1091,7 +1091,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
           value_err=float(acells[indproxies[i]+ndim])
         else:
           value=float(acells[indproxies[i]]) + feh[-1]
-          value_err=sqrt(float(acells[indproxies[i]+ndim])**2 + covar[0,0] )
+          value_err=sqrt(float(acells[indproxies[i]+ndim])**2 + covar[-1][0,0] )
     
         batch.append(value)
         batch_err.append(value_err)
