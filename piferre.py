@@ -1072,10 +1072,6 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
     else: success.append(0)
     tmp = cells[0].split('_')
     targetid.append(int64(tmp[0]))
-    target_ra.append(fibermap.data['target_ra'])
-    target_dec.append(fibermap.data['target_dec'])
-    ref_id.append(fibermap.data['ref_id'])
-    ref_cat.append(fibermap.data['ref_cat'])
     srcfile.append(root)
     #fiber.append(int32(tmp[1]))
     if 'elem' in conf:
@@ -1102,6 +1098,12 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
       elem.append([nan,nan])
       elem_err.append([nan,nan])
 
+
+  #add info copied from fibermap
+  target_ra=fibermap.data['target_ra']
+  target_dec=fibermap.data['target_dec']
+  ref_id=fibermap.data['ref_id']
+  ref_cat=fibermap.data['ref_cat']
 
   #primary extension
   hdu0=fits.PrimaryHDU()
@@ -1919,7 +1921,10 @@ def packfits(input="*.fits",output="output.fits"):
           print(i, str(type(hdul1[i])),str(type(hdul2[i])))
           print('Warning: the extension ',i, 'in file ',entry,' is not a binary table as expected based on the preceding files. The extension is skipped.')
         for colname in hdul1[i].columns.names:
+          #print('adding colname=',colname,' from the 2nd file')
           if colname in hdul2[i].columns.names:
+            #print(hdul1[i].data[colname].shape,hdul2[i].data[colname].shape)
+            #print(hdu.data[colname].shape)
             hdu.data[colname][nrows1:] = hdul2[i].data[colname]
           else: print('Warning: the file ',entry,' does not include column ',colname,' in extension ',i,' -- ',hdu.header['EXTNAME'])
 
