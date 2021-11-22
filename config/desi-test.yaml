@@ -37,6 +37,7 @@ extensions:
        offile: 'nal.$elem$i'
        sffile: 'nad.$elem$i'
        filterfile: 'n_rdesi1.$elem.flt'
+       covprob: 1
 m_rdesi1:
    param:
        ndim: 5

@@ -1513,11 +1513,11 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
       o=sorted(glob.glob(proot+".opf*_sorted"))
       
 
-  o=sorted(glob.glob(proot+".opf?"))
-  m=sorted(glob.glob(proot+".mdl?"))
-  n=sorted(glob.glob(proot+".nrd?"))
-  l=sorted(glob.glob(proot+".ndl?"))
-  t=sorted(glob.glob(proot+".opt?"))
+  o=sorted(glob.glob(proot+".opf?*"))
+  m=sorted(glob.glob(proot+".mdl?*"))
+  n=sorted(glob.glob(proot+".nrd?*"))
+  l=sorted(glob.glob(proot+".ndl?*"))
+  t=sorted(glob.glob(proot+".opt?*"))
  
 
   llimit=[] # lower limits for Teff
@@ -1542,19 +1542,19 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   ngrid=len(o)
   if (len(m) > 0):
     if ngrid != len(m): 
-      print("there are different number of opf? and mdl? arrays")
+      print("there are different number of opf?* and mdl?* arrays")
       return(0)
   if (len(n) > 0):
     if ngrid != len(n):  
-      print("there are different number of opf? and nrd? arrays")
+      print("there are different number of opf?* and nrd?* arrays")
       return(0)
   if (len(l) > 0):
     if ngrid != len(l):  
-      print("there are different number of opf? and ndl? arrays")
+      print("there are different number of opf?* and ndl?* arrays")
       return(0)
   if (len(t) > 0):
     if ngrid != len(t):  
-      print("there are different number of opf? and opt? arrays")
+      print("there are different number of opf?* and opt?* arrays")
       return(0)
 
 
