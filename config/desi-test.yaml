@@ -21,12 +21,6 @@ global:
     sffile: 'nrd$i'
     nthreads: 8
 extensions:
-   rteff: 
-       nov: 1
-       indv: $Teff
-       inter: 4
-       pfile: 'opf$i'
-       opfile: 'opt$i'
    calib: 
        nov: 0
        cont: 0
