@@ -129,8 +129,8 @@ config='desi-n.yaml'):
     f.write("cd "+os.path.abspath(path)+"\n")
     for i in range(ngrids):
       #f.write("cp input.nml-"+root+"_"+str(i)+" input.nml \n")
-      f.write("(  time "+ferre+" -l input.lst-"+root+"_"+str(i+1)+" >& "+root+".log_"+str(i+1))
-      f.write(" ; echo FERRE job " + str(i+1) + " ) & \n")
+      f.write("(  time "+ferre+" -l input.lst-"+root+"_"+"{:02d}".format(i+1)+" >& "+root+".log_"+"{:02d}".format(i+1))
+      f.write(" ; echo FERRE job " + "{:02d}".format(i+1) + " ) & \n")
     f.write("wait \n")
     f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
             "'); from piferre import opfmerge, oafmerge, write_tab_fits, write_mod_fits, cleanup; opfmerge(\'"+\
@@ -165,7 +165,7 @@ def mergeslurm(path='./',nmerge=2):
         f2.writelines(header)
         f2.writelines(body)
         f2.close()
-      f2 = open('job-'+str(k)+'.slurm','w')
+      f2 = open('job-'+"{:04d}".format(k)+'.slurm','w')
       time = 0
       header = []
       body = []
@@ -255,7 +255,7 @@ def mknml(conf,root,libpath='.',path='.'):
     ndim=int(header['N_OF_DIM'])
     n_p=tuple(array(header['N_P'].split(),dtype=int))
 
-    lst=open(os.path.join(path,'input.lst-'+root+'_'+str(k+1)),'w')
+    lst=open(os.path.join(path,'input.lst-'+root+'_'+"{:02d}".format(k+1)),'w')
     for run in conf[synth]: #loop over all runs (param and any other one)
 
       #global keywords in yaml adopted first
@@ -302,7 +302,7 @@ def mknml(conf,root,libpath='.',path='.'):
         nml[key] = nml_key_expansion(str(nml[key]),k,synth,labels)
 
 
-      nmlfile='input.nml-'+root+'_'+str(k+1)+run
+      nmlfile='input.nml-'+root+'_'+"{:02d}".format(k+1)+run
       lst.write(nmlfile+'\n')
       write_nml(nml,nmlfile=nmlfile,path=path)
 
@@ -375,11 +375,11 @@ def mknml(conf,root,libpath='.',path='.'):
               if '$proxy' in content: content = content.replace('$proxy',str(indproxies[i]))
               nml1[key] = content
 
-            nmlfile='input.nml-'+root+'_'+str(k+1)+conf['elem'][i]
+            nmlfile='input.nml-'+root+'_'+"{:02d}".format(k+1)+conf['elem'][i]
             lst.write(nmlfile+'\n')
             write_nml(nml1,nmlfile=nmlfile,path=path)
         else:
-          nmlfile='input.nml-'+root+'_'+str(k+1)+run
+          nmlfile='input.nml-'+root+'_'+"{:02d}".format(k+1)+run
           lst.write(nmlfile+'\n')
           write_nml(nml,nmlfile=nmlfile,path=path)
 
@@ -388,7 +388,7 @@ def mknml(conf,root,libpath='.',path='.'):
   return None
 
 def nml_key_expansion(content,k,synth,labels):
-    if '$i' in content: content = content.replace('$i',str(k+1))
+    if '$i' in content: content = content.replace('$i',"{:02d}".format(k+1))
     if '$synth' in content: content = content.replace('$synth',synth)
     i = 1
     for entry in labels:
@@ -787,9 +787,9 @@ def get_versions():
 
   ver = get_dep_versions()
   ver['piferre'] = version
-  log1file = glob.glob("*.log_1")
+  log1file = glob.glob("*.log_01")
   if len(log1file) < 1:
-    print("Warning: cannot find any *.log_1 file in the working directory")
+    print("Warning: cannot find any *.log_01 file in the working directory")
     fversion = 'unknown'
   else:
     l1 = open(log1file[0],'r')
@@ -1200,7 +1200,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   k = 0
   for entry in colcomm.keys():
     print(entry) 
-    hdu.header['TCOMM'+str(k+1)] = colcomm[entry]
+    hdu.header['TCOMM'+"{:03d}".format(k+1)] = colcomm[entry]
     k+=1
   hdulist.append(hdu)
 
@@ -1238,7 +1238,7 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   k = 0
   for entry in colcomm.keys():
     print(entry) 
-    hdu.header['TCOMM'+str(k+1)] = colcomm[entry]
+    hdu.header['TCOMM'+"{:03d}".format(k+1)] = colcomm[entry]
     k+=1
   hdulist.append(hdu)
 
@@ -1408,7 +1408,7 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
     k = 0
     for entry in colcomm.keys():
       print(entry) 
-      hdu.header['TCOMM'+str(k+1)] = colcomm[entry]
+      hdu.header['TCOMM'+"{:03d}".format(k+1)] = colcomm[entry]
       k+=1
     hdulist.append(hdu)
     i += 1
@@ -1448,7 +1448,7 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
     k = 0
     for entry in colcomm.keys():
       print(entry) 
-      hdu.header['TCOMM'+str(k+1)] = colcomm[entry]
+      hdu.header['TCOMM'+"{:03d}".format(k+1)] = colcomm[entry]
       k+=1
     hdulist.append(hdu)
 
@@ -1588,7 +1588,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
     if len(n) > 0: min_nline=nf[0].readline()
     if len(l) > 0: min_lline=lf[0].readline()
     if len(t) > 0: min_tline=tf[0].readline()
-    k = 1
+    k = 0
     for i in range(len(o)-1):
       oline=of[i+1].readline()
       if len(m) > 0: mline=mf[i+1].readline()
@@ -1607,10 +1607,10 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
         if len(n) > 0: min_nline=nline
         if len(l) > 0: min_lline=lline
         if len(t) > 0: min_tline=tline
-        k = i + 2
+        k = i + 1
     
     #print(min_chi,min_oline)
-    oo.write(str(k)+' '+min_oline)
+    oo.write("{:02d}".format(k+1)+' '+min_oline)
     if len(m) > 0: mo.write(min_mline)
     if len(n) > 0: no.write(min_nline)
     if len(l) > 0: lo.write(min_lline)
@@ -1688,7 +1688,7 @@ def oafmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   for el in elem:
     a=[]
     for en in indices:
-      a.append(proot+".oaf."+el+str(en))
+      a.append(proot+".oaf."+el+"{:02d}".format(en))
 
     #open input files
     of=open(proot+".opf")

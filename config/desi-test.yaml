@@ -1,8 +1,8 @@
 bands: ['b', 'r', 'z']
-grids: ['m_rdesi1', 'm_rdesi2', 'm_rdesi3', 'm_rdesi4', 'm_rdesi5', 'm_rdesi6', 'm_rdesi7', 'm_rdesi8', 'm_rdesi9']
+grids: ['m_rdesi1', 'm_rdesi2', 'm_rdesi3', 'm_rdesi4', 'm_rdesi5', 'm_rdesi6', 'm_rdesi7', 'm_rdesi8', 'm_rdesi9','s_rdesi0']
 elem:  [ 'Fe',     'Ca',     'C',       'Mg'   ]
 proxy: ['[Fe/H]', '[a/Fe]', '[Fe/H]', '[a/Fe]' ]
-abund_grids: ['m_rdesi1', 'm_rdesi2']
+abund_grids: ['m_rdesi1', 'm_rdesi2','s_rdesi0']
 seconds_per_spectrum: 10.
 global:
     algor: 3
@@ -37,7 +37,7 @@ extensions:
        offile: 'nal.$elem$i'
        sffile: 'nad.$elem$i'
        filterfile: 'n_rdesi1.$elem.flt'
-       covprob: 1
+       covprop: 1
 m_rdesi1:
    param:
        ndim: 5
@@ -110,4 +110,12 @@ m_rdesi9:
        labels: [ 'Teff', 'logg']
        llimits:  15000.00       7.00000
        steps: 5000. 0.25
+s_rdesi0:
+   param:
+       ndim: 4
+       nov: 4
+       indv: 1 2 3 4
+       labels:  ['[a/Fe]', '[Fe/H]',  'Teff',  'logg']
+       llimits:   -0.4      -4.0       2300.    -0.5
+       steps:   0.2          0.5        100.     0.5
 
