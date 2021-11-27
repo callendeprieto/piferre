@@ -47,7 +47,7 @@ def head_synth(synthfile):
         line=file.readline()
         part=line.split('=')
         if (len(part) < 2): meta=meta+1
-        if (meta>header['MULTI']): break
+        if (meta>int(header['MULTI'])): break
         k=part[0].strip()
         v=part[1].strip()
         header[k]=v
