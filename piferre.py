@@ -60,6 +60,7 @@ def head_synth(synthfile):
 #extract the wavelength array for a FERRE synth file
 def lambda_synth(synthfile):
     header=head_synth(synthfile)
+    print(header)
     tmp=header['WAVE'].split()
     npix=int(header['NPIX'])
     step=float(tmp[1])
