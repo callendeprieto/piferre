@@ -39,13 +39,15 @@ filterdir = os.path.join(piferredir,'filter')
 
 #extract the header of a synthfile
 def head_synth(synthfile):
+    meta=0
     file=open(synthfile,'r')
     line=file.readline()
     header={}
     while (1):
         line=file.readline()
         part=line.split('=')
-        if (len(part) < 2): break
+        if (len(part) < 2): meta=meta+1
+        if (meta>header['MULTI']): break
         k=part[0].strip()
         v=part[1].strip()
         header[k]=v
