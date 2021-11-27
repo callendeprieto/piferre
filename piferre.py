@@ -47,12 +47,14 @@ def head_synth(synthfile):
     while (1):
         line=file.readline()
         part=line.split('=')
-        if (len(part) < 2): meta=meta+1
-        if (meta>multi): break
-        k=part[0].strip()
-        v=part[1].strip()
-        header[k]=v
-        if k == 'MULTI': multi=int(v)
+        if (len(part) < 2): 
+          meta=meta+1
+          if (meta>multi): break
+        else:
+          k=part[0].strip()
+          v=part[1].strip()
+          header[k]=v
+          if k == 'MULTI': multi=int(v)
     return header
 
 #extract the wavelength array for a FERRE synth file
