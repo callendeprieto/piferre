@@ -49,7 +49,10 @@ def head_synth(synthfile):
         part=line.split('=')
         if (len(part) < 2): 
           meta=meta+1
-          if (meta>multi): break
+          if (meta>multi): 
+            break
+          else:
+            line=file.readline()
         else:
           k=part[0].strip()
           v=part[1].strip()
