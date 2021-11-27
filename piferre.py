@@ -40,6 +40,7 @@ filterdir = os.path.join(piferredir,'filter')
 #extract the header of a synthfile
 def head_synth(synthfile):
     meta=0
+    multi=0
     file=open(synthfile,'r')
     line=file.readline()
     header={}
@@ -47,10 +48,11 @@ def head_synth(synthfile):
         line=file.readline()
         part=line.split('=')
         if (len(part) < 2): meta=meta+1
-        if (meta>int(header['MULTI'])): break
+        if (meta>multi): break
         k=part[0].strip()
         v=part[1].strip()
         header[k]=v
+        if k == 'MULTI': multi=int(v)
     return header
 
 #extract the wavelength array for a FERRE synth file
