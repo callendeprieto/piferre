@@ -136,11 +136,18 @@ config='desi-n.yaml'):
       f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
  
     f.write("cd "+os.path.abspath(path)+"\n")
+    f.write("vmstat 1 > vmstat.dat & \n")
+    f.write("vmstat_pid=$! \n")
     for i in range(ngrids):
       #f.write("cp input.nml-"+root+"_"+str(i)+" input.nml \n")
       f.write("(  time "+ferre+" -l input.lst-"+root+"_"+"{:02d}".format(i+1)+" >& "+root+".log_"+"{:02d}".format(i+1))
       f.write(" ; echo FERRE job " + "{:02d}".format(i+1) + " ) & \n")
-    f.write("wait \n")
+      f.write("pids+=($!) \n")
+    f.write("for pid in ${pids[@]} \n")
+    f.write("do \n")
+    f.write("  wait $pid \n")
+    f.write("done \n")
+    f.write("kill $vmstat_pid \n")
     f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
             "'); from piferre import opfmerge, oafmerge, write_tab_fits, write_mod_fits, cleanup; opfmerge(\'"+\
             str(root)+"\',config='"+config+"\'); oafmerge(\'"+\
