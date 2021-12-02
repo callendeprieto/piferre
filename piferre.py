@@ -317,8 +317,13 @@ def mknml(conf,root,libpath='.',path='.'):
 
     libpath=os.path.abspath(libpath)
     header=head_synth(os.path.join(libpath,synthfiles[0]))
-    ndim=int(header['N_OF_DIM'])
-    n_p=tuple(array(header['N_P'].split(),dtype=int))
+    if ndim(header) == 0:
+      ndim=int(header['N_OF_DIM'])
+      n_p=tuple(array(header['N_P'].split(),dtype=int))
+    else:
+      nd=int(header[0]['N_OF_DIM'])
+      n_p=tuple(array(header[0]['N_P'].split(),dtype=int))
+
 
     lst=open(os.path.join(path,'input.lst-'+root+'_'+"{:02d}".format(k+1)),'w')
     for run in conf[synth]: #loop over all runs (param and any other one)
