@@ -318,7 +318,7 @@ def mknml(conf,root,libpath='.',path='.'):
     libpath=os.path.abspath(libpath)
     header=head_synth(os.path.join(libpath,synthfiles[0]))
     if ndim(header) == 0:
-      ndim=int(header['N_OF_DIM'])
+      nd=int(header['N_OF_DIM'])
       n_p=tuple(array(header['N_P'].split(),dtype=int))
     else:
       nd=int(header[0]['N_OF_DIM'])
@@ -344,7 +344,7 @@ def mknml(conf,root,libpath='.',path='.'):
         if (min(n_p)-1 < int(nml['inter'])): nml['inter']=min(n_p)-1
       #ncores from command line is for the slurm job, 
       #the ferre omp nthreads should come from the config yaml file
-      nml['ndim']=ndim
+      nml['ndim']=nd
       for i in range(len(synthfiles)): 
         nml['SYNTHFILE('+str(i+1)+')'] = "'"+os.path.join(libpath,synthfiles[i])+"'"
 
@@ -396,7 +396,7 @@ def mknml(conf,root,libpath='.',path='.'):
           if (min(n_p)-1 < int(nml['inter'])): nml['inter']=min(n_p)-1
         #ncores from command line is for the slurm job, 
         #the ferre omp nthreads should come from the config yaml file
-        nml['ndim']=ndim
+        nml['ndim']=nd
         for i in range(len(synthfiles)): 
           nml['SYNTHFILE('+str(i+1)+')'] = "'"+os.path.join(libpath,synthfiles[i])+"'"
 
