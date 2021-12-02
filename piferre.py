@@ -289,16 +289,30 @@ def mknml(conf,root,libpath='.',path='.'):
 
 
   grids=conf['grids']
+  grid_bands=conf['grid_bands']
   if 'abund_grids' in conf: abund_grids=conf['abund_grids']
 
   for k in range(len(grids)): #loop over all grids
     synth=grids[k]
     synthfiles=[]
     for band in conf['bands']:
-      if band == '':
-        gridfile=synth+'.dat'
+
+      #if band == '':
+      #  gridfile=synth+'.dat'
+      #else:
+      #  gridfile=synth+'-'+band+'.dat'
+      #synthfiles.append(gridfile)
+
+      if len(grid_bands) == 0:
+        gridfile=grids[0]+'.dat'
       else:
-        gridfile=synth+'-'+band+'.dat'
+        if len(grid_bands) == 1:
+          gridfile=grids[0]+'-'+grid_bands[0]+'.dat'
+        elif len(grid_bands) == len(bands):
+          gridfile=grids[0]+'-'+bands[j]+'.dat'
+        else:
+          print('mknml: error -- the array grid_bands must have 0, 1 or the same length as bands')
+          return None   
       synthfiles.append(gridfile)
 
     libpath=os.path.abspath(libpath)
@@ -2603,11 +2617,6 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
         else:
           print('do: error -- the array grid_bands must have 0, 1 or the same length as bands')
           return None   
-
-      #if bands[j] == '': 
-      #  gridfile=grids[0]+'.dat'
-      #else:
-      #  gridfile=grids[0]+'-'+bands[j]+'.dat'
 
       #read grid wavelength array
       x1=lambda_synth(os.path.join(libpath,gridfile))
