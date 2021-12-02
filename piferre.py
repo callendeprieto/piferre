@@ -2459,6 +2459,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
   grids=conf['grids']
   #print('grids=',grids)
   bands=conf['bands']
+  grid_bands=conf['grid_bands']
   if conf['seconds_per_spectrum']: 
     seconds_per_spectrum=conf['seconds_per_spectrum']
   else:
@@ -2592,13 +2593,25 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
     #collect data for each band
     for j in range(len(bands)):
 
-      if bands[j] == '': 
+      if len(grid_bands) == 0:
         gridfile=grids[0]+'.dat'
       else:
-        gridfile=grids[0]+'-'+bands[j]+'.dat'
+        if len(grid_bands) == 1:
+          gridfile=grids[0]+'-'+grid_bands[0]+'.dat'
+        elif len(grid_bands) == len(bands):
+          gridfile=grids[0]+'-'+bands[j]+'.dat'
+        else:
+          print('do: error -- the array grid_bands must have 0, 1 or the same length as bands')
+          return None   
+
+      #if bands[j] == '': 
+      #  gridfile=grids[0]+'.dat'
+      #else:
+      #  gridfile=grids[0]+'-'+bands[j]+'.dat'
 
       #read grid wavelength array
       x1=lambda_synth(os.path.join(libpath,gridfile))
+      if len(x1) == len(bands): x1=x1[j]
 
       #read DESI data, select targets, and resample 
 
