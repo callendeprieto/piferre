@@ -17,7 +17,7 @@ import platform
 import glob
 import re
 import importlib
-from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, log10, median, std, mean, pi, intersect1d, isfinite
+from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, log10, median, std, mean, pi, intersect1d, isfinite, ndim
 from scipy.signal import savgol_filter
 from astropy.io import fits
 from astropy.coordinates import SkyCoord
@@ -50,48 +50,83 @@ def head_synth(synthfile):
         if (len(part) < 2): 
           meta=meta+1
           if (meta>multi): 
+            if multi>0: multi_header.append(header)
             break
           else:
+            if (meta > 1): multi_header.append(header)
+            header={}
             line=file.readline()
         else:
           k=part[0].strip()
           v=part[1].strip()
           header[k]=v
-          if k == 'MULTI': multi=int(v)
+          if k == 'MULTI': 
+            multi=int(v)
+            multi_header=[]
+    if (multi > 1): header=multi_header
     return header
 
 #extract the wavelength array for a FERRE synth file
 def lambda_synth(synthfile):
-    header=head_synth(synthfile)
-    tmp=header['WAVE'].split()
-    npix=int(header['NPIX'])
-    step=float(tmp[1])
-    x0=float(tmp[0])
-    x=arange(npix)*step+x0
-    if header['LOGW']:
-      if int(header['LOGW']) == 1: x=10.**x
-      if int(header['LOGW']) == 2: x=exp(x)  
+    multi_header=head_synth(synthfile)
+    if ndim(multi_header) == 0: multi_header=[multi_header]
+    xx=[]
+    j=0
+    for header in multi_header:
+      tmp=header['WAVE'].split()
+      npix=int(header['NPIX'])
+      step=float(tmp[1])
+      x0=float(tmp[0])
+      x=arange(npix)*step+x0
+      if header['LOGW']:
+        if int(header['LOGW']) == 1: x=10.**x
+        if int(header['LOGW']) == 2: x=exp(x)   
+      j=j+1
+      xx.append(x)
+
+    if len(xx)>1: x=xx[:]
+
     return x
 
 #read a synthfile
 def read_synth(synthfile):
+    meta=0
+    multi=0
     file=open(synthfile,'r')
     line=file.readline()
     header={}
     nlines=1
     while (1):
         line=file.readline()
-        part=line.split('=')
-        if (len(part) < 2): break
-        k=part[0].strip()
-        v=part[1].strip()
-        header[k]=v
         nlines+=1
-        #print(nlines)
+        part=line.split('=')
+        if (len(part) < 2): 
+          meta=meta+1
+          if (meta>multi): 
+            if multi>0: multi_header.append(header)
+            break
+          else:
+            if (meta > 1): multi_header.append(header)
+            header={}
+            line=file.readline()
+            nlines+=1
+        else:
+          k=part[0].strip()
+          v=part[1].strip()
+          header[k]=v
+          if k == 'MULTI': 
+            multi=int(v)
+            multi_header=[]
+    if (multi > 1): header=multi_header
     file.close()
 
-    n_p = tuple(array(header['N_P'].split(),dtype=int)) + (-1,)
-    data=loadtxt(synthfile, skiprows=nlines+1, dtype=float)
+    if ndim(header) > 0: 
+      snp=header[0]['N_P'] 
+    else: 
+      snp=header['N_P']
+
+    n_p = tuple(array(snp.split(),dtype=int)) + (-1,)
+    data=loadtxt(synthfile, skiprows=nlines, dtype=float)
     data = reshape( data, n_p)
     
 
