@@ -295,7 +295,7 @@ def mknml(conf,root,libpath='.',path='.'):
   for k in range(len(grids)): #loop over all grids
     synth=grids[k]
     synthfiles=[]
-    for band in conf['bands']:
+    for band in conf['grid_bands']:
 
       #if band == '':
       #  gridfile=synth+'.dat'
