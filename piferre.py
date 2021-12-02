@@ -304,12 +304,12 @@ def mknml(conf,root,libpath='.',path='.'):
       #synthfiles.append(gridfile)
 
       if len(grid_bands) == 0:
-        gridfile=grids[0]+'.dat'
+        gridfile=synth+'.dat'
       else:
         if len(grid_bands) == 1:
-          gridfile=grids[0]+'-'+grid_bands[0]+'.dat'
+          gridfile=synth+'-'+grid_bands[0]+'.dat'
         elif len(grid_bands) == len(bands):
-          gridfile=grids[0]+'-'+bands[j]+'.dat'
+          gridfile=synth+'-'+bands[j]+'.dat'
         else:
           print('mknml: error -- the array grid_bands must have 0, 1 or the same length as bands')
           return None   
