@@ -288,6 +288,7 @@ def mknml(conf,root,libpath='.',path='.'):
     scratch='./'
 
 
+  bands=conf['bands']
   grids=conf['grids']
   grid_bands=conf['grid_bands']
   if 'abund_grids' in conf: abund_grids=conf['abund_grids']
