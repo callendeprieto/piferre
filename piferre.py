@@ -295,7 +295,7 @@ def mknml(conf,root,libpath='.',path='.'):
   for k in range(len(grids)): #loop over all grids
     synth=grids[k]
     synthfiles=[]
-    for band in conf['grid_bands']:
+    for band in grid_bands:
 
       #if band == '':
       #  gridfile=synth+'.dat'
@@ -307,9 +307,9 @@ def mknml(conf,root,libpath='.',path='.'):
         gridfile=synth+'.dat'
       else:
         if len(grid_bands) == 1:
-          gridfile=synth+'-'+grid_bands[0]+'.dat'
+          gridfile=synth+'-'+band+'.dat'
         elif len(grid_bands) == len(bands):
-          gridfile=synth+'-'+bands[j]+'.dat'
+          gridfile=synth+'-'+band+'.dat'
         else:
           print('mknml: error -- the array grid_bands must have 0, 1 or the same length as bands')
           return None   
