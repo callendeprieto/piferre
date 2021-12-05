@@ -1,5 +1,6 @@
 bands: ['b', 'r', 'z']
 grids: ['m_rdesi10']
+grid_bands: ['b', 'r', 'z']
 seconds_per_spectrum: 10.
 global:
     algor: 3
