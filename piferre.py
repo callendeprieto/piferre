@@ -864,8 +864,9 @@ def get_versions():
     fversion = 'unknown'
   else:
     l1 = open(log1file[0],'r')
-    while 1:
-      line = l1.readline()
+    #while 1:
+    #  line = l1.readline()
+    for line in l1:
       if 'f e r r e' in line:
         entries = line.split()
         fversion = entries[-1][1:]
