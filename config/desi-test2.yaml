@@ -30,7 +30,7 @@ extensions:
        offile: 'mdl$i'
        sffile: ''
    abund:
-       nov: 1
+       nov: 12
        indv: $proxy
        nthreads: 1
        pfile: 'opf$i'
