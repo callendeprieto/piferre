@@ -859,9 +859,9 @@ def get_versions():
   ver = get_dep_versions()
   ver['piferre'] = version
   log1file = glob.glob("*.log_01")
+  fversion = 'unknown'
   if len(log1file) < 1:
     print("Warning: cannot find any *.log_01 file in the working directory")
-    fversion = 'unknown'
   else:
     l1 = open(log1file[0],'r')
     #while 1:
