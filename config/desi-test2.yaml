@@ -30,9 +30,9 @@ extensions:
        offile: 'mdl$i'
        sffile: ''
    abund:
-       nov: 12
+       nov: 1
        indv: $proxy
-       nthreads: 1
+       nthreads: 12
        pfile: 'opf$i'
        opfile: 'oaf.$elem$i'
        offile: 'nal.$elem$i'
