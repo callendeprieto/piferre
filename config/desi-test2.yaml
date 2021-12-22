@@ -32,7 +32,7 @@ extensions:
    abund:
        nov: 1
        indv: $proxy
-       nthreads: 12
+       nthreads: 1
        pfile: 'opf$i'
        opfile: 'oaf.$elem$i'
        offile: 'nal.$elem$i'
