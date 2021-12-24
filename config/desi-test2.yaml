@@ -6,7 +6,7 @@ proxy: ['[Fe/H]', '[a/Fe]', '[Fe/H]', '[a/Fe]' ]
 abund_grids: ['m_rdesi1', 'm_rdesi2','s_rdesi0']
 seconds_per_spectrum: 15.
 global:
-    algor: 3
+    algor: 1
     f_format: 1
     f_access: 0
     errbar: 1
