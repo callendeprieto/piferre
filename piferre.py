@@ -1455,13 +1455,11 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
     else: tdata = edata[j1:j2][None,:]
     cols['err'] = tdata
     colcomm['err'] = 'Error in spectra as fit'
-    mdlname = 'fit'
-    if (len(l) > 0): 
-      mdlname = 'flx'
-      colcomm[mdlname] = 'Absolute model flux'
-    else:
-      colcomm[mdlname] = 'Best-fitting model'
-    cols[mdlname] = tdata
+    if (len(m) > 0): 
+      if mdata.ndim == 2: tdata = mdata[:,j1:j2]
+      else: tdata = mdata[j1:j2][None,:]
+      cols['flx'] = tdata
+      colcomm['flx'] = 'Absolute flux for best-fitting model'
     if (len(l) > 0): 
       if ldata.ndim == 2: tdata = ldata[:,j1:j2]
       else: tdata = ldata[j1:j2][None,:]
