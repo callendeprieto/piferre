@@ -17,7 +17,9 @@ import platform
 import glob
 import re
 import importlib
-from numpy import arange,loadtxt,savetxt,zeros,ones,nan,sqrt,interp,concatenate,array,reshape,min,max,where,divide,mean, stack, vstack, int64, int32, log10, median, std, mean, pi, intersect1d, isfinite, ndim
+from numpy import arange, loadtxt, savetxt, genfromtxt, zeros, ones, nan, sqrt, interp,     \
+  concatenate, array, reshape, min, max, where, divide, mean, stack, vstack, int64, int32,  \
+  log10, median, std, mean, pi, intersect1d, isfinite, ndim, cos, sin
 from scipy.signal import savgol_filter
 from astropy.io import fits
 from astropy.coordinates import SkyCoord
@@ -2443,6 +2445,61 @@ def radec2lb(ra,dec):
 
   return(gc.l,gc.b)
 
+#load a csv into a structured arrays (names are picked from the first row)
+def loadcsv(csvfile):
+
+  d=genfromtxt(csvfile,delimiter=',',names=True,skip_header=0)
+
+  return(d)
+
+#download a file over the net
+#adapted from https://stackoverflow.com/questions/16694907/download-large-file-in-python-with-requests/16696317#16696317
+def download_file(url,local_filename=None, user=None, password=None):
+
+    import requests
+    from requests.auth import HTTPBasicAuth
+
+    if local_filename is None: local_filename = url.split('/')[-1]
+    if user is None or password is None:
+        with requests.get(url, stream=True) as r:
+            r.raise_for_status()
+            with open(local_filename, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192): 
+                    # If you have chunk encoded response uncomment if
+                    # and set chunk_size parameter to None.
+                    #if chunk: 
+                    f.write(chunk)
+    else:
+        with requests.get(url, stream=True, auth = HTTPBasicAuth(user,password)) as r:
+            r.raise_for_status()
+            with open(local_filename, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192): 
+                    # If you have chunk encoded response uncomment if
+                    # and set chunk_size parameter to None.
+                    #if chunk: 
+                    f.write(chunk)
+    return local_filename
+
+#check whether a tile has been observed
+def check_tile(ra,dec):
+
+    from getpass import getpass
+
+    user = input("Please enter desi data username:\n")
+    password = getpass("Please enter desi data password\n")
+    download_file('https://data.desi.lbl.gov/desi/spectro/redux/daily/tiles-daily.csv',
+      local_filename='tiles-tmp.csv', user=user,password=password)
+
+    tiles = loadcsv('tiles-tmp.csv')
+
+    w = (sqrt( (tiles['TILERA']*cos(tiles['TILEDEC']/180.*pi) - ra*cos(dec/180.*pi))**2 + (tiles['TILEDEC']-dec)**2 ) < 1.5 )
+    
+    if any(w): 
+      print('the center of the following tiles falls within 1.5 deg from the target:\n',
+            tiles.dtype.names,'\n ',tiles[where(w)[0]])
+    else:
+      print('no tiles have been processed whose center falls within 1.5 deg from the target:\n')
+    
 
 #process a single pixel
 def do(path, pixel, sdir='', truth=None, ncores=1, rvpath=None, 
