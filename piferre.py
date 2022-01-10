@@ -2687,7 +2687,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
       #read DESI data, select targets, and resample 
 
       (x,y,ivar,r)=read_spec(datafile,bands[j])
-      ey=sqrt(divide(1.,ivar,where=(ivar != 0.)))
+      ey=sqrt(divide(1.,ivar,where=(ivar > 0.)))
       ey[where(ivar == 0.)]=max(y)*1e3
 
       #plt.ion()
