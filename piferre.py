@@ -1992,13 +1992,17 @@ def packfits(input="*.fits",output="output.fits"):
         if (str(type(hdul2[i])) != "<class 'astropy.io.fits.hdu.table.BinTableHDU'>"): 
           print(i, str(type(hdul1[i])),str(type(hdul2[i])))
           print('Warning: the extension ',i, 'in file ',entry,' is not a binary table as expected based on the preceding files. The extension is skipped.')
+
         for colname in hdul1[i].columns.names:
           #print('adding colname=',colname,' from the 2nd file')
-          if colname in hdul2[i].columns.names:
-            #print(hdul1[i].data[colname].shape,hdul2[i].data[colname].shape)
-            #print(hdu.data[colname].shape)
-            hdu.data[colname][nrows1:] = hdul2[i].data[colname]
-          else: print('Warning: the file ',entry,' does not include column ',colname,' in extension ',i,' -- ',hdu.header['EXTNAME'])
+          try:
+            if colname in hdul2[i].columns.names:
+              #print(hdul1[i].data[colname].shape,hdul2[i].data[colname].shape)
+              #print(hdu.data[colname].shape)
+              hdu.data[colname][nrows1:] = hdul2[i].data[colname]
+            else: print('Warning: the file ',entry,' does not include column ',colname,' in extension ',i,' -- ',hdu.header['EXTNAME'])
+          except AttributeError:
+            print('Warning: the file ',entry,' does not have the attribute columns ',' in extension ',i,' -- ',hdu.header['EXTNAME']) 
 
 
       elif (str(type(hdul1[i])) == "<class 'astropy.io.fits.hdu.image.ImageHDU'>"): #images
