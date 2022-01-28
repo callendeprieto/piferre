@@ -173,7 +173,7 @@ config='desi-n.yaml'):
       f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
  
     f.write("cd "+os.path.abspath(path)+"\n")
-    f.write("vmstat 1 > vmstat.dat & \n")
+    f.write("vmstat 1 > "+str(root)+"_vmstat.dat & \n")
     f.write("vmstat_pid=$! \n")
     for i in range(ngrids):
       #f.write("cp input.nml-"+root+"_"+str(i)+" input.nml \n")

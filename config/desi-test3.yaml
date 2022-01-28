@@ -4,7 +4,7 @@ grid_bands: ['brz']
 elem:  [ 'Fe',     'Ca',     'C',       'Mg'   ]
 proxy: ['[Fe/H]', '[a/Fe]', '[Fe/H]', '[a/Fe]' ]
 abund_grids: ['m_rdesi1', 'm_rdesi2','s_rdesi0']
-seconds_per_spectrum: 100.
+seconds_per_spectrum: 20.
 global:
     algor: 1
     f_format: 1
@@ -12,7 +12,7 @@ global:
     errbar: 1
     covprint: 1
     inter: 3
-    cont: 3
+    cont: -3
     ncont: 500
     ffile: 'frd'
     erfile: 'err'
