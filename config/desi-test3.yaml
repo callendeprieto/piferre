@@ -12,7 +12,7 @@ global:
     errbar: 1
     covprint: 1
     inter: 3
-    cont: -3
+    cont: 3
     ncont: 500
     ffile: 'frd'
     erfile: 'err'
@@ -123,6 +123,7 @@ s_rdesi0:
        ndim: 4
        nov: 4
        indv: 1 2 3 4
+       indi: 4 3 1 2
        nthreads: 8
        labels:  ['[a/Fe]', '[Fe/H]',  'Teff',  'logg']
        llimits:   -0.4      -4.0       2300.    -0.5
