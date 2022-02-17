@@ -2504,6 +2504,20 @@ def check_tile(ra,dec):
     else:
       print('no tiles have been processed whose center falls within 1.5 deg from the target:\n')
     
+#create a series of testing folders to run a DESI data set over all possible permutations of the interpolation order
+
+def mkindices(ndim,script='indices.sh',yaml='desi-s.yaml',sp='../../tiles/cumulative',spt='coadd',rv='../../rv_output',rvt='rvtab',c='desi-s2.yaml',l='../../../../grids'):
+
+  import itertools
+  o = open(script,'w')
+  st=''
+  for chiffre in range(ndim): st=st+str(chiffre+1)
+  f=itertools.permutations(st,ndim)
+  for entry in f: 
+    s=''.join(list(entry))
+    o.write('cp ~/piferre/config/'+yaml+' ~/piferre/config/'+c+' \n sustituye "indi:  1 2 3 4" "indi:  '+'  '.join(list(entry))+'" ~/piferre/config/'+c+' \n mkdir sp_s'+s+' \n cd sp_s'+s+' \n python3 ~/piferre/piferre.py -sp '+sp+' -spt '+spt+' -rv '+rv+' -rvt '+rvt+' -c '+c+' -l '+l+' \n cd .. \n')
+  o.close()
+
 
 #process a single pixel
 def do(path, pixel, sdir='', truth=None, ncores=1, rvpath=None, 
