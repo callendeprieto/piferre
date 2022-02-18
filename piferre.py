@@ -631,8 +631,9 @@ def read_rvtab(file):
 def show1(modfile,i=0):
   
   xb,yb,xr,yr,xz,yz,h = read_spmod(modfile)
-  plot(xb,yb['obs'][i,:],xr,yr['obs'][i,:],xz,yz['obs'][i,:])
-  plot(xb,yb['fit'][i,:],xr,yr['fit'][i,:],xz,yz['fit'][i,:])
+  plt.plot(xb,yb['obs'][i,:],xr,yr['obs'][i,:],xz,yz['obs'][i,:])
+  plt.plot(xb,yb['fit'][i,:],xr,yr['fit'][i,:],xz,yz['fit'][i,:])
+  plt.show()
 
   return(None)
 
