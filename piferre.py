@@ -627,6 +627,14 @@ def read_rvtab(file):
 
   return(r,f,h)
 
+#show the data (obs) and best-fitting model (fit) for i-th spectrum (0,1...) in an rv/spmod file
+def show1(modfile,i=0):
+  
+  xb,yb,xr,yr,xz,yz,h = read_spmod(modfile)
+  plot(xb,yb['obs'][i,:],xr,yr['obs'][i,:],xz,yz['obs'][i,:])
+  plot(xb,yb['fit'][i,:],xr,yr['fit'][i,:],xz,yz['fit'][i,:])
+
+  return(None)
 
 def smooth(x,n):
 
