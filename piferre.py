@@ -2521,7 +2521,7 @@ def mkindices(ndim,script='indices.sh',yaml='desi-s.yaml',sp='../../tiles/cumula
 
 #process a single pixel
 def do(path, pixel, sdir='', truth=None, ncores=1, rvpath=None, 
-libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
+libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml', only=[]):
   
   #get input data files
   #datafiles,zbestfiles  = finddatafiles(path,pixel,sdir,rvpath=rvpath) 
@@ -2622,6 +2622,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
       #fibermap=hdu['PLUGMAP']
       fibermap=hdu[5]
       fiberid=fibermap.data['fiberid']
+      fiber=array(fiberid,dtype=int)
       ra=fibermap.data['RA']
       dec=fibermap.data['DEC']
       #mag=zeros((ra.size,5)) # used zeros for LAMOST fibermap.data['MAG']
@@ -2639,6 +2640,21 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml'):
     for i in range(nspec):
       if z.get(targetid[i],-1) != -1:
         if (abs(z[targetid[i]][0]) < 0.01) & (abs(z[targetid[i]][0]) >= 0.): process_target[i]= True
+
+    #if the array 'only' is not emtpy, only the fibers indicated will be processed
+    #only can have strings and integers: 
+    #   strings are matched against targetid
+    #   integers are matched against fiber
+    if len(only) > 0:
+      process_target = zeros(nspec, dtype=bool)
+      for entry in only:
+        try: 
+          entry = int(entry)
+          w = (fiber == entry)
+        except ValueError:
+          w = (targetid == entry)
+        process_target[w] = True
+        
 
     
     #skip the rest of the code if there are no targets 
@@ -2813,6 +2829,11 @@ def main(args):
                       help='truth file for DESI simulations',
                       default=None)
 
+  parser.add_argument('-o','--only',
+                      type=list,
+                      help='list of target ids or fiber numbers to process',
+                      default=[])
+
   args = parser.parse_args()
 
   sppath=args.sppath
@@ -2830,6 +2851,8 @@ def main(args):
   truthfile=args.truthfile
   if (truthfile is not None):  truthtuple=read_truth(truthfile)
   else: truthtuple=None
+
+  only=args.only
 
 
   pixels=getpixels(sppath)
@@ -2850,7 +2873,7 @@ def main(args):
       os.mkdir(os.path.join(sdir,pixel))
 
     pararr = [sppath,pixel,sdir,truthtuple,ncores, 
-       rvpath, libpath, sptype, rvtype, config]
+       rvpath, libpath, sptype, rvtype, config, only]
 
     #do(sppath,pixel,sdir=sdir,truth=truthtuple, 
     #   rvpath=rvpath, libpath=libpath, 

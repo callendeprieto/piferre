@@ -6,12 +6,12 @@ proxy: ['[Fe/H]', '[a/Fe]', '[Fe/H]', '[a/Fe]' ]
 abund_grids: ['s_rdesi']
 seconds_per_spectrum: 20.
 global:
-    algor: 1
+    algor: 5 
     f_format: 1
     f_access: 0
     errbar: 1
     covprint: 1
-    inter: 3
+    inter: 1
     cont: 3
     ncont: 500
     ffile: 'frd'
