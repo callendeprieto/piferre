@@ -137,6 +137,7 @@ def read_synth(synthfile):
 #create a slurm script for a given pixel
 def write_slurm(root,ncores=1,minutes=102,path=None,ngrids=None, 
 config='desi-n.yaml', cleanup=True):
+
     ferre=os.environ['HOME']+"/ferre/src/a.out"
     python_path=os.environ['HOME']+"/piferre"
     try: 
@@ -191,7 +192,7 @@ config='desi-n.yaml', cleanup=True):
             str(root)+"\',config='"+config+"\'); write_tab_fits(\'"+\
             str(root)+"\',config='"+config+"\'); write_mod_fits(\'"+\
             str(root)+"\',config='"+config+"\')"
-    if cleanup: 
+    if cleanup == True: 
       command=command+" ; cleanup(\'"+str(root)+"\')"
     command=command+" \"\n"
     f.write(command)
