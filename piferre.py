@@ -2855,8 +2855,8 @@ def main(args):
                       help='list of target ids or fiber numbers to process',
                       default=[])
 
-  parser.add_argument('--cleanup', dest='cleanup', action='store_true')
-  parser.add_argument('--no-cleanup', dest='cleanup', action='store_false')
+  parser.add_argument('-cl','--cleanup', dest='cleanup', action='store_true')
+  parser.add_argument('-ncl','--no-cleanup', dest='cleanup', action='store_false')
   parser.set_defaults(cleanup=True)
 
   #parser.add_argument('--feature', default=True, action=argparse.BooleanOptionalAction)
