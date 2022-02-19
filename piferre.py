@@ -4,7 +4,7 @@
 '''
 Interface to use FERRE from python for DESI/BOSS data
 
-use: piferre -sp path-to-spectra [-rv rvpath -l libpath -spt sptype -rvt rvtype -c config -n cores  -t truthfile ]
+use: piferre -sp path-to-spectra [-rv rvpath -l libpath -spt sptype -rvt rvtype -c config -n cores  -t truthfile -o list_of_targets -cl True/False ]
 
 e.g. piferre -sp /data/spectro/redux/dc17a2/spectra-64 
 
@@ -136,7 +136,7 @@ def read_synth(synthfile):
 
 #create a slurm script for a given pixel
 def write_slurm(root,ncores=1,minutes=102,path=None,ngrids=None, 
-config='desi-n.yaml'):
+config='desi-n.yaml', cleanup=True):
     ferre=os.environ['HOME']+"/ferre/src/a.out"
     python_path=os.environ['HOME']+"/piferre"
     try: 
@@ -185,13 +185,16 @@ config='desi-n.yaml'):
     f.write("  wait $pid \n")
     f.write("done \n")
     f.write("kill $vmstat_pid \n")
-    f.write("python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
+    command="python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
             "'); from piferre import opfmerge, oafmerge, write_tab_fits, write_mod_fits, cleanup; opfmerge(\'"+\
             str(root)+"\',config='"+config+"\'); oafmerge(\'"+\
             str(root)+"\',config='"+config+"\'); write_tab_fits(\'"+\
             str(root)+"\',config='"+config+"\'); write_mod_fits(\'"+\
-            str(root)+"\',config='"+config+"\'); cleanup(\'"+\
-            str(root)+"\')\"\n")
+            str(root)+"\',config='"+config+"\')"
+    if cleanup: 
+      command=command+" ; cleanup(\'"+str(root)+"\')"
+    command=command+" \"\n"
+    f.write(command)
     f.close()
     os.chmod(os.path.join(path,root+'.slurm'),0o755)
 
@@ -965,16 +968,27 @@ def get_slurm_cores(proot):
 
   return(ncores)
   
+#gather config. info
+def load_conf(config='desi-n.yaml'):
+
+  try:
+    yfile=open(os.path.join('.',config),'r')
+  except:
+    try:
+      yfile=open(os.path.join(confdir,config),'r')
+    except:
+      print('ERROR in load_conf: cannot find the file ',config)
+      return(None)
+  #conf=yaml.full_load(yfile)
+  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
+  yfile.close()
+
+  return(conf)
 
 #write piferre param. output
 def write_tab_fits(root, path=None, config='desi-n.yaml'):
   
-
-  #gather config. info
-  yfile=open(os.path.join(confdir,config),'r')
-  #conf=yaml.full_load(yfile)
-  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
-  yfile.close()
+  conf=load_conf(config)
 
   if path is None: path=""
   proot=os.path.join(path,root)
@@ -1225,6 +1239,10 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   #get versions and enter then in primary header
   ver = get_versions()
   for entry in ver.keys(): hdu0.header[entry] = ver[entry]
+
+  #add FERRE nml info
+  for item in conf.keys():
+    hdu0.header[item] = conf[item]
   
   hdulist = [hdu0]
 
@@ -1338,10 +1356,7 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
   proot=os.path.join(path,root)
 
   #gather config. info
-  yfile=open(os.path.join(confdir,config),'r')
-  #conf=yaml.full_load(yfile)
-  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
-  yfile.close()
+  conf=load_conf(config)
   global_conf=dict(conf['global'])
 
   
@@ -1440,6 +1455,10 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
   #get versions and enter then in primary header
   ver = get_versions()
   for entry in ver.keys(): hdu0.header[entry] = ver[entry]
+
+  #add FERRE nml info
+  for item in conf.keys():
+    hdu0.header[item] = conf[item]
 
   hdulist = [hdu0]
 
@@ -1604,10 +1623,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   llimit=[] # lower limits for Teff
   iteff=[]  # column for Teff in opf
   ilchi=[]  # column for log10(red. chi**2) in opf
-  yfile=open(os.path.join(confdir,config),'r')
-  #conf=yaml.full_load(yfile)
-  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
-  yfile.close()
+  conf=load_conf(config)  
   #set the set of grids to be used
   grids=conf['grids']
   for entry in grids:
@@ -1727,10 +1743,7 @@ def oafmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
       a=sorted(glob.glob(proot+".oaf*_sorted"))
       
 
-  yfile=open(os.path.join(confdir,config),'r')
-  #conf=yaml.full_load(yfile)
-  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
-  yfile.close()
+  conf=load_conf(config)
 
   if 'elem' not in conf: return None
 
@@ -2406,9 +2419,7 @@ def create_filters(modelfile,config='desi-n.yaml',libpath='.'):
 
   from synple import elements, mkflt
 
-  yfile=open(os.path.join(confdir,config),'r')
-  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
-  yfile.close()
+  conf=load_conf(config)
 
   symbol, mass, sol = elements()
 
@@ -2530,7 +2541,7 @@ def mkindices(ndim,script='indices.sh',yaml='desi-s.yaml',sp='../../tiles/cumula
 
 #process a single pixel
 def do(path, pixel, sdir='', truth=None, ncores=1, rvpath=None, 
-libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml', only=[]):
+libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml', only=[], cleanup=True):
   
   #get input data files
   #datafiles,zbestfiles  = finddatafiles(path,pixel,sdir,rvpath=rvpath) 
@@ -2554,10 +2565,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml', only=[]):
     source='boss'
 
   #gather config. info
-  yfile=open(os.path.join(confdir,config),'r')
-  #conf=yaml.full_load(yfile)
-  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
-  yfile.close()
+  conf=load_conf(config)
   #set the set of grids to be used
   grids=conf['grids']
   #print('grids=',grids)
@@ -2779,7 +2787,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml', only=[]):
 
     #write slurm script
     write_slurm(fileroot,path=os.path.join(sdir,pixel),
-            ngrids=len(grids),ncores=ncores, minutes=minutes, config=config)
+            ngrids=len(grids),ncores=ncores, minutes=minutes, config=config, cleanup=cleanup)
 
 
     #loop over all grids
@@ -2843,6 +2851,11 @@ def main(args):
                       help='list of target ids or fiber numbers to process',
                       default=[])
 
+  parser.add_argument('-cl','--cleanup',
+                      type=bool,
+                      help='cleanup temporary files',
+                      default=True)
+
   args = parser.parse_args()
 
   sppath=args.sppath
@@ -2863,6 +2876,7 @@ def main(args):
 
   only=args.only
 
+  cleanup=args.cleanup
 
   pixels=getpixels(sppath)
   
@@ -2882,7 +2896,7 @@ def main(args):
       os.mkdir(os.path.join(sdir,pixel))
 
     pararr = [sppath,pixel,sdir,truthtuple,ncores, 
-       rvpath, libpath, sptype, rvtype, config, only]
+       rvpath, libpath, sptype, rvtype, config, only, cleanup]
 
     #do(sppath,pixel,sdir=sdir,truth=truthtuple, 
     #   rvpath=rvpath, libpath=libpath, 
