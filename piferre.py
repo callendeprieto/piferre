@@ -638,7 +638,7 @@ def show1(modfile,i=0,abu=False):
   plt.ion()
   plt.plot(xb,yb['obs'][i,:],xr,yr['obs'][i,:],xz,yz['obs'][i,:])
   plt.plot(xb,yb['fit'][i,:],xr,yr['fit'][i,:],xz,yz['fit'][i,:])
-  plt.xlabel('wavelength ('+r’$\AA$’+')')
+  plt.xlabel('wavelength ($\AA$)')
   plt.ylabel('flux')
   plt.legend(['b','r','z','model b','model r','model z']
   if abu:
