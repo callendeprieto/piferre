@@ -983,13 +983,10 @@ def get_slurm_cores(proot):
 def load_conf(config='desi-n.yaml'):
 
   try:
-    yfile=open(os.path.join('.',config),'r')
+    yfile=open(os.path.join(confdir,config),'r')
   except:
-    try:
-      yfile=open(os.path.join(confdir,config),'r')
-    except:
-      print('ERROR in load_conf: cannot find the file ',config)
-      return(None)
+    print('ERROR in load_conf: cannot find the file ',config)
+    return(None)
   #conf=yaml.full_load(yfile)
   conf=yaml.load(yfile, Loader=yaml.SafeLoader)
   yfile.close()
