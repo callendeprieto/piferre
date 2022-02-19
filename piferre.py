@@ -4,7 +4,7 @@
 '''
 Interface to use FERRE from python for DESI/BOSS data
 
-use: piferre -sp path-to-spectra [-rv rvpath -l libpath -spt sptype -rvt rvtype -c config -n cores  -t truthfile -o list_of_targets -cl True/False ]
+use: piferre -sp path-to-spectra [-rv rvpath -l libpath -spt sptype -rvt rvtype -c config -n cores  -t truthfile -o list_of_targets -x]
 
 e.g. piferre -sp /data/spectro/redux/dc17a2/spectra-64 
 
@@ -2855,11 +2855,8 @@ def main(args):
                       help='list of target ids or fiber numbers to process',
                       default=[])
 
-  parser.add_argument('-cl','--cleanup', dest='cleanup', action='store_true')
-  parser.add_argument('-ncl','--no-cleanup', dest='cleanup', action='store_false')
+  parser.add_argument('-x','--no-cleanup', dest='cleanup', action='store_false')
   parser.set_defaults(cleanup=True)
-
-  #parser.add_argument('--feature', default=True, action=argparse.BooleanOptionalAction)
 
 
   args = parser.parse_args()
