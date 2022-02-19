@@ -2908,6 +2908,8 @@ def main(args):
     #   ncores=ncores,  config=config)
 
     #run(pixel,path=os.path.join(sdir,pixel))
+    
+    print('cleanup=',cleanup)
 
     dopars.append(pararr)
 
