@@ -1240,9 +1240,6 @@ def write_tab_fits(root, path=None, config='desi-n.yaml'):
   ver = get_versions()
   for entry in ver.keys(): hdu0.header[entry] = ver[entry]
 
-  #add FERRE nml info
-  for item in conf.keys():
-    hdu0.header[item] = conf[item]
   
   hdulist = [hdu0]
 
@@ -1456,9 +1453,6 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
   ver = get_versions()
   for entry in ver.keys(): hdu0.header[entry] = ver[entry]
 
-  #add FERRE nml info
-  for item in conf.keys():
-    hdu0.header[item] = conf[item]
 
   hdulist = [hdu0]
 
