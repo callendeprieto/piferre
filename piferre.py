@@ -640,13 +640,12 @@ def show1(modfile,i=0,abu=False):
   plt.plot(xb,yb['fit'][i,:],xr,yr['fit'][i,:],xz,yz['fit'][i,:])
   plt.xlabel('wavelength ($\AA$)')
   plt.ylabel('flux')
-  plt.legend(['b','r','z','model b','model r','model z']
-  if abu:
+  if abu == True:
     plt.plot(xb,yb['abu'][i,:],xr,yr['abu'][i,:],xz,yz['abu'][i,:])
     plt.plot(xb,yb['abu'][i,:]/yb['fit'][i,:],xr,yr['abu'][i,:]/yr['fit'][i,:],xz,yz['abu'][i,:]/yz['fit'][i,:])
-    plt.legend(['b','r','z','fit b','fit r','fit z','abu b','abu r','abi z','abu/fit b','abu/fit r','abu/fit z']
+    plt.legend(['b','r','z','fit b','fit r','fit z','abu b','abu r','abu z','abu/fit b','abu/fit r','abu/fit z'])
   else:
-    plt.legend(['b','r','z','fit b','fit r','fit z']
+    plt.legend(['b','r','z','fit b','fit r','fit z'])
   plt.show()
 
   return(None)
