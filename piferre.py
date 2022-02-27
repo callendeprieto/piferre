@@ -145,6 +145,8 @@ config='desi-n.yaml', cleanup=True):
     except:
       host='Unknown'
 
+    conf=load_conf(config)
+
     now=time.strftime("%c")
     if path is None: path='.'
     if ngrids is None: ngrids=1
