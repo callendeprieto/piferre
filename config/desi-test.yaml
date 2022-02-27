@@ -1,8 +1,6 @@
 bands: ['z']
 grids: ['s_rdesi']
 grid_bands: ['z']
-elem:  [  'Fe',     'Ca',     'C',      'Mg'   ]
-proxy: ['[Fe/H]', '[a/Fe]', '[Fe/H]', '[a/Fe]' ]
 abund_grids: ['s_rdesi']
 seconds_per_spectrum: 20.
 global:

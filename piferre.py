@@ -187,11 +187,12 @@ config='desi-n.yaml', cleanup=True):
     f.write("done \n")
     f.write("kill $vmstat_pid \n")
     command="python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
-            "'); from piferre import opfmerge, oafmerge, write_tab_fits, write_mod_fits, cleanup; opfmerge(\'"+\
-            str(root)+"\',config='"+config+"\'); oafmerge(\'"+\
-            str(root)+"\',config='"+config+"\'); write_tab_fits(\'"+\
-            str(root)+"\',config='"+config+"\'); write_mod_fits(\'"+\
-            str(root)+"\',config='"+config+"\')"
+     "'); from piferre import opfmerge, oafmerge, write_tab_fits, write_mod_fits, cleanup;"+ \
+     " opfmerge(\'"+str(root)+"\',config='"+config+"\');"
+    if 'elem' in conf:
+      command=command + " oafmerge(\'"+str(root)+"\',config='"+config+"\');"
+    command=command + " write_tab_fits(\'"+str(root)+"\',config='"+config+"\');"+ \
+     " write_mod_fits(\'"+str(root)+"\',config='"+config+"\')"
     if cleanup == True: 
       command=command+" ; cleanup(\'"+str(root)+"\')"
     command=command+" \"\n"
