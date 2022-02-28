@@ -21,6 +21,7 @@ global:
     offile: 'ndl$i'
     sffile: 'nrd$i'
     nthreads: 12
+extensions:
   calib: 
        nov: 0
        cont: 0
