@@ -1,6 +1,6 @@
-bands: ['z']
+bands: ['b']
 grids: ['s_rdesi']
-grid_bands: ['z']
+grid_bands: ['b']
 abund_grids: ['s_rdesi']
 seconds_per_spectrum: 20.
 global:
@@ -10,7 +10,7 @@ global:
     errbar: 1
     covprint: 1
     inter: 3
-    cont: -3
+    cont: 3
     ncont: 500
     ffile: 'frd'
     erfile: 'err'   

@@ -1,4 +1,4 @@
-bands: ['b', 'r', 'z']
+bands: ['b','r','z']
 grids: ['s_rdesi']
 grid_bands: ['brz']
 elem:  [  'Fe',     'Ca',     'C',      'Mg'   ]
@@ -12,8 +12,9 @@ global:
     errbar: 1
     covprint: 1
     inter: 3
-    cont: -3
-    ncont: 500
+    cont: -1
+    ncont: 3
+    rejectcont: 0.5
     ffile: 'frd'
     erfile: 'err'   
     pfile: 'vrd'
