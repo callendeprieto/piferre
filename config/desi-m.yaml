@@ -118,15 +118,4 @@ m_rdesi9:
        llimits:  15000.00       7.00000
        steps: 5000. 0.25
        nthreads: 2
-s_rdesi0:
-   param:
-       ndim: 4
-       nov: 4
-       indv: 1 2 3 4
-       indi: 4 3 1 2
-       nthreads: 8
-       labels:  ['[a/Fe]', '[Fe/H]',  'Teff',  'logg']
-       llimits:   -0.4      -4.0       2300.    -0.5
-       steps:   0.2          0.5        100.     0.5
-
 

@@ -12,8 +12,8 @@ global:
     errbar: 1
     covprint: 1
     inter: 3
-    cont: -1
-    ncont: 3
+    cont: 3
+    ncont: 500
     rejectcont: 0.5
     ffile: 'frd'
     erfile: 'err'   
@@ -49,4 +49,5 @@ s_rdesi:
        labels:  ['[a/Fe]','[Fe/H]',  'Teff',  'logg']
        llimits: -0.4  -4. 2300. -0.5
        steps:  0.2   0.5  100.  0.5
+
 
