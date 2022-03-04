@@ -14,7 +14,6 @@ global:
     inter: 3
     cont: 3
     ncont: 500
-    rejectcont: 0.5
     ffile: 'frd'
     erfile: 'err'   
     pfile: 'vrd'

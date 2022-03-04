@@ -125,7 +125,7 @@ s_rdesi:
        indv: 1 2 3 4
        indi: 1 2 3 4
        nthreads: 8
-       filterfile: 's_rdesi.param.flt'
+       filterfile: 'n_rz.flt'
        labels:  ['[a/Fe]', '[Fe/H]',  'Teff',  'logg']
        llimits:   -0.4      -4.0       2300.    -0.5
        steps:   0.2          0.5        100.     0.5
