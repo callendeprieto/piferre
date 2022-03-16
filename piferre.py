@@ -32,7 +32,7 @@ import argparse
 import yaml
 from multiprocessing import Pool,cpu_count
 
-version = '0.2.0'
+version = '0.3.0'
 hplanck = 6.62607015e-34 # J s
 clight = 299792458.0 #/s
 piferredir = os.path.dirname(os.path.realpath(__file__))
