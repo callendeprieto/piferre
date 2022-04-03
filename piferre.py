@@ -2788,7 +2788,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml', only=[], cl
 
     write_ferre_input(fileroot,ids,par,yy,eyy,path=os.path.join(sdir,pixel))
      
-    minutes= 2. + npass*seconds_per_spectrum/60.*32./ncores
+    minutes= 10. + npass*seconds_per_spectrum/60.*32./ncores
 
     #write slurm script
     write_slurm(fileroot,path=os.path.join(sdir,pixel),
