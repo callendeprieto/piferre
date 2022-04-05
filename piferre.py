@@ -174,7 +174,9 @@ config='desi-n.yaml', cleanup=True):
       #f.write("#SBATCH  -t "+"{:02d}".format(hours2)+":"+"{:02d}".format(minutes2)+":00"+"\n") #hh:mm:ss
       #f.write("#SBATCH  -D "+os.path.abspath(path)+" \n")    
       f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
- 
+      f.write("load module gnu"+"\n")
+      f.write("load module python"+"\n")
+
     f.write("cd "+os.path.abspath(path)+"\n")
     f.write("vmstat 1 > "+str(root)+"_vmstat.dat & \n")
     f.write("vmstat_pid=$! \n")
