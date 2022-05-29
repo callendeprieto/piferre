@@ -368,8 +368,9 @@ def mknml(conf,root,libpath='.',path='.'):
 
 
       #make sure tmp 'sort' files are stored in $SCRATCH for cori
-      if host[:4] == 'cori':
-        nml['scratch'] = "'"+scratch+"'"
+      #if host[:4] == 'cori':
+      #  nml['scratch'] = "'"+scratch+"'"
+      #no longer needed after replacing fsort by msort in ferre (may 2022)
 
       #get rid of keywords in yaml that are not for the nml file, but for opfmerge 
       #or write_tab
