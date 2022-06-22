@@ -2330,11 +2330,12 @@ def inspect2(sptabfile,sym='.',rvrange=(-1e32,1e32),
 
 
 # pick-up metal-poor star candidates
-def mpcandidates(sptabfile,sym='.'):
+def mpcandidates(sptabfile,minteff=4000.,maxteff=7000.,minfeh=-4.9,
+    maxfeh=-4.0,minsnr_med=30.,maxchisq_tot=4.,sym='.'):
 
-  s,f,h = read_sptab(sptabfile)
+  s,m,h = read_sptab(sptabfile)
 
-  w = (s['teff'] > 4000.) & (s['teff'] < 7000.) & (s['feh'] > -4.9) & (s['snr_med'] > 30.) & (s['chisq_tot'] < 4.) & (s['feh'] < -4.0)
+  w = (s['teff'] > minteff) & (s['teff'] < maxteff) & (s['feh'] > minfeh) & (s['snr_med'] > minsnr_med) & (s['chisq_tot'] < maxchisq_tot) & (s['feh'] < maxfeh)
 
   plt.figure()
   plt.ion()
@@ -2348,7 +2349,7 @@ def mpcandidates(sptabfile,sym='.'):
   ws = where(w)[0]
   print('  targetid          Teff   logg [Fe/H] [a/Fe] snr_med chisq    ra        dec      Gmag')
   for i in ws:
-    print('{:16}  {:7.2}  {:4.2}  {:5.2}  {:6.1}  {:6.1} {:4.2} {:10.8} {:10.8} {:4.3}'.format(s['targetid'][i],s['teff'][i],s['logg'][i],s['feh'][i], s['alphafe'][i],s['snr_med'][i],s['chisq_tot'][i],f['target_ra'][i],f['target_dec'][i],f['GAIA_PHOT_G_MEAN_MAG'][i]))
+    print('{:16}  {:7.2}  {:4.2}  {:5.2}  {:6.1}  {:6.1} {:4.2} {:10.8} {:10.8} {:4.3}'.format(s['targetid'][i],s['teff'][i],s['logg'][i],s['feh'][i], s['alphafe'][i],s['snr_med'][i],s['chisq_tot'][i],m['target_ra'][i],m['target_dec'][i],m['GAIA_PHOT_G_MEAN_MAG'][i]))
 
 #peruse a spectrum
 def peruse(targetid,sptabfile):
