@@ -2347,30 +2347,47 @@ def mpcandidates(sptabfile,minteff=4000.,maxteff=7000.,minfeh=-4.9,
   plt.show()
 
   ws = where(w)[0]
-  print('  targetid          Teff   logg [Fe/H] [a/Fe] snr_med chisq    ra        dec      Gmag')
+  print('  targetid/srcfile  Teff   logg [Fe/H] [a/Fe] snr_med chisq    ra        dec      Gmag')
   for i in ws:
-    print('{:16}  {:7.2}  {:4.2}  {:5.2}  {:6.1}  {:6.1} {:4.2} {:10.8} {:10.8} {:4.3}'.format(s['targetid'][i],s['teff'][i],s['logg'][i],s['feh'][i], s['alphafe'][i],s['snr_med'][i],s['chisq_tot'][i],m['target_ra'][i],m['target_dec'][i],m['GAIA_PHOT_G_MEAN_MAG'][i]))
+    print('{:16}  {:7.2}  {:4.2}  {:5.2}  {:6.1}  {:6.1} {:4.2} {:10.8} {:10.8} {:4.3} \n {}'.format(s['targetid'][i],s['teff'][i],s['logg'][i],s['feh'][i], s['alphafe'][i],s['snr_med'][i],s['chisq_tot'][i],m['target_ra'][i],m['target_dec'][i],m['GAIA_PHOT_G_MEAN_MAG'][i],s['srcfile'][i]))
 
 #peruse a spectrum
-def peruse(targetid,sptabfile):
+def peruse(targetid,sptabfile,sptabdir='./',subdirlevel=None):
 
-  s,f, h = read_sptab(sptabfile)
+  indir = sptabdir
+  print(indir)
+  if subdirlevel is not None: 
+    for entry in range(subdirlevel):
+      print(indir)
+      indir = os.path.join(indir,'*')
+  files = glob.glob(os.path.join(indir,sptabfile))
+  print(indir,sptabfile)
+  print(files)
+
+  assert len(files) < 2,'more than one match found for the sptab '
+ 
+  infile = files[0]
+  s,f, h = read_sptab(infile)
   w = where(s['targetid'] == targetid)[0]
-  spmodfile = sptabfile.replace('sptab','spmod')
-  print(sptabfile,spmodfile)
+
+  stop
+
+  print('len(w)=',len(w))
+  spmodfile = infile.replace('sptab','spmod')
+  print(infile,spmodfile)
   bx,by, rx,ry, zx,zy, hm = read_spmod(spmodfile)
   
   plt.figure()
   plt.ion()
-  plt.plot(bx,by['obs'][w[0],:],rx,ry['obs'][w[0],:],zx,zy['obs'][w[0],:])
-  plt.plot(bx,by['fit'][w[0],:],rx,ry['fit'][w[0],:],zx,zy['fit'][w[0],:])
+  plt.plot(bx,by['obs'][w,:],rx,ry['obs'][w,:],zx,zy['obs'][w,:])
+  plt.plot(bx,by['fit'][w,:],rx,ry['fit'][w,:],zx,zy['fit'][w,:])
   plt.xlabel('Wavelength (A)')
   plt.ylabel('normalized flux')
   plt.title(targetid)
-  plt.text(rx[0],mean(ry['obs'][w])/2,'Teff='+str(s['teff'][w[0]]))
-  plt.text(rx[0],mean(ry['obs'][w])/2.5,'logg='+str(s['logg'][w[0]]))
-  plt.text(rx[0],mean(ry['obs'][w])/3,'[Fe/H]='+str(s['feh'][w[0]]))
-  plt.text(rx[0],mean(ry['obs'][w])/3.5,'median(S/N)='+str(s['snr_med'][w[0]]))
+  plt.text(rx,mean(ry['obs'][w])/2,'Teff='+str(s['teff'][w]))
+  plt.text(rx,mean(ry['obs'][w])/2.5,'logg='+str(s['logg'][w]))
+  plt.text(rx,mean(ry['obs'][w])/3,'[Fe/H]='+str(s['feh'][w]))
+  plt.text(rx,mean(ry['obs'][w])/3.5,'median(S/N)='+str(s['snr_med'][w]))
   plt.show()
 
 #rv vs sp comparison
