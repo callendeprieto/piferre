@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.8
 # -*- coding: utf-8 -*-
 
 '''
@@ -175,7 +175,7 @@ config='desi-n.yaml', cleanup=True):
       #f.write("#SBATCH  -D "+os.path.abspath(path)+" \n")    
       f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
       f.write("module load gnu"+"\n")
-      f.write("module load python"+"\n")
+      f.write("module load python/3.8"+"\n")
 
     f.write("cd "+os.path.abspath(path)+"\n")
     f.write("vmstat 1 > "+str(root)+"_vmstat.dat & \n")
@@ -190,7 +190,7 @@ config='desi-n.yaml', cleanup=True):
     f.write("  wait $pid \n")
     f.write("done \n")
     f.write("kill $vmstat_pid \n")
-    command="python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
+    command="python3.8 -c \"import sys; sys.path.insert(0, '"+python_path+ \
      "'); from piferre import opfmerge, oafmerge, write_tab_fits, write_mod_fits, cleanup;"+ \
      " opfmerge(\'"+str(root)+"\',config='"+config+"\');"
     if 'elem' in conf:
@@ -2656,7 +2656,7 @@ def mkindices(ndim,script='indices.sh',yaml='desi-s.yaml',sp='../../tiles/cumula
   f=itertools.permutations(st,ndim)
   for entry in f: 
     s=''.join(list(entry))
-    o.write('cp ~/piferre/config/'+yaml+' ~/piferre/config/'+c+' \n sustituye "indi:  1 2 3 4" "indi:  '+'  '.join(list(entry))+'" ~/piferre/config/'+c+' \n mkdir sp_s'+s+' \n cd sp_s'+s+' \n python3 ~/piferre/piferre.py -sp '+sp+' -spt '+spt+' -rv '+rv+' -rvt '+rvt+' -c '+c+' -l '+l+' \n cd .. \n')
+    o.write('cp ~/piferre/config/'+yaml+' ~/piferre/config/'+c+' \n sustituye "indi:  1 2 3 4" "indi:  '+'  '.join(list(entry))+'" ~/piferre/config/'+c+' \n mkdir sp_s'+s+' \n cd sp_s'+s+' \n python3.8 ~/piferre/piferre.py -sp '+sp+' -spt '+spt+' -rv '+rv+' -rvt '+rvt+' -c '+c+' -l '+l+' \n cd .. \n')
   o.close()
 
 
