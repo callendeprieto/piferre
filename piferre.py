@@ -157,7 +157,7 @@ config='desi-n.yaml', cleanup=True):
     f.write("#This script was written by piferre.py on "+now+" \n") 
     f.write("#SBATCH --time="+str(int(minutes)+1)+"\n") #minutes
     f.write("#SBATCH --ntasks=1" + "\n")
-    f.write("$SBATCH --nodes=1" + "\n")
+    f.write("#SBATCH --nodes=1" + "\n")
     if host[:4] == 'cori':
       f.write("#SBATCH --qos=regular" + "\n")
       f.write("#SBATCH --constraint=haswell" + "\n")
