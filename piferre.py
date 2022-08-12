@@ -145,7 +145,7 @@ config='desi-n.yaml', cleanup=True):
     except:
       host='Unknown'
 
-    conf=load_conf(config)
+    conf=load_conf(config,confdir=confdir)
 
     now=time.strftime("%c")
     if path is None: path='.'
@@ -301,30 +301,28 @@ def mknml(conf,root,libpath='.',path='.'):
 
   bands=conf['bands']
   grids=conf['grids']
-  grid_bands=conf['grid_bands']
+  if 'grid_bands' in conf: grid_bands=conf['grid_bands']
   if 'abund_grids' in conf: abund_grids=conf['abund_grids']
 
   for k in range(len(grids)): #loop over all grids
     synth=grids[k]
     synthfiles=[]
-    for band in grid_bands:
-
-      #if band == '':
-      #  gridfile=synth+'.dat'
-      #else:
-      #  gridfile=synth+'-'+band+'.dat'
-      #synthfiles.append(gridfile)
-
-      if len(grid_bands) == 0:
-        gridfile=synth+'.dat'
-      else:
-        if len(grid_bands) == 1:
-          gridfile=synth+'-'+band+'.dat'
-        elif len(grid_bands) == len(bands):
-          gridfile=synth+'-'+band+'.dat'
+    if 'grid_bands' in conf:
+      grid_bands=conf['grid_bands']	
+      for band in grid_bands:
+        if len(grid_bands) == 0:
+          gridfile=synth+'.dat'
         else:
-          print('mknml: error -- the array grid_bands must have 0, 1 or the same length as bands')
-          return None   
+          if len(grid_bands) == 1:
+            gridfile=synth+'-'+band+'.dat'
+          elif len(grid_bands) == len(bands):
+            gridfile=synth+'-'+band+'.dat'
+          else:
+            print('mknml: error -- the array grid_bands must have 0, 1 or the same length as bands')
+            return None       
+        synthfiles.append(gridfile)
+    else:
+      gridfile=synth+'.dat'  
       synthfiles.append(gridfile)
 
     libpath=os.path.abspath(libpath)
@@ -421,8 +419,9 @@ def mknml(conf,root,libpath='.',path='.'):
 
 
         #make sure tmp 'sort' files are stored in $SCRATCH for cori
-        if host[:4] == 'cori':
-          nml['scratch'] = "'"+scratch+"'"
+        #no longer needed after changing fsort by msort
+        #if host[:4] == 'cori':
+        #  nml['scratch'] = "'"+scratch+"'"
 
         #get rid of keywords in yaml that are not for the nml file, but for opfmerge or write_tab
         labels = nml['labels']
@@ -986,7 +985,7 @@ def get_slurm_cores(proot):
   return(ncores)
   
 #gather config. info
-def load_conf(config='desi-n.yaml'):
+def load_conf(config='desi-n.yaml',confdir='.'):
 
   try:
     yfile=open(os.path.join(confdir,config),'r')
@@ -1002,7 +1001,7 @@ def load_conf(config='desi-n.yaml'):
 #write piferre param. output
 def write_tab_fits(root, path=None, config='desi-n.yaml'):
   
-  conf=load_conf(config)
+  conf=load_conf(config,confdir=confdir)
 
   if path is None: path=""
   proot=os.path.join(path,root)
@@ -1367,7 +1366,7 @@ def write_mod_fits(root, path=None, config='desi-n.yaml'):
   proot=os.path.join(path,root)
 
   #gather config. info
-  conf=load_conf(config)
+  conf=load_conf(config,confdir=confdir)
   global_conf=dict(conf['global'])
 
   
@@ -1631,7 +1630,7 @@ def opfmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
   llimit=[] # lower limits for Teff
   iteff=[]  # column for Teff in opf
   ilchi=[]  # column for log10(red. chi**2) in opf
-  conf=load_conf(config)  
+  conf=load_conf(config,confdir=confdir)  
   #set the set of grids to be used
   grids=conf['grids']
   for entry in grids:
@@ -1751,7 +1750,7 @@ def oafmerge(root,path=None,wait_on_sorted=False,config='desi-n.yaml'):
       a=sorted(glob.glob(proot+".oaf*_sorted"))
       
 
-  conf=load_conf(config)
+  conf=load_conf(config,confdir=confdir)
 
   if 'elem' not in conf: return None
 
@@ -2540,7 +2539,7 @@ def create_filters(modelfile,config='desi-n.yaml',libpath='.'):
 
   from synple import elements, mkflt
 
-  conf=load_conf(config)
+  conf=load_conf(config,confdir=confdir)
 
   symbol, mass, sol = elements()
 
@@ -2686,7 +2685,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml', only=[], cl
     source='boss'
 
   #gather config. info
-  conf=load_conf(config)
+  conf=load_conf(config,confdir=confdir)
   #set the set of grids to be used
   grids=conf['grids']
   #print('grids=',grids)
