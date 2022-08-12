@@ -157,6 +157,7 @@ config='desi-n.yaml', cleanup=True):
     f.write("#This script was written by piferre.py on "+now+" \n") 
     f.write("#SBATCH --time="+str(int(minutes)+1)+"\n") #minutes
     f.write("#SBATCH --ntasks=1" + "\n")
+    f.write("$SBATCH --nodes=1" + "\n")
     if host[:4] == 'cori':
       f.write("#SBATCH --qos=regular" + "\n")
       f.write("#SBATCH --constraint=haswell" + "\n")
@@ -181,8 +182,7 @@ config='desi-n.yaml', cleanup=True):
       f.write("#SBATCH --constraint=cpu" + "\n")
       #f.write("#SBATCH --time="+str(minutes)+"\n") #minutes
       #f.write("#SBATCH --ntasks=1" + "\n")
-      f.write("#SBATCH -N 1 \n")
-      f.write("#SBATCH -A desi \n")
+      f.write("#SBATCH --account=desi \n")
       f.write("#SBATCH --cpus-per-task="+str(ncores*2)+"\n")
       f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
 
