@@ -974,7 +974,7 @@ def get_slurm_timings(proot):
 #get the number of cores assigned in slurm for the calculation 
 def get_slurm_cores(proot):
 
-  ncores = nan
+  ncores = 0
   f=open(proot+'.slurm','r')
   for line in f:
     if '--cpus-per-task' in line:
