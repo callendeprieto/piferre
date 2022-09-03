@@ -158,14 +158,14 @@ config='desi-n.yaml', cleanup=True):
     f.write("#SBATCH --time="+str(int(minutes)+1)+"\n") #minutes
     f.write("#SBATCH --ntasks=1" + "\n")
     f.write("#SBATCH --nodes=1" + "\n")
-    if host[:4] == 'cori':
+    if host[:4] == 'cori': #cori
       f.write("#SBATCH --qos=regular" + "\n")
       f.write("#SBATCH --constraint=haswell" + "\n")
       #f.write("#SBATCH --time="+str(minutes)+"\n") #minutes
       #f.write("#SBATCH --ntasks=1" + "\n")
       f.write("#SBATCH --cpus-per-task="+str(ncores*2)+"\n")
       f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
-    elif (host == 'login1'):
+    elif (host == 'login1'): #lapalma
       #f.write("#SBATCH  -J "+str(root)+" \n")
       #f.write("#SBATCH  -o "+str(root)+"_%j.out"+" \n")
       #f.write("#SBATCH  -e "+str(root)+"_%j.err"+" \n")
@@ -177,7 +177,7 @@ config='desi-n.yaml', cleanup=True):
       f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
       f.write("module load gnu"+"\n")
       f.write("module load python/3.8"+"\n")
-    else:
+    else: # perlmutter
       f.write("#SBATCH --qos=regular" + "\n")
       f.write("#SBATCH --constraint=cpu" + "\n")
       #f.write("#SBATCH --time="+str(minutes)+"\n") #minutes
@@ -185,6 +185,8 @@ config='desi-n.yaml', cleanup=True):
       f.write("#SBATCH --account=desi \n")
       f.write("#SBATCH --cpus-per-task="+str(ncores*2)+"\n")
       f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
+      f.write("module load gcc"+"\n")
+      f.write("module load python"+"\n")
 
 
     f.write("cd "+os.path.abspath(path)+"\n")
