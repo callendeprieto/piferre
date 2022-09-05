@@ -2364,6 +2364,12 @@ def mpcandidates(sptabfile,minteff=4000.,maxteff=7000.,minfeh=-4.9,
 
 #peruse a spectrum
 def peruse(targetid,sptabfile,sptabdir='./',subdirlevel=None):
+	
+  s, m, h = read_sptab(sptabfile)
+  w = (s['targetid'] == targetid)
+  srcfile = s['srcfile'][w]
+  
+  print(srcfile)
 
   indir = sptabdir
   print(indir)
@@ -2371,7 +2377,7 @@ def peruse(targetid,sptabfile,sptabdir='./',subdirlevel=None):
     for entry in range(subdirlevel):
       print(indir)
       indir = os.path.join(indir,'*')
-  files = glob.glob(os.path.join(indir,sptabfile))
+  files = glob.glob(os.path.join(indir,'sptab_'+srcfile+'.fits'))
   print(indir,sptabfile)
   print(files)
 
