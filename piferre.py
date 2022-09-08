@@ -26,6 +26,7 @@ from astropy.coordinates import SkyCoord
 import astropy.table as tbl
 import astropy.units as units
 import matplotlib.pyplot as plt
+from synple import head_synth,lambda_synth
 import subprocess
 import datetime, time
 import argparse
@@ -39,100 +40,6 @@ piferredir = os.path.dirname(os.path.realpath(__file__))
 confdir = os.path.join(piferredir,'config')
 filterdir = os.path.join(piferredir,'filter')
 
-#extract the header of a synthfile
-def head_synth(synthfile):
-    meta=0
-    multi=0
-    file=open(synthfile,'r')
-    line=file.readline()
-    header={}
-    while (1):
-        line=file.readline()
-        part=line.split('=')
-        if (len(part) < 2): 
-          meta=meta+1
-          if (meta>multi): 
-            if multi>0: multi_header.append(header)
-            break
-          else:
-            if (meta > 1): multi_header.append(header)
-            header={}
-            line=file.readline()
-        else:
-          k=part[0].strip()
-          v=part[1].strip()
-          header[k]=v
-          if k == 'MULTI': 
-            multi=int(v)
-            multi_header=[]
-    if (multi > 1): header=multi_header
-    return header
-
-#extract the wavelength array for a FERRE synth file
-def lambda_synth(synthfile):
-    multi_header=head_synth(synthfile)
-    if ndim(multi_header) == 0: multi_header=[multi_header]
-    xx=[]
-    j=0
-    for header in multi_header:
-      tmp=header['WAVE'].split()
-      npix=int(header['NPIX'])
-      step=float(tmp[1])
-      x0=float(tmp[0])
-      x=arange(npix)*step+x0
-      if header['LOGW']:
-        if int(header['LOGW']) == 1: x=10.**x
-        if int(header['LOGW']) == 2: x=exp(x)   
-      j=j+1
-      xx.append(x)
-
-    if len(xx)>1: x=xx[:]
-
-    return x
-
-#read a synthfile
-def read_synth(synthfile):
-    meta=0
-    multi=0
-    file=open(synthfile,'r')
-    line=file.readline()
-    header={}
-    nlines=1
-    while (1):
-        line=file.readline()
-        nlines+=1
-        part=line.split('=')
-        if (len(part) < 2): 
-          meta=meta+1
-          if (meta>multi): 
-            if multi>0: multi_header.append(header)
-            break
-          else:
-            if (meta > 1): multi_header.append(header)
-            header={}
-            line=file.readline()
-            nlines+=1
-        else:
-          k=part[0].strip()
-          v=part[1].strip()
-          header[k]=v
-          if k == 'MULTI': 
-            multi=int(v)
-            multi_header=[]
-    if (multi > 1): header=multi_header
-    file.close()
-
-    if ndim(header) > 0: 
-      snp=header[0]['N_P'] 
-    else: 
-      snp=header['N_P']
-
-    n_p = tuple(array(snp.split(),dtype=int)) + (-1,)
-    data=loadtxt(synthfile, skiprows=nlines, dtype=float)
-    data = reshape( data, n_p)
-    
-
-    return header,data
 
 #create a slurm script for a given pixel
 def write_slurm(root,ncores=1,minutes=102,path=None,ngrids=None, 
