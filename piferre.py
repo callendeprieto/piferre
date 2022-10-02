@@ -92,7 +92,7 @@ config='desi-n.yaml', cleanup=True):
       f.write("#SBATCH --account=desi \n")
       f.write("#SBATCH --cpus-per-task="+str(ncores*2)+"\n")
       f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
-      f.write("module load gcc"+"\n")
+      f.write("module load PrgEnv-gnu"+"\n")
       f.write("module load python"+"\n")
 
 
