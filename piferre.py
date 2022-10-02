@@ -61,7 +61,7 @@ config='desi-n.yaml', cleanup=True):
     f=open(os.path.join(path,root+'.slurm'),'w')
     f.write("#!/bin/bash \n")
     f.write("#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-# \n")
-    f.write("#This script was written by piferre.py on "+now+" \n") 
+    f.write("#This script was written by piferre.py version "+version+" on "+now+" \n") 
     f.write("#SBATCH --time="+str(int(minutes)+1)+"\n") #minutes
     f.write("#SBATCH --ntasks=1" + "\n")
     f.write("#SBATCH --nodes=1" + "\n")
