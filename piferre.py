@@ -2587,6 +2587,10 @@ def xc(template,data,npoints=10):
 
 #cross correlate two spectra and fit a Gaussian to find the RV offset
 def xcl(tlambda,template,dlambda,data,npoints=10):
+  #tlabmbda and dlambda are the wavelength arrays for the spectra
+  #in template and data, respectively
+  #npoints is the number of data points considered in the Gaussian
+  #fitting to the Cross-correlation function
 	
   l0 = mean(tlambda)
   tv = (tlambda - l0) / l0 * clight
