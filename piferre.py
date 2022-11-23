@@ -18,9 +18,11 @@ import glob
 import re
 import importlib
 from numpy import arange, loadtxt, savetxt, genfromtxt, zeros, ones, nan, sqrt, interp,     \
-  concatenate, array, reshape, min, max, where, divide, mean, stack, vstack, int64, int32,  \
-  log10, median, std, mean, pi, intersect1d, isfinite, ndim, cos, sin
+  concatenate, correlate, array, reshape, min, max, diff, where, divide, mean, stack, vstack, \
+  int64, int32,  \
+  log10, median, std, mean, pi, intersect1d, isfinite, ndim, cos, sin, exp
 from scipy.signal import savgol_filter
+from scipy.optimize import curve_fit
 from astropy.io import fits
 from astropy.coordinates import SkyCoord
 import astropy.table as tbl
@@ -2549,6 +2551,56 @@ def download_file(url,local_filename=None, user=None, password=None):
                     f.write(chunk)
     return local_filename
 
+#Gaussian 
+def gauss(x, B, A, mu,sigma):
+  return B+A*exp(-(x-mu)**2/(2.*sigma**2))
+    
+#fit a Gaussian to data
+def gaussfit(x, y, B=0.0, A=1.0, mu=0.0, sigma=1.0):
+  p0 = [B, A, mu, sigma]
+  coeff, var = curve_fit(gauss, x, y, p0=p0)
+  
+  return(coeff,var)
+    
+#cros-correlate two arrays of the same length and fit a Gaussian      
+def xc(template,data,npoints=10):
+	c = correlate(data,template,'same')
+	lenc = len(c)
+	hlenc = int(lenc/2)
+	x = arange( lenc ) - hlenc
+	
+	#fitting a Gaussian
+	plt.plot(x,c,'*')
+	plt.xlim([-npoints,npoints])
+	lmin = min(c[hlenc-npoints:hlenc+npoints])
+	lmax = max(c[hlenc-npoints:hlenc+npoints])
+	plt.ylim([lmin*0.95,lmax*1.05])
+	coeff, var = gaussfit(x[hlenc-int(npoints/2):hlenc+int(npoints/2)], 
+	                      c[hlenc-int(npoints/2):hlenc+int(npoints/2)],
+	                      B=min(c), A=max(c)-min(c), 
+	                      mu=0.0, sigma=npoints/2.)
+	                    
+	plt.plot(x,gauss(x, *coeff))
+	plt.show()
+	
+	return(coeff[2], sqrt(var[2,2]))
+
+#cross correlate two spectra and fit a Gaussian to find the RV offset
+def xcl(tlambda,template,dlambda,data,npoints=10):
+	
+  l0 = mean(tlambda)
+  tv = (tlambda - l0) / l0 * clight
+  dv = (dlambda - l0) / l0 * clight
+  delta = median(diff(tv))
+  nn = int( (max(tv) - min(tv) ) / delta ) + 1
+  x = arange(nn) * delta + min(tv)
+  rtemplate = interp(x, tv, template)
+  rdata = interp(x, dv, data)
+  offset, error = xc(rtemplate,rdata,npoints=npoints)
+  print('offset is ',offset*delta, ' +/- ',error*delta, 'm/s')
+  
+  return(offset*delta, error*delta)
+    
 #check whether a tile has been observed
 def check_tile(ra,dec):
 
