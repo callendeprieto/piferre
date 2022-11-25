@@ -2563,30 +2563,38 @@ def gaussfit(x, y, B=0.0, A=1.0, mu=0.0, sigma=1.0):
   return(coeff,var)
     
 #cros-correlate two arrays of the same length and fit a Gaussian      
-def xc(template,data,npoints=10):
-	c = correlate(data,template,'same')
-	lenc = len(c)
-	hlenc = int(lenc/2)
-	x = arange( lenc ) - hlenc
+def xc(template,data,npoints=10,show=True):
+  '''
+  template is the reference array
+  data is the data array
+  npoints is the number of points used to fit a Gaussian to the xc function
+  '''
+  c = correlate(data,template,'same')
+  lenc = len(c)
+  hlenc = int(lenc/2)
+  x = arange( lenc ) - hlenc
 	
-	#fitting a Gaussian
-	plt.plot(x,c,'*')
-	plt.xlim([-npoints,npoints])
-	lmin = min(c[hlenc-npoints:hlenc+npoints])
-	lmax = max(c[hlenc-npoints:hlenc+npoints])
-	plt.ylim([lmin*0.95,lmax*1.05])
-	coeff, var = gaussfit(x[hlenc-int(npoints/2):hlenc+int(npoints/2)], 
-	                      c[hlenc-int(npoints/2):hlenc+int(npoints/2)],
-	                      B=min(c), A=max(c)-min(c), 
-	                      mu=0.0, sigma=npoints/2.)
-	                    
-	plt.plot(x,gauss(x, *coeff))
-	plt.show()
+  #fitting a Gaussian
+  if show:
+   plt.plot(x,c,'*')
+   plt.xlim([-npoints,npoints])
+   lmin = min(c[hlenc-npoints:hlenc+npoints])
+   lmax = max(c[hlenc-npoints:hlenc+npoints])
+   plt.ylim([lmin*0.95,lmax*1.05])
+  
+  coeff, var = gaussfit(x[hlenc-int(npoints/2):hlenc+int(npoints/2)], 
+               c[hlenc-int(npoints/2):hlenc+int(npoints/2)],
+               B=min(c), A=max(c)-min(c), 
+               mu=0.0, sigma=npoints/2.)
+ 
+  if show:    
+    plt.plot(x,gauss(x, *coeff))
+    plt.show()
 	
-	return(coeff[2], sqrt(var[2,2]))
+  return(coeff[2], sqrt(var[2,2]))
 
 #cross correlate two spectra and fit a Gaussian to find the RV offset
-def xcl(tlambda,template,dlambda,data,npoints=10):
+def xcl(tlambda,template,dlambda,data,npoints=10,show=True):
   #tlabmbda and dlambda are the wavelength arrays for the spectra
   #in template and data, respectively
   #npoints is the number of data points considered in the Gaussian
@@ -2600,7 +2608,7 @@ def xcl(tlambda,template,dlambda,data,npoints=10):
   x = arange(nn) * delta + min(tv)
   rtemplate = interp(x, tv, template)
   rdata = interp(x, dv, data)
-  offset, error = xc(rtemplate,rdata,npoints=npoints)
+  offset, error = xc(rtemplate,rdata,npoints=npoints, show=show)
   print('offset is ',offset*delta, ' +/- ',error*delta, 'm/s')
   
   return(offset*delta, error*delta)
