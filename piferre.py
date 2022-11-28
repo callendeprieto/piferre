@@ -129,9 +129,9 @@ config='desi-n.yaml', cleanup=True):
 
 
 #identify all the *.slurm files in the path and merge them in groups of nmerge so that there are fewer/longer jobs. The scripts are named job-*.slurm and written to the current folder
-def mergeslurm(path='./',nmerge=2):
+def mergeslurm(path='./',ext='slurm',nmerge=2,concurrent=False):
 
-  slurms = glob.glob(os.path.join(path,'**','*slurm'), recursive=True)
+  slurms = glob.glob(os.path.join(path,'**','*'+ext), recursive=True)
 
   nfiles = len(slurms)
 
@@ -143,15 +143,19 @@ def mergeslurm(path='./',nmerge=2):
     if j == 0:
       k = k + 1
       if k > 1: 
-        entries = header[wtime].split('=')
-        header[wtime] = entries[0]+'='+str(time)+'\n'
+        if wtime > -1:
+          entries = header[wtime].split('=')
+          header[wtime] = entries[0]+'='+str(time)+'\n'
         f2.writelines(header)
+        if concurrent: body.append("wait\n")
         f2.writelines(body)
         f2.close()
       f2 = open('job-'+"{:04d}".format(k)+'.slurm','w')
       time = 0
       header = []
       body = []
+    if concurrent: 
+      body.append("(\n")
     for line in f1: 
       if line[0] == "#":
         if j == 0: header.append(line)
@@ -161,10 +165,14 @@ def mergeslurm(path='./',nmerge=2):
           if j == 0: wtime = len(header)-1
       else:
         body.append(line)
+    if concurrent:
+      body.append(") & \n")
   
-  entries = header[wtime].split('=')
-  header[wtime] = entries[0]+'='+str(time)+'\n' 
+  if wtime > -1: 
+    entries = header[wtime].split('=')
+    header[wtime] = entries[0]+'='+str(time)+'\n' 
   f2.writelines(header)
+  if concurrent: body.append("wait\n")
   f2.writelines(body)
   f2.close()
     
