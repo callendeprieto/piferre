@@ -535,9 +535,9 @@ def read_tab(file):
   d=fits.open(file)
   n=extnames(d)
   h=d[0].header
-  if 'sptab' in n:
+  if 'SPTAB' in n or 'sptab' in n:
     s=d['sptab'].data
-  elif 'rvtab' in n:
+  elif 'rvtab' in n or 'RVTAB' in n:
     s=d['rvtab'].data
   else:
     print('Error: cannot find an rvtab or sptab extension in the file')
