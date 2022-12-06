@@ -1,6 +1,8 @@
-bands: ['b']
+bands: ['b','r','z']
 grids: ['s_rdesi']
-grid_bands: ['b']
+grid_bands: ['brz']
+elem:  [  'Fe',     'Ca',     'C',      'Mg'   ]
+proxy: ['[Fe/H]', '[a/Fe]', '[Fe/H]', '[a/Fe]' ]
 abund_grids: ['s_rdesi']
 seconds_per_spectrum: 20.
 global:
@@ -10,8 +12,8 @@ global:
     errbar: 1
     covprint: 1
     inter: 3
-    cont: 3
-    ncont: 500
+    cont: 1
+    ncont: 0
     ffile: 'frd'
     erfile: 'err'   
     pfile: 'vrd'
@@ -27,6 +29,16 @@ extensions:
        pfile: 'opf$i'
        offile: 'mdl$i'
        sffile: ''
+   abund:
+       nov: 1
+       indv: $proxy
+       nthreads: 12
+       pfile: 'opf$i'
+       opfile: 'oaf.$elem$i'
+       offile: 'nal.$elem$i'
+       sffile: 'nad.$elem$i'
+       filterfile: 'n_rdesi1.$elem.flt'
+       covprop: 1
 s_rdesi:
    param:
        ndim: 4
@@ -36,4 +48,5 @@ s_rdesi:
        labels:  ['[a/Fe]','[Fe/H]',  'Teff',  'logg']
        llimits: -0.4  -4. 2300. -0.5
        steps:  0.2   0.5  100.  0.5
+
 

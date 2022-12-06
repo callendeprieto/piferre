@@ -529,19 +529,28 @@ def read_spec(filename,band=None):
 
   return((wavelength,flux,ivar,res))
 
-#read sptab file, returning sptab, fibermap and primary header (s,f,p)
-def read_sptab(file):
+#read sptab/rvtab file, returning sp/rvtab, fibermap and primary header (s,f,p)
+def read_tab(file):
 
   d=fits.open(file)
+  n=extnames(d)
   h=d[0].header
-  s=d['sptab'].data
+  if 'sptab' in n:
+    s=d['sptab'].data
+  elif 'rvtab' in n:
+    s=d['rvtab'].data
+  else:
+    print('Error: cannot find an rvtab or sptab extension in the file')
+    s=None
   f=d['fibermap'].data
  
   return(s,f,h) 
 
-#read spmod table, returning bx,by,rx,ry,zx,zy (wavelength and fluxes), and 
+#read sp/rvmod table, returning bx,by,rx,ry,zx,zy (wavelength and fluxes), and 
 #primary header (h)
-def read_spmod(file):
+#spmod files contain obs,err,flx,fit and abu arrays
+#rvmod files contain only fit 
+def read_mod(file):
 
   d=fits.open(file)
   h=d[0].data
@@ -554,16 +563,6 @@ def read_spmod(file):
 
   return(bx,by,rx,ry,zx,zy,h)
  
-
-#read  rvtab file, returning rvtab, fibermap and primary header (r,f,p)
-def read_rvtab(file):
-
-  d=fits.open(file)
-  h=d[0].header
-  r=d['rvtab'].data
-  f=d['fibermap'].data
-
-  return(r,f,h)
 
 #show the data (obs) and best-fitting model (fit) for i-th spectrum (0,1...) in an rv/spmod file
 def show1(modfile,i=0,abu=False):
