@@ -20,7 +20,7 @@ import importlib
 from numpy import arange, loadtxt, savetxt, genfromtxt, zeros, ones, nan, sqrt, interp,     \
   concatenate, correlate, array, reshape, min, max, diff, where, divide, mean, stack, vstack, \
   int64, int32,  \
-  log10, median, std, mean, pi, intersect1d, isfinite, ndim, cos, sin, exp
+  log10, median, std, mean, pi, intersect1d, isfinite, ndim, cos, sin, exp, isnan
 from scipy.signal import savgol_filter
 from scipy.optimize import curve_fit
 from astropy.io import fits
@@ -2362,6 +2362,8 @@ def apogeecomp(allstarfile,sptabfile,clean=True):
   s, f, h = read_tab(sptabfile)
 
   apo = SkyCoord(ra=a['ra']*units.degree, dec=a['dec']*units.degree)
+  w =  (~isnan(apo.ra) & ~isnan(apo.dec)) #clean up single Nan
+  apo = apo[w]
   desi = SkyCoord(ra=f['target_ra']*units.degree, dec=f['target_dec']*units.degree)
   
   max_sep = 1.0* units.arcsec
