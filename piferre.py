@@ -617,7 +617,7 @@ def ind_calibrators(sframe,sptab,
   fmp=sf['fibermap'].data
 
   #info on calibration stars from sptab
-  s,f,h = read_sptab(sptab)
+  s,f,h = read_tab(sptab)
   ind = {}  #dict that connects targetid to index of spectrum in spmod/tab
   for i in range(len(f['target_ra'])): ind[f['targetid'][i]] = i
 
@@ -2260,7 +2260,7 @@ def inspect2(sptabfile,sym='.',rvrange=(-1e32,1e32),
 def mpcandidates(sptabfile,minteff=4000.,maxteff=7000.,minfeh=-4.9,
     maxfeh=-4.0,minsnr_med=30.,maxchisq_tot=4.,sym='.'):
 
-  s,m,h = read_sptab(sptabfile)
+  s,m,h = read_tab(sptabfile)
 
   w = (s['teff'] > minteff) & (s['teff'] < maxteff) & (s['feh'] > minfeh) & (s['snr_med'] > minsnr_med) & (s['chisq_tot'] < maxchisq_tot) & (s['feh'] < maxfeh)
 
@@ -2281,7 +2281,7 @@ def mpcandidates(sptabfile,minteff=4000.,maxteff=7000.,minfeh=-4.9,
 #peruse a spectrum
 def peruse(targetid,sptabfile,sptabdir='./',subdirlevel=None):
 	
-  s, m, h = read_sptab(sptabfile)
+  s, m, h = read_tab(sptabfile)
   w = (s['targetid'] == targetid)
   srcfile = s['srcfile'][w]
   
@@ -2300,7 +2300,7 @@ def peruse(targetid,sptabfile,sptabdir='./',subdirlevel=None):
   assert len(files) < 2,'more than one match found for the sptab '
  
   infile = files[0]
-  s,f, h = read_sptab(infile)
+  s,f, h = read_tab(infile)
   w = where(s['targetid'] == targetid)[0]
 
   stop
@@ -2326,8 +2326,8 @@ def peruse(targetid,sptabfile,sptabdir='./',subdirlevel=None):
 #rv vs sp comparison
 def rvspcomp(rvtabfile,sptabfile, clean=True):
 
-  r, f1, h1 = read_rvtab(rvtabfile)
-  s, f2, h2 = read_sptab(sptabfile)
+  r, f1, h1 = read_tab(rvtabfile)
+  s, f2, h2 = read_tab(sptabfile)
 
   rs, i1, i2 = intersect1d( r['targetid'], s['targetid'], return_indices=True)
 
@@ -2359,7 +2359,7 @@ def apogeecomp(allstarfile,sptabfile,clean=True):
   
   allstar = fits.open(allstarfile)
   a = allstar[1].data
-  s, f, h = read_sptab(sptabfile)
+  s, f, h = read_tab(sptabfile)
 
   apo = SkyCoord(ra=a['ra']*units.degree, dec=a['dec']*units.degree)
   desi = SkyCoord(ra=f['target_ra']*units.degree, dec=f['target_dec']*units.degree)
@@ -2402,7 +2402,7 @@ def ssppcomp(ssppfile,sptabfile,clean=True):
   
   allstar = fits.open(ssppfile)
   a = allstar[1].data
-  s, f, h = read_sptab(sptabfile)
+  s, f, h = read_tab(sptabfile)
 
   #cleanup missing decs
   w = a['dec'] > -90.
