@@ -2420,9 +2420,9 @@ def ssppcomp(ssppfile,sptabfile,clean=True):
   ww = where(i1)[0]
   i1 = ww
 
+  names = s.names
 
   if clean:
-    names = s.names
     if 'SPTAB' in names:
       w=(a['teff_adop'][i1] > 4000.) & (a['teff_adop'][i1] < 7000.) & (a['feh_adop'][i1] > -4.9) & (s['teff'][i2] > 4000.) & (s['teff'][i2] < 7000.) & (s['feh'][i2] > -4.9)  & (s['snr_med'][i2] > 10.) & (s['chisq_tot'][i2] < 4)  
     else:
@@ -2433,7 +2433,11 @@ def ssppcomp(ssppfile,sptabfile,clean=True):
     i1 = i1[ww]
     i2 = i2[ww]
 
-  par = ['teff','logg','feh','rv_adop']
+  if 'SPTAB' in names:
+    par = ['teff','logg','feh','rv_adop']
+  else:
+    par = ['teff','logg','feh','vrad']
+
   apopar = ['teff_adop', 'logg_adop', 'feh_adop','rv_adop']
 
   j = 1
