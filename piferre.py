@@ -2002,6 +2002,7 @@ def treepackfits(input='sptab*.fits',path='./',depth=3):
     infiles = glob.glob(os.path.join('*',input))
     print('pwd=',os.path.abspath(os.curdir))
     print('infiles=',infiles)
+    if len(infiles) < 1: continue
     parts = infiles[0].split(os.path.sep)[1].split('-')
     ext = parts[-1].split('.')[-1]
     outfile = '-'.join(parts[:-1]) + '.' + ext
