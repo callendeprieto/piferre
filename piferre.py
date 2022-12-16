@@ -1981,7 +1981,7 @@ def packfits(input="*.fits",output="output.fits",update_srcfile=False):
 #to pack the results from a DESI data tree
 #e.g. try calling it from healpix with structure like
 #healpix/cmx/backup/gpix/hpix
-def treepackfits(input='sptab*.fits',path='./',depth=3):
+def treepackspfits(input='sptab*.fits',path='./',depth=3):
   sites = []
   base_depth = path.rstrip(os.path.sep).count(os.path.sep)
   for root, dirs, files in os.walk(path,topdown=False):
@@ -2005,10 +2005,12 @@ def treepackfits(input='sptab*.fits',path='./',depth=3):
     if len(infiles) < 1: continue
     parts = infiles[0].split(os.path.sep)[1].split('-')
     ext = parts[-1].split('.')[-1]
-    outfile = '-'.join(parts[:-1]) + '.' + ext
+    
     if i == 1:
+      outfile = '-'.join(parts[:-1]) + '-' + entry.split(os.path.sep)[-1] + '.' + ext
       packfits(os.path.join('*',input),output=outfile,update_srcfile=True)
     else:
+      outfile = '-'.join(parts[:-1]) + '.' + ext
       packfits(os.path.join('*',input),output=outfile,update_srcfile=False)			
  			
   return(None)
