@@ -1964,9 +1964,6 @@ def packfits(input="*.fits",output="output.fits",update_srcfile=False):
             if entry == f[1]: 
               hdu.data[colname][:nrows1] = '-'.join(f[0].split(os.path.sep)[-1].split('-')[1:])
             hdu.data[colname][nrows1:] = '-'.join(entry.split(os.path.sep)[-1].split('-')[1:])
-            print(len(hdu.data[colname][nrows1]),len(entry.split(os.path.sep)[-1]))
-
-              
 
       elif (str(type(hdul1[i])) == "<class 'astropy.io.fits.hdu.image.ImageHDU'>"): #images
         hdu = fits.PrimaryHDU(vstack( (hdul1[i].data, hdul2[i].data) ))
