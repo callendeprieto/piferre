@@ -1961,8 +1961,8 @@ def packfits(input="*.fits",output="output.fits",update_srcfile=False):
           except AttributeError:
             print('Warning: the file ',entry,' does not have the attribute columns ',' in extension ',i,' -- ',hdu.header['EXTNAME']) 
           if update_srcfile and colname == 'SRCFILE':
-            if entry == f[1]: hdu.data[colname][1:nrows1-1] = f[0]
-            hdu.data[colname][nrows1:] = entry
+            if entry == f[1]: hdu.data[colname][1:nrows1-1] = f[0].split(os.path.sep)[-1]
+            hdu.data[colname][nrows1:] = entry.split(os.path.sep)[-1]
               
 
       elif (str(type(hdul1[i])) == "<class 'astropy.io.fits.hdu.image.ImageHDU'>"): #images
