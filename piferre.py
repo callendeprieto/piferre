@@ -1962,8 +1962,8 @@ def packfits(input="*.fits",output="output.fits",update_srcfile=False):
             print('Warning: the file ',entry,' does not have the attribute columns ',' in extension ',i,' -- ',hdu.header['EXTNAME']) 
           if update_srcfile and colname == 'SRCFILE':
             if entry == f[1]: hdu.data[colname][:nrows1] = f[0].split(os.path.sep)[-1].split('-')[1:]
-            hdu.data[colname][nrows1:] = entry.split(os.path.sep)[-1]
-            print(len(hdu.data[colname][nrows1]),len(entry.split(os.path.sep)[-1])).split('-')[1:]
+            hdu.data[colname][nrows1:] = entry.split(os.path.sep)[-1].split('-')[1:]
+            print(len(hdu.data[colname][nrows1]),len(entry.split(os.path.sep)[-1]))
 
               
 
