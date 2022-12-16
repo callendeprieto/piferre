@@ -1982,16 +1982,21 @@ def packfits(input="*.fits",output="output.fits",update_srcfile=False):
 #e.g. try calling it from healpix with structure like
 #healpix/cmx/backup/gpix/hpix
 def treepackspfits(input='sptab*.fits',path='./',depth=3):
-  sites = []
+  sites1 = [] #deepest layer, gpix (where srcfile will be updated)
+  sites2 = [] #rest of layers
   base_depth = path.rstrip(os.path.sep).count(os.path.sep)
   for root, dirs, files in os.walk(path,topdown=False):
     for entry in dirs:
       cur_depth = os.path.join(root,entry).count(os.path.sep) 
       print(os.path.join(root,entry),cur_depth)
-      if base_depth + depth >= cur_depth:
-        sites.append(os.path.join(root,entry))
+      if base_depth + depth == cur_depth:
+        sites1.append(os.path.join(root,entry))
+      elif base_depth + depth > cur_depth:
+        sites2.append(os.path.join(root,entry))
       
-  sites.append(path)
+  sites2.append(path)
+  
+  sites = sites1 + sites2
   
   i = 0
   startpath = os.path.abspath(os.curdir)
@@ -2006,7 +2011,7 @@ def treepackspfits(input='sptab*.fits',path='./',depth=3):
     parts = infiles[0].split(os.path.sep)[1].split('-')
     ext = parts[-1].split('.')[-1]
     
-    if i == 1:
+    if entry in sites1:
       outfile = '-'.join(parts[:-1]) + '-' + entry.split(os.path.sep)[-1] + '.' + ext
       packfits(os.path.join('*',input),output=outfile,update_srcfile=True)
     else:
