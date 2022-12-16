@@ -2012,6 +2012,8 @@ def treepackspfits(input='sptab*.fits',path='./',depth=3):
     ext = parts[-1].split('.')[-1]
     
     if entry in sites1:
+	  #drop petal info from filename, since petals are merged
+	  if parts[1] in list(map(str,range(10))): parts.pop(1) 
       outfile = '-'.join(parts[:-1]) + '-' + entry.split(os.path.sep)[-1] + '.' + ext
       packfits(os.path.join('*',input),output=outfile,update_srcfile=True)
     else:
