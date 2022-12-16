@@ -1927,7 +1927,7 @@ def finddatafiles(path,pixel,sdir='',rvpath=None):
 
 
 #pack a collection of fits files with binary tables in multiple HDUs into a single one
-def packfits(input="*.fits",output="output.fits"):
+def packfits(input="*.fits",output="output.fits",update_srcfile=False):
 
 
   f = sorted(glob.glob(input))
@@ -1960,7 +1960,10 @@ def packfits(input="*.fits",output="output.fits"):
             else: print('Warning: the file ',entry,' does not include column ',colname,' in extension ',i,' -- ',hdu.header['EXTNAME'])
           except AttributeError:
             print('Warning: the file ',entry,' does not have the attribute columns ',' in extension ',i,' -- ',hdu.header['EXTNAME']) 
-
+          if update_srcfile and colname == 'SRCFILE':
+            if entry == f[1]: hdu.data[colname][1:nrows1-1] = f[0]
+            hdu.data[colname][nrows1:] = entry
+              
 
       elif (str(type(hdul1[i])) == "<class 'astropy.io.fits.hdu.image.ImageHDU'>"): #images
         hdu = fits.PrimaryHDU(vstack( (hdul1[i].data, hdul2[i].data) ))
@@ -1973,7 +1976,42 @@ def packfits(input="*.fits",output="output.fits"):
   hdul1.writeto(output)
 
   return(None)
-
+  
+#calls packfits hierarchically in a folder tree
+#to pack the results from a DESI data tree
+#e.g. try calling it from healpix with structure like
+#healpix/cmx/backup/gpix/hpix
+def treepackfits(input='sptab*.fits',path='./',depth=3):
+  sites = []
+  base_depth = path.rstrip(os.path.sep).count(os.path.sep)
+  for root, dirs, files in os.walk(path,topdown=False):
+    for entry in dirs:
+      cur_depth = os.path.join(root,entry).count(os.path.sep) 
+      print(os.path.join(root,entry),cur_depth)
+      if base_depth + depth >= cur_depth:
+        sites.append(os.path.join(root,entry))
+      
+  sites.append(path)
+  
+  i = 0
+  startpath = os.path.abspath(os.curdir)
+  for entry in sites:
+    i = i + 1
+    os.chdir(startpath)
+    os.chdir(entry)
+    infiles = glob.glob(os.path.join('*',input))
+    print('pwd=',os.path.abspath(os.curdir))
+    print('infiles=',infiles)
+    parts = infiles[0].split(os.path.sep)[1].split('-')
+    ext = parts[-1].split('.')[-1]
+    outfile = '-'.join(parts[:-1]) + '.' + ext
+    if i == 1:
+      packfits(os.path.join('*',input),output=outfile,update_srcfile=True)
+    else:
+      packfits(os.path.join('*',input),output=outfile,update_srcfile=False)			
+ 			
+  return(None)
+  
 #inspector
 def inspect(sptabfile,sym='.',rvrange=(-1e32,1e32),
                rarange=(0.,360.), decrange=(-90,90),  
