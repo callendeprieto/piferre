@@ -554,6 +554,7 @@ def read_mod(file):
 
   d=fits.open(file)
   h=d[0].data
+  m=d['fibermap'].data
   bx=d['b_wavelength'].data
   by=d['b_model'].data
   rx=d['r_wavelength'].data
@@ -561,7 +562,7 @@ def read_mod(file):
   zx=d['z_wavelength'].data
   zy=d['z_model'].data
 
-  return(bx,by,rx,ry,zx,zy,h)
+  return(bx,by,rx,ry,zx,zy,m,h)
  
 
 #show the data (obs) and best-fitting model (fit) for i-th spectrum (0,1...) in an rv/spmod file
