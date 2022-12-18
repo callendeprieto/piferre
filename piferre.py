@@ -512,7 +512,7 @@ def read_spec(filename,band=None):
     #mask=hdu[band+'_MASK'].data       #mask (multiple spectra)
     res=hdu[band+'_RESOLUTION'].data  #resolution matrix (multiple spectra)
     #bintable=hdu['BINTABLE'].data  #bintable with info (incl. mag, ra_obs, dec_obs)
-    fibermap=hdu['FIBERMKAP"].data
+    fibermap=hdu['FIBERMAP"].data
 
   if filename.find('spPlate') > -1: #SDSS/BOSS
     header=hdu['PRIMARY'].header
