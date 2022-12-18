@@ -505,12 +505,14 @@ def read_spec(filename,band=None):
   hdu=fits.open(filename)
 
   if filename.find('spectra-') > -1 or filename.find('exp_') > -1 or filename.find('coadd') > -1: #DESI
+    header=hdu[0].header
     wavelength=hdu[band+'_WAVELENGTH'].data #wavelength array
     flux=hdu[band+'_FLUX'].data       #flux array (multiple spectra)
     ivar=hdu[band+'_IVAR'].data       #inverse variance (multiple spectra)
     #mask=hdu[band+'_MASK'].data       #mask (multiple spectra)
     res=hdu[band+'_RESOLUTION'].data  #resolution matrix (multiple spectra)
     #bintable=hdu['BINTABLE'].data  #bintable with info (incl. mag, ra_obs, dec_obs)
+    fibermap=hdu['FIBERMKAP"].data
 
   if filename.find('spPlate') > -1: #SDSS/BOSS
     header=hdu['PRIMARY'].header
@@ -525,9 +527,10 @@ def read_spec(filename,band=None):
     #res=hdu['WAVEDISP'].data  #FWHM array (multiple spectra)
     res=hdu[4].data  #FWHM array (multiple spectra)
     #bintable=hdu['BINTABLE'].data  #bintable with info (incl. mag, ra, dec)
+    fibermap=hdu['FIBERMAP'].data
     
 
-  return((wavelength,flux,ivar,res))
+  return((wavelength,flux,ivar,res,fibermap,header))
 
 #read sptab/rvtab file, returning sp/rvtab, fibermap and primary header (s,f,p)
 def read_tab(file):
@@ -2904,7 +2907,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml', only=[], cl
 
       #read DESI data, select targets, and resample 
 
-      (x,y,ivar,r)=read_spec(datafile,bands[j])
+      (x,y,ivar,r,mm,hh)=read_spec(datafile,bands[j])
       ey=sqrt(divide(1.,ivar,where=(ivar > 0.)))
       ey[where(ivar == 0.)]=max(y)*1e3
 
