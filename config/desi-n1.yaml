@@ -1,6 +1,6 @@
 bands: ['b', 'r', 'z']
 grids: ['n_rdesi1', 'n_rdesi2', 'n_rdesi3', 'n_rdesi4', 'n_rdesi5', 'n_rdesi6', 'n_rdesi7', 'n_rdesi8', 'n_rdesi9']
-blocks = [ [4300., 4450.] ]
+blocks: [ [4300., 4450.] ]
 grid_bands: ['b','r','z']
 elem:  [ 'Fe',     'Ca',     'C',       'Mg'   ]
 proxy: ['[Fe/H]', '[Fe/H]', '[Fe/H]', '[Fe/H]' ]
