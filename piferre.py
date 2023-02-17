@@ -2533,6 +2533,7 @@ def create_filters(modelfile,config='desi-n.yaml',libpath='.'):
 
   grids = conf['grids']
   bands = conf['bands']
+  blocks = conf['blocks']
 
   for g in grids:
     for b in bands:
@@ -2547,7 +2548,7 @@ def create_filters(modelfile,config='desi-n.yaml',libpath='.'):
         os.mkdir(tmpdir)
       except OSError:
         print( "cannot create folder %s " % (tmpdir) )
-      mkflt(modelfile+'.dlt', x, fwhm=fwhm, outdir=tmpdir)
+      mkflt(modelfile+'.dlt', x, fwhm=fwhm, blocks=blocks, outdir=tmpdir)
 
     
   
