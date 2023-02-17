@@ -2533,7 +2533,10 @@ def create_filters(modelfile,config='desi-n.yaml',libpath='.'):
 
   grids = conf['grids']
   bands = conf['bands']
-  blocks = conf['blocks']
+  if 'blocks' in conf: 
+	  blocks = conf['blocks']
+  else:
+	  blocks = []
 
   for g in grids:
     for b in bands:
