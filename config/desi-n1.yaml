@@ -1,0 +1,114 @@
+bands: ['b', 'r', 'z']
+grids: ['n_rdesi1', 'n_rdesi2', 'n_rdesi3', 'n_rdesi4', 'n_rdesi5', 'n_rdesi6', 'n_rdesi7', 'n_rdesi8', 'n_rdesi9']
+blocks = [ [4300., 4450.] ]
+grid_bands: ['b','r','z']
+elem:  [ 'Fe',     'Ca',     'C',       'Mg'   ]
+proxy: ['[Fe/H]', '[Fe/H]', '[Fe/H]', '[Fe/H]' ]
+abund_grids: ['n_rdesi1', 'n_rdesi2']
+seconds_per_spectrum: 1.
+global:
+    algor: 1
+    f_format: 1
+    f_access: 0
+    errbar: 1
+    covprint: 1
+    inter: 3
+    cont: 3
+    ncont: 500
+    ffile: 'frd'
+    erfile: 'err'   
+    pfile: 'vrd'
+    opfile: 'opf$i'
+    offile: 'ndl$i'
+    sffile: 'nrd$i'
+    nthreads: 4
+extensions:
+   calib: 
+       nov: 0
+       cont: 0
+       nthreads: 1
+       pfile: 'opf$i'
+       offile: 'mdl$i'
+       sffile: ''
+   abund:
+       nov: 1
+       indv: $proxy
+       nthreads: 4
+       pfile: 'opf$i'
+       opfile: 'oaf.$elem$i'
+       offile: 'nal.$elem$i'
+       sffile: 'nad.$elem$i'
+       filterfile: 'n_rdesi1.$elem.flt'
+       covprop: 1
+n_rdesi1:
+   param:
+       ndim: 3
+       nov: 3
+       indv:  1  2  3
+       labels:  ['[Fe/H]',  'Teff',  'logg']
+       llimits: -5. 3500. 0.0
+       steps:  0.5  500.  1.0
+n_rdesi2:
+   param:
+       ndim: 3
+       nov: 3
+       indv:  1  2  3
+       labels:  ['[Fe/H]',  'Teff',  'logg']
+       llimits:  -5.  5500.  1.0
+       steps: 0.5 500. 1.0
+n_rdesi3:
+   param:
+       ndim: 3
+       nov: 3
+       indv:  1  2  3
+       labels:  ['[Fe/H]',  'Teff',  'logg']
+       llimits: -5.  7000.  2.0
+       steps: 0.5 1000. 1.0
+n_rdesi4:
+   param:
+       ndim: 3
+       nov: 3
+       indv:  1  2  3
+       labels:  ['[Fe/H]',  'Teff',  'logg']
+       llimits: -5. 10000. 3.0
+       steps: 0.5  2000. 1.0
+n_rdesi5:
+   param:
+       ndim: 3
+       nov: 3
+       indv:  1  2  3
+       labels: [ '[Fe/H]',  'Teff', 'logg']
+       llimits: -5. 20000. 4.0
+       steps: 0.5 5000. 1.0
+n_rdesi6:
+   param:
+       ndim: 2
+       nov: 2
+       indv: 1 2
+       labels: ['Teff' ,'logg']
+       llimits: 6000.00      7.00000
+       steps: 500. 0.5
+n_rdesi7:
+   param:
+       ndim: 2
+       nov: 2
+       indv: 1 2
+       labels: ['Teff', 'logg']
+       llimits: 10000.00       7.00000
+       steps: 5000. 0.5
+n_rdesi8:
+   param:
+       ndim: 2
+       nov: 2
+       indv: 1 2
+       labels: ['Teff', 'logg']
+       llimits: 10000.00       7.00000
+       steps: 1000.  0.25
+n_rdesi9:
+   param:
+       ndim: 2
+       nov: 2
+       indv:  1 2
+       labels: [ 'Teff', 'logg']
+       llimits:  15000.00       7.00000
+       steps: 5000. 0.25
