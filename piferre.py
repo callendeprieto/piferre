@@ -17,8 +17,10 @@ import platform
 import glob
 import re
 import importlib
-from numpy import arange, loadtxt, savetxt, genfromtxt, zeros, ones, nan, sqrt, interp,     \
-  concatenate, correlate, array, reshape, min, max, diff, where, divide, mean, stack, vstack, \
+from numpy import arange, loadtxt, savetxt, genfromtxt, zeros, ones, nan, sqrt,  \
+  interp, insert, append,    \
+  concatenate, correlate, array, reshape, min, max, diff, where, divide, mean,  \
+  stack, vstack, \
   int64, int32,  \
   log10, median, std, mean, pi, intersect1d, isfinite, ndim, cos, sin, exp, isnan
 from scipy.signal import savgol_filter
@@ -2331,48 +2333,53 @@ def mpcandidates(sptabfile,minteff=4000.,maxteff=7000.,minfeh=-4.9,
     print('{:16}  {:7.2}  {:4.2}  {:5.2}  {:6.1}  {:6.1} {:4.2} {:10.8} {:10.8} {:4.3} \n {}'.format(s['targetid'][i],s['teff'][i],s['logg'][i],s['feh'][i], s['alphafe'][i],s['snr_med'][i],s['chisq_tot'][i],m['target_ra'][i],m['target_dec'][i],m['GAIA_PHOT_G_MEAN_MAG'][i],s['srcfile'][i]))
 
 #peruse a spectrum
-def peruse(targetid,sptabfile,sptabdir='./',subdirlevel=None):
+def peruse(targetid,sptabfile,sptabdir='./'):
 	
   s, m, h = read_tab(sptabfile)
   w = (s['targetid'] == targetid)
   srcfile = s['srcfile'][w]
   
-  print(srcfile)
 
-  indir = sptabdir
-  print(indir)
-  if subdirlevel is not None: 
-    for entry in range(subdirlevel):
-      print(indir)
-      indir = os.path.join(indir,'*')
-  files = glob.glob(os.path.join(indir,'sptab_'+srcfile+'.fits'))
-  print(indir,sptabfile)
-  print(files)
-
-  assert len(files) < 2,'more than one match found for the sptab '
- 
-  infile = files[0]
-  s,f, h = read_tab(infile)
-  w = where(s['targetid'] == targetid)[0]
-
-  stop
-
-  print('len(w)=',len(w))
-  spmodfile = infile.replace('sptab','spmod')
-  print(infile,spmodfile)
-  bx,by, rx,ry, zx,zy, hm = read_spmod(spmodfile)
-  
   plt.figure()
   plt.ion()
-  plt.plot(bx,by['obs'][w,:],rx,ry['obs'][w,:],zx,zy['obs'][w,:])
-  plt.plot(bx,by['fit'][w,:],rx,ry['fit'][w,:],zx,zy['fit'][w,:])
-  plt.xlabel('Wavelength (A)')
-  plt.ylabel('normalized flux')
-  plt.title(targetid)
-  plt.text(rx,mean(ry['obs'][w])/2,'Teff='+str(s['teff'][w]))
-  plt.text(rx,mean(ry['obs'][w])/2.5,'logg='+str(s['logg'][w]))
-  plt.text(rx,mean(ry['obs'][w])/3,'[Fe/H]='+str(s['feh'][w]))
-  plt.text(rx,mean(ry['obs'][w])/3.5,'median(S/N)='+str(s['snr_med'][w]))
+
+  for entry in srcfile:
+    
+    iroot = entry.find('.f')
+    path = entry[:iroot].split('-')
+    path2 = insert(path,-1,'*')
+    path3 = append(path2,'sptab*'+entry[:iroot]+'.fits')
+    spath = os.path.join(sptabdir,'/'.join(path3))
+    files = glob.glob(spath)
+    print(spath)
+    print(files)
+
+    assert len(files) < 2,'more than one match found for the sptab '
+ 
+    infile = files[0]
+    s,f, h = read_tab(infile)
+    w = where(s['targetid'] == targetid)[0][0]
+
+
+    print('w=',w)
+    spmodfile = infile.replace('sptab','spmod')
+    print(infile,spmodfile)
+    bx,by, rx,ry, zx,zy, m, hd = read_mod(spmodfile)
+    #w = where(m['targetid'] == targetid)[0][0]
+    #print('len(w)=',len(w))
+    print('w=',w)
+
+
+  
+    plt.plot(bx,by['obs'][w,:],rx,ry['obs'][w,:],zx,zy['obs'][w,:])
+    plt.plot(bx,by['fit'][w,:],rx,ry['fit'][w,:],zx,zy['fit'][w,:])
+    plt.xlabel('Wavelength (A)')
+    plt.ylabel('normalized flux')
+    plt.title(targetid)
+    plt.text(rx,mean(ry['obs'][w,:])/2,'Teff='+str(s['teff'][w]))
+    plt.text(rx,mean(ry['obs'][w,:])/2.5,'logg='+str(s['logg'][w]))
+    plt.text(rx,mean(ry['obs'][w,:])/3,'[Fe/H]='+str(s['feh'][w]))
+    plt.text(rx,mean(ry['obs'][w,:])/3.5,'median(S/N)='+str(s['snr_med'][w]))
   plt.show()
 
 #rv vs sp comparison
