@@ -2318,14 +2318,14 @@ def mpcandidates(sptabfile,minteff=4000.,maxteff=7000.,minfeh=-4.9,
 
   w = (s['teff'] > minteff) & (s['teff'] < maxteff) & (s['feh'] > minfeh) & (s['snr_med'] > minsnr_med) & (s['chisq_tot'] < maxchisq_tot) & (s['feh'] < maxfeh)
 
-  plt.figure()
-  plt.ion()
-  plt.plot(s['teff'][w],s['logg'][w],sym)
-  plt.xlabel('Teff (K)')
-  plt.ylabel('logg (K)')
-  plt.ylim([5.5,-1.0])
-  plt.xlim([7000.,4000.])
-  plt.show()
+  #plt.figure()
+  #plt.ion()
+  #plt.plot(s['teff'][w],s['logg'][w],sym)
+  #plt.xlabel('Teff (K)')
+  #plt.ylabel('logg (K)')
+  #plt.ylim([5.5,-1.0])
+  #plt.xlim([7000.,4000.])
+  #plt.show()
 
   ws = where(w)[0]
   print('  targetid/srcfile  Teff   logg [Fe/H] [a/Fe] snr_med chisq    ra        dec      Gmag')
@@ -2340,18 +2340,24 @@ def peruse(targetid,sptabfile,sptabdir='./'):
   srcfile = s['srcfile'][w]
   
 
-  plt.figure()
-  plt.ion()
+  #plt.figure()
+  #plt.ion()
 
   for entry in srcfile:
-    
+    proot = entry.find('coadd-') 
+    if proot < 0: 
+      proot = 0 
+    else:
+      proot = proot + 6
     iroot = entry.find('.f')
-    path = entry[:iroot].split('-')
+    if iroot < 0:
+      iroot = len(entry)+1
+    path = entry[proot:iroot].split('-')
     path2 = insert(path,-1,'*')
-    path3 = append(path2,'sptab*'+entry[:iroot]+'.fits')
+    path3 = append(path2,'sptab*'+entry[proot:iroot]+'.fits')
     spath = os.path.join(sptabdir,'/'.join(path3))
     files = glob.glob(spath)
-    print(spath)
+    #print(path,path2,path3,spath)
     print(files)
 
     assert len(files) < 2,'more than one match found for the sptab '
@@ -2361,26 +2367,24 @@ def peruse(targetid,sptabfile,sptabdir='./'):
     w = where(s['targetid'] == targetid)[0][0]
 
 
-    print('w=',w)
     spmodfile = infile.replace('sptab','spmod')
     print(infile,spmodfile)
     bx,by, rx,ry, zx,zy, m, hd = read_mod(spmodfile)
     #w = where(m['targetid'] == targetid)[0][0]
     #print('len(w)=',len(w))
     print('w=',w)
-
-
-  
-    plt.plot(bx,by['obs'][w,:],rx,ry['obs'][w,:],zx,zy['obs'][w,:])
-    plt.plot(bx,by['fit'][w,:],rx,ry['fit'][w,:],zx,zy['fit'][w,:])
+    plt.plot(bx,by['obs'][w,:])
+    plt.plot(bx,by['fit'][w,:])
     plt.xlabel('Wavelength (A)')
     plt.ylabel('normalized flux')
     plt.title(targetid)
-    plt.text(rx,mean(ry['obs'][w,:])/2,'Teff='+str(s['teff'][w]))
-    plt.text(rx,mean(ry['obs'][w,:])/2.5,'logg='+str(s['logg'][w]))
-    plt.text(rx,mean(ry['obs'][w,:])/3,'[Fe/H]='+str(s['feh'][w]))
-    plt.text(rx,mean(ry['obs'][w,:])/3.5,'median(S/N)='+str(s['snr_med'][w]))
+    mbx = mean(bx)*1.1
+    plt.text(mbx,mean(ry['obs'][w,:])/1.5,'Teff='+str(s['teff'][w]))
+    plt.text(mbx,mean(ry['obs'][w,:])/1.8,'logg='+str(s['logg'][w]))
+    plt.text(mbx,mean(ry['obs'][w,:])/2.1,'[Fe/H]='+str(s['feh'][w]))
+    plt.text(mbx,mean(ry['obs'][w,:])/2.4,'median(S/N)='+str(s['snr_med'][w]))
   plt.show()
+  #plt.savefig('test.png')
 
 #rv vs sp comparison
 def rvspcomp(rvtabfile,sptabfile, clean=True):
