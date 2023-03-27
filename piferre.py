@@ -30,6 +30,8 @@ from astropy.coordinates import SkyCoord
 import astropy.table as tbl
 import astropy.units as units
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid.inset_locator import (inset_axes, InsetPosition,
+                                                  mark_inset)
 from synple import head_synth,lambda_synth
 import subprocess
 import datetime, time
@@ -2342,7 +2344,9 @@ def peruse(targetid,sptabfile,sptabdir='./'):
 
   #plt.figure()
   #plt.ion()
-
+ 
+  rms = []
+  err = []
   for entry in srcfile:
     proot = entry.find('coadd-') 
     if proot < 0: 
@@ -2373,18 +2377,34 @@ def peruse(targetid,sptabfile,sptabdir='./'):
     #w = where(m['targetid'] == targetid)[0][0]
     #print('len(w)=',len(w))
     print('w=',w)
-    plt.plot(bx,by['obs'][w,:])
-    plt.plot(bx,by['fit'][w,:])
-    plt.xlabel('Wavelength (A)')
-    plt.ylabel('normalized flux')
-    plt.title(targetid)
-    mbx = mean(bx)*1.1
-    plt.text(mbx,mean(ry['obs'][w,:])/1.5,'Teff='+str(s['teff'][w]))
-    plt.text(mbx,mean(ry['obs'][w,:])/1.8,'logg='+str(s['logg'][w]))
-    plt.text(mbx,mean(ry['obs'][w,:])/2.1,'[Fe/H]='+str(s['feh'][w]))
-    plt.text(mbx,mean(ry['obs'][w,:])/2.4,'median(S/N)='+str(s['snr_med'][w]))
-  plt.show()
-  #plt.savefig('test.png')
+    fig, ax1 = plt.subplots()
+    ax1.plot(bx,by['obs'][w,:])
+    ax1.plot(bx,by['fit'][w,:])
+    ax1.set_xscale('log')
+    ax1.set_xlabel('Wavelength (A)')
+    ax1.set_ylabel('normalized flux')
+    ax1.set_title(targetid)
+    ax1.axes.text(4500.,1.2,'Teff='+str(s['teff'][w]))
+    ax1.axes.text(5250.,1.2,'logg='+str(s['logg'][w]))
+    ax1.axes.text(4500.,1.1,'[Fe/H]='+str(s['feh'][w]))
+    ax1.axes.text(5250.,1.1,'median(S/N)='+str(s['snr_med'][w]))
+    
+    ax2=plt.axes([0,0,1,1])
+    ip = InsetPosition(ax1, [0.6,0.1,0.5,0.5])
+    ax2.set_axes_locator(ip)
+    mark_inset(ax1,ax2,loc1=2,loc2=4,fc="none", ec='0.5')
+    ax2.plot(bx,by['obs'][w,:])
+    ax2.plot(bx,by['fit'][w,:])
+    ax2.set_xlim(3900.,4000.)
+    wl = (bx > 3900.) & (bx < 4000.)
+    rms1 = std(by['obs'][w,wl] - by['fit'][w,wl])
+    err1 = mean(by['err'][w,wl])
+    print('rms,err=',rms1,err1)
+    rms.append(rms1)
+    err.append(err1)
+  #plt.show()
+  plt.savefig(str(targetid)+'.png')
+  return(rms,err)
 
 #rv vs sp comparison
 def rvspcomp(rvtabfile,sptabfile, clean=True):
