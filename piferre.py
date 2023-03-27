@@ -2334,6 +2334,8 @@ def mpcandidates(sptabfile,minteff=4000.,maxteff=7000.,minfeh=-4.9,
   for i in ws:
     print('{:16}  {:7.2}  {:4.2}  {:5.2}  {:6.1}  {:6.1} {:4.2} {:10.8} {:10.8} {:4.3} \n {}'.format(s['targetid'][i],s['teff'][i],s['logg'][i],s['feh'][i], s['alphafe'][i],s['snr_med'][i],s['chisq_tot'][i],m['target_ra'][i],m['target_dec'][i],m['GAIA_PHOT_G_MEAN_MAG'][i],s['srcfile'][i]))
 
+  return(s[ws], m[ws], h)
+
 #peruse a spectrum
 def peruse(targetid,sptabfile,sptabdir='./'):
 	
@@ -2361,10 +2363,12 @@ def peruse(targetid,sptabfile,sptabdir='./'):
     path3 = append(path2,'sptab*'+entry[proot:iroot]+'.fits')
     spath = os.path.join(sptabdir,'/'.join(path3))
     files = glob.glob(spath)
-    #print(path,path2,path3,spath)
+    print(path,path2,path3,spath)
     print(files)
 
     assert len(files) < 2,'more than one match found for the sptab '
+
+    if len(files) < 1: continue
  
     infile = files[0]
     s,f, h = read_tab(infile)
@@ -2380,7 +2384,7 @@ def peruse(targetid,sptabfile,sptabdir='./'):
     fig, ax1 = plt.subplots()
     ax1.plot(bx,by['obs'][w,:])
     ax1.plot(bx,by['fit'][w,:])
-    ax1.set_xscale('log')
+    ax1.set_xlim(3700,4500)
     ax1.set_xlabel('Wavelength (A)')
     ax1.set_ylabel('normalized flux')
     ax1.set_title(targetid)
