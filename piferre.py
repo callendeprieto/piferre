@@ -2314,11 +2314,11 @@ def inspect2(sptabfile,sym='.',rvrange=(-1e32,1e32),
 
 # pick-up metal-poor star candidates
 def mpcandidates(sptabfile,minteff=4000.,maxteff=7000.,minfeh=-4.9,
-    maxfeh=-4.0,minsnr_med=30.,maxchisq_tot=4.,sym='.'):
+    maxfeh=-4.0,minsnr_med=30.,maxsnr_med=1e7,maxchisq_tot=4.,sym='.'):
 
   s,m,h = read_tab(sptabfile)
 
-  w = (s['teff'] > minteff) & (s['teff'] < maxteff) & (s['feh'] > minfeh) & (s['snr_med'] > minsnr_med) & (s['chisq_tot'] < maxchisq_tot) & (s['feh'] < maxfeh)
+  w = (s['teff'] > minteff) & (s['teff'] < maxteff) & (s['feh'] > minfeh) & (s['snr_med'] > minsnr_med) & (s['snr_med'] < maxsnr_med) & (s['chisq_tot'] < maxchisq_tot) & (s['feh'] < maxfeh)
 
   #plt.figure()
   #plt.ion()
