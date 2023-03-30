@@ -165,7 +165,11 @@ def mergeslurm(path='./',ext='slurm',nmerge=2,concurrent=False):
         if j == 0: header.append(line)
         if '--time' in line:
           entries = line.split('=') 
-          time = time + int(entries[1])
+          newtime = int(entries[1])
+          if concurrent:
+            if newtime > time: time = newtime
+          else:
+            time = time + newtime
           if j == 0: wtime = len(header)-1
       else:
         body.append(line)
