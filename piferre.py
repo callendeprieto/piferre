@@ -173,7 +173,7 @@ def mergeslurm(path='./',ext='slurm',nmerge=2,concurrent=False):
     if concurrent:
       body.append(") & \n")
 
-  if concurrent: time = time/nfiles*3. #factor 3 is a safety margin 
+  #if concurrent: time = time/nfiles*3. #factor 3 is a safety margin 
   if wtime > -1: 
     entries = header[wtime].split('=')
     header[wtime] = entries[0]+'='+str(time)+'\n' 
