@@ -166,20 +166,17 @@ def mergeslurm(path='./',ext='slurm',nmerge=2,concurrent=False):
         if '--time' in line:
           entries = line.split('=') 
           newtime = int(entries[1])
-          if concurrent:
-            if newtime > time: time = newtime
-          else:
-            time = time + newtime
+          time = time + newtime
           if j == 0: wtime = len(header)-1
       else:
         body.append(line)
     if concurrent:
       body.append(") & \n")
- 
+
+  if concurrent: time = time/nfiles*3. #factor 3 is a safety margin 
   if wtime > -1: 
     entries = header[wtime].split('=')
     header[wtime] = entries[0]+'='+str(time)+'\n' 
-    if concurrent: time = time*2. #safety margin
   f2.writelines(header)
   if concurrent: body.append("wait\n")
   f2.writelines(body)
