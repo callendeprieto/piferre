@@ -148,7 +148,7 @@ def mergeslurm(path='./',ext='slurm',nmerge=2,concurrent=False):
       k = k + 1
       if k > 1: 
         if wtime > -1:
-          if concurrent: time = int(time*4.) #factor 4 is a safety margin
+          if concurrent: time = int(time*2.) #factor 2 is a safety margin
           entries = header[wtime].split('=')
           header[wtime] = entries[0]+'='+str(time)+'\n'
         f2.writelines(header)
@@ -178,7 +178,7 @@ def mergeslurm(path='./',ext='slurm',nmerge=2,concurrent=False):
       body.append(") & \n")
 
   if wtime > -1: 
-    if concurrent: time = int(time*4.) #factor 4 is a safety margin
+    if concurrent: time = int(time*2.) #factor 2 is a safety margin
     entries = header[wtime].split('=')
     header[wtime] = entries[0]+'='+str(time)+'\n' 
   f2.writelines(header)
