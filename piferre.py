@@ -52,7 +52,7 @@ def write_slurm(root,ncores=1,minutes=102,path=None,ngrids=None,
 config='desi-n.yaml', cleanup=True):
 
     ferre=os.environ['HOME']+"/ferre/src/a.out"
-    python_path=os.environ['HOME']+"/piferre"
+    python_path=os.environ['HOME']+"/piferre:"+os.environ['HOME']+"/synple"
     try: 
       host=os.environ['HOST']
     except:
