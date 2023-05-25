@@ -52,7 +52,8 @@ def write_slurm(root,ncores=1,minutes=102,path=None,ngrids=None,
 config='desi-n.yaml', cleanup=True):
 
     ferre=os.environ['HOME']+"/ferre/src/a.out"
-    python_path=os.environ['HOME']+"/piferre:"+os.environ['HOME']+"/synple"
+    python_path1=os.environ['HOME']+"/piferre"
+    python_path2=os.environ['HOME']+"/synple"
     try: 
       host=os.environ['HOST']
     except:
@@ -115,8 +116,8 @@ config='desi-n.yaml', cleanup=True):
     f.write("  wait $pid \n")
     f.write("done \n")
     f.write("kill $vmstat_pid \n")
-    command="python3 -c \"import sys; sys.path.insert(0, '"+python_path+ \
-     "'); from piferre import opfmerge, oafmerge, write_tab_fits, write_mod_fits, cleanup;"+ \
+    command="python3 -c \"import sys; sys.path.insert(0, '"+python_path1+ \
+     "'); sys.path.insert(0, '"+python_path2+"'); from piferre import opfmerge, oafmerge, write_tab_fits, write_mod_fits, cleanup;"+ \
      " opfmerge(\'"+str(root)+"\',config='"+config+"\');"
     if 'elem' in conf:
       command=command + " oafmerge(\'"+str(root)+"\',config='"+config+"\');"
