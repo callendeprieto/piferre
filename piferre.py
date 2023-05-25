@@ -2416,9 +2416,8 @@ def peruse(targetid,sptabfile,sptabdir='./'):
     err.append(err1)
   #plt.show()
   plt.savefig(str(targetid)+'.png')
-  return(bx,by['obs'][w,:],by['fit'][w,:],
-         rx,ry['obs'][w,:],ry['fit'][w,:],
-         zx,zy['obs'][w,:],zy['fit'][w,:])
+  return(rms,err)
+
 
 #rv vs sp comparison
 def rvspcomp(rvtabfile,sptabfile, clean=True):
