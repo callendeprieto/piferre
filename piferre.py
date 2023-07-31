@@ -30,8 +30,8 @@ from astropy.coordinates import SkyCoord
 import astropy.table as tbl
 import astropy.units as units
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid.inset_locator import (inset_axes, InsetPosition,
-                                                  mark_inset)
+#from mpl_toolkits.axes_grid.inset_locator import (inset_axes, InsetPosition,
+#                                                  mark_inset)
 from synple import head_synth,lambda_synth
 import subprocess
 import datetime, time
@@ -2402,9 +2402,9 @@ def peruse(targetid,sptabfile,sptabdir='./'):
     ax1.axes.text(5250.,1.1,'median(S/N)='+str(s['snr_med'][w]))
     
     ax2=plt.axes([0,0,1,1])
-    ip = InsetPosition(ax1, [0.6,0.1,0.5,0.5])
-    ax2.set_axes_locator(ip)
-    mark_inset(ax1,ax2,loc1=2,loc2=4,fc="none", ec='0.5')
+    #ip = InsetPosition(ax1, [0.6,0.1,0.5,0.5])
+    #ax2.set_axes_locator(ip)
+    #mark_inset(ax1,ax2,loc1=2,loc2=4,fc="none", ec='0.5')
     ax2.plot(bx,by['obs'][w,:])
     ax2.plot(bx,by['fit'][w,:])
     ax2.set_xlim(3900.,4000.)
