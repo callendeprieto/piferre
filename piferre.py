@@ -2321,7 +2321,8 @@ def inspect2(sptabfile,sym='.',rvrange=(-1e32,1e32),
 
 # pick-up metal-poor star candidates
 def mpcandidates(sptabfile,minteff=4000.,maxteff=7000.,minfeh=-4.9,
-    maxfeh=-4.0,minsnr_med=30.,maxsnr_med=1e7,maxchisq_tot=4.,sym='.'):
+    maxfeh=-4.0,minsnr_med=30.,maxsnr_med=1e7,maxchisq_tot=4.,sym='.',
+    output='candidates.txt'):
 
   s,m,h = read_tab(sptabfile)
 
@@ -2341,7 +2342,26 @@ def mpcandidates(sptabfile,minteff=4000.,maxteff=7000.,minfeh=-4.9,
   for i in ws:
     print('{:16}  {:7.2}  {:4.2}  {:5.2}  {:6.1}  {:6.1} {:4.2} {:10.8} {:10.8} {:4.3} \n {}'.format(s['targetid'][i],s['teff'][i],s['logg'][i],s['feh'][i], s['alphafe'][i],s['snr_med'][i],s['chisq_tot'][i],m['target_ra'][i],m['target_dec'][i],m['GAIA_PHOT_G_MEAN_MAG'][i],s['srcfile'][i]))
 
+  of = open(output,'w')
+  original_stdout = sys.stdout
+  sys.stdout = of
+  print('  targetid/srcfile  Teff   logg [Fe/H] [a/Fe] snr_med chisq    ra        dec      Gmag')
+  for i in ws:
+    print('{:16}  {:7.2}  {:4.2}  {:5.2}  {:6.1}  {:6.1} {:4.2} {:10.8} {:10.8} {:4.3} \n {}'.format(s['targetid'][i],s['teff'][i],s['logg'][i],s['feh'][i], s['alphafe'][i],s['snr_med'][i],s['chisq_tot'][i],m['target_ra'][i],m['target_dec'][i],m['GAIA_PHOT_G_MEAN_MAG'][i],s['srcfile'][i]))
+   
+  sys.stdout = original_stdout
+    
+
   return(s[ws], m[ws], h)
+
+
+#peruse multiple spectra
+def peruseall(targetids,sptabfile,sptabdir='./'):
+
+  for entry in targetids:
+     peruse(entry,sptabfile,sptabdir=sptabdir)
+
+  return()
 
 #peruse a spectrum
 def peruse(targetid,sptabfile,sptabdir='./'):
@@ -2352,7 +2372,6 @@ def peruse(targetid,sptabfile,sptabdir='./'):
   
 
   #plt.figure()
-  #plt.ion()
  
   rms = []
   err = []
@@ -2366,9 +2385,9 @@ def peruse(targetid,sptabfile,sptabdir='./'):
     if iroot < 0:
       iroot = len(entry)+1
     path = entry[proot:iroot].split('-')
-    path2 = insert(path,-1,'*')
+    path2 = insert(path,-1,str(int(path[-1]) // 100))
     path3 = append(path2,'sptab*'+entry[proot:iroot]+'.fits')
-    spath = os.path.join(sptabdir,'/'.join(path3))
+    spath = os.path.join(sptabdir,'healpix','/'.join(path3))
     files = glob.glob(spath)
     print(path,path2,path3,spath)
     print(files)
@@ -2388,34 +2407,43 @@ def peruse(targetid,sptabfile,sptabdir='./'):
     #w = where(m['targetid'] == targetid)[0][0]
     #print('len(w)=',len(w))
     print('w=',w)
-    fig, ax1 = plt.subplots()
-    ax1.plot(bx,by['obs'][w,:])
-    ax1.plot(bx,by['fit'][w,:])
-    ax1.set_xscale('log')
-    #ax1.set_xlim(3700,4500)
-    ax1.set_xlabel('Wavelength (A)')
-    ax1.set_ylabel('normalized flux')
-    ax1.set_title(targetid)
-    ax1.axes.text(4500.,1.2,'Teff='+str(s['teff'][w]))
-    ax1.axes.text(5250.,1.2,'logg='+str(s['logg'][w]))
-    ax1.axes.text(4500.,1.1,'[Fe/H]='+str(s['feh'][w]))
-    ax1.axes.text(5250.,1.1,'median(S/N)='+str(s['snr_med'][w]))
-    
-    ax2=plt.axes([0,0,1,1])
-    #ip = InsetPosition(ax1, [0.6,0.1,0.5,0.5])
-    #ax2.set_axes_locator(ip)
-    #mark_inset(ax1,ax2,loc1=2,loc2=4,fc="none", ec='0.5')
-    ax2.plot(bx,by['obs'][w,:])
-    ax2.plot(bx,by['fit'][w,:])
-    ax2.set_xlim(3900.,4000.)
+
+    #plt.subplot(2,1,1)
+    plt.subplot2grid((2, 2), (0, 0), colspan=2)
+    plt.plot(bx,by['obs'][w,:])
+    plt.plot(bx,by['fit'][w,:],linewidth=0.9)
+    plt.plot(bx,by['fit'][w,:]-by['obs'][w,:])
+    plt.xscale('log')
+    plt.xlim(3700,4500)
+    plt.xticks([3700,3900,4100,4300])
+    plt.xlabel('Wavelength (A)')
+    plt.ylabel('normalized flux')
+    plt.title(targetid)
+    plt.text(3900.,1.25,'Teff='+str(s['teff'][w]))
+    plt.text(4100.,1.25,'logg='+str(s['logg'][w]))
+    plt.text(4300.,1.25,'[Fe/H]='+str(s['feh'][w]))
+    plt.text(4200.,0.3,'median(S/N)='+str(s['snr_med'][w]))
+   
+    #plt.subplot(2,1,2) 
+    plt.subplot2grid((2, 2), (1, 0), colspan=1)
+    plt.plot(bx,by['obs'][w,:])
+    plt.plot(bx,by['fit'][w,:],linewidth=0.9)
+    plt.xlim(3900.,4000.)
     wl = (bx > 3900.) & (bx < 4000.)
     rms1 = std(by['obs'][w,wl] - by['fit'][w,wl])
     err1 = mean(by['err'][w,wl])
     print('rms,err=',rms1,err1)
     rms.append(rms1)
     err.append(err1)
+
+    plt.subplot2grid((2, 2), (1, 1), colspan=1)
+    plt.plot(zx,zy['obs'][w,:])
+    plt.plot(zx,zy['fit'][w,:],linewidth=0.9)
+    plt.xlim(8470.,8740.)
+    plt.ylim((0.5,1.2))
+
   #plt.show()
-  plt.savefig(str(targetid)+'.png')
+  plt.savefig(str(targetid)+'.png',dpi=96*2)
   return(rms,err)
 
 
