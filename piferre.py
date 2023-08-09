@@ -2356,12 +2356,23 @@ def mpcandidates(sptabfile,minteff=4000.,maxteff=7000.,minfeh=-4.9,
 
 
 #peruse multiple spectra
-def peruseall(targetids,sptabfile,sptabdir='./'):
+def peruseall(targetids,sptabfile,sptabdir='./',outfile='rms-over-err.txt'):
+#ex.
+# s, m, h  = mpcandidates('sptab_coadd-fuji.fits')
+# rms, err = peruseall(s['targetid'],'sptab_coadd-fuji.fits')
 
+  rms = []
+  err = []
+  of = open(outfile,'w')
   for entry in targetids:
-     peruse(entry,sptabfile,sptabdir=sptabdir)
+     rms1, err1 =  peruse(entry,sptabfile,sptabdir=sptabdir)
+     rms.append(mean(rms1))
+     err.append(mean(err1))
+     of.write(' \n '+str(entry)+' '+str(rms[-1])+' '+str(rms[-1]/err[-1])+'\n')
 
-  return()
+  of.close()
+
+  return(rms,err)
 
 #peruse a spectrum
 def peruse(targetid,sptabfile,sptabdir='./'):
@@ -2372,9 +2383,11 @@ def peruse(targetid,sptabfile,sptabdir='./'):
   
 
   #plt.figure()
+
  
   rms = []
   err = []
+  j = 0
   for entry in srcfile:
     proot = entry.find('coadd-') 
     if proot < 0: 
@@ -2397,12 +2410,18 @@ def peruse(targetid,sptabfile,sptabdir='./'):
     if len(files) < 1: continue
  
     infile = files[0]
+    if not os.path.exist(infile): 
+      print('cannot find the sptab file '+infile)
+      continue
     s,f, h = read_tab(infile)
     w = where(s['targetid'] == targetid)[0][0]
 
 
     spmodfile = infile.replace('sptab','spmod')
     print(infile,spmodfile)
+    if not os.path.exist(spmodfile): 
+      print('cannot find the spmod file '+spmodfile)
+      continue
     bx,by, rx,ry, zx,zy, m, hd = read_mod(spmodfile)
     #w = where(m['targetid'] == targetid)[0][0]
     #print('len(w)=',len(w))
@@ -2415,8 +2434,9 @@ def peruse(targetid,sptabfile,sptabdir='./'):
     plt.plot(bx,by['fit'][w,:]-by['obs'][w,:])
     plt.xscale('log')
     plt.xlim(3700,4500)
-    plt.xticks([3700,3900,4100,4300])
-    plt.xlabel('Wavelength (A)')
+
+    #tm = [3700,3900,4100,4300]
+    #plt.xticks(tm,map(str,tm))
     plt.ylabel('normalized flux')
     plt.title(targetid)
     plt.text(3900.,1.25,'Teff='+str(s['teff'][w]))
@@ -2432,6 +2452,8 @@ def peruse(targetid,sptabfile,sptabdir='./'):
     wl = (bx > 3900.) & (bx < 4000.)
     rms1 = std(by['obs'][w,wl] - by['fit'][w,wl])
     err1 = mean(by['err'][w,wl])
+    plt.text(3950.,j*0.1+0.6,'rms= '+str(rms1))
+    plt.text(3950.,j*0.1+0.5,'rms/err= '+str(rms1/err1))
     print('rms,err=',rms1,err1)
     rms.append(rms1)
     err.append(err1)
@@ -2441,6 +2463,8 @@ def peruse(targetid,sptabfile,sptabdir='./'):
     plt.plot(zx,zy['fit'][w,:],linewidth=0.9)
     plt.xlim(8470.,8740.)
     plt.ylim((0.5,1.2))
+
+    j = j + 1
 
   #plt.show()
   plt.savefig(str(targetid)+'.png',dpi=96*2)
