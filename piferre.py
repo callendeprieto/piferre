@@ -2410,7 +2410,7 @@ def peruse(targetid,sptabfile,sptabdir='./'):
     if len(files) < 1: continue
  
     infile = files[0]
-    if not os.path.exist(infile): 
+    if not os.path.exists(infile): 
       print('cannot find the sptab file '+infile)
       continue
     s,f, h = read_tab(infile)
@@ -2419,7 +2419,7 @@ def peruse(targetid,sptabfile,sptabdir='./'):
 
     spmodfile = infile.replace('sptab','spmod')
     print(infile,spmodfile)
-    if not os.path.exist(spmodfile): 
+    if not os.path.exists(spmodfile): 
       print('cannot find the spmod file '+spmodfile)
       continue
     bx,by, rx,ry, zx,zy, m, hd = read_mod(spmodfile)
