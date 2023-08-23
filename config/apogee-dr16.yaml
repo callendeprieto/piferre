@@ -1,0 +1,48 @@
+bands: ['VIS','H']
+grids: ['f_dr16-apo1', 'f_dr16-apo2', 'f_dr16-apo3', 'f_dr16-apo4', 'f_dr16-apo5']
+seconds_per_spectrum: 20.
+f_dr16-apo1:
+   param:
+       ndim: 5
+       nov: 5
+       indv: 1 2 3 4 5
+       labels:  ['[Fe/H]', '[a/Fe]', '[C/Fe]', 'Teff',  'logg']
+       llimits: -2.5 -0.75  -1.5 3500. 0.0
+       steps:   0.25  0.25   0.25 250. 0.5
+       n_p:      15    8     11   11   10
+f_dr16-apo2:
+   param:
+       ndim: 5
+       nov: 5
+       indv: 1 2 3 4 5
+       labels:  ['[Fe/H]', '[a/Fe]', '[C/Fe]', 'Teff',  'logg']
+       llimits: -2.5 -0.75  -1.5 3000. -0.5
+       steps:   0.25  0.25   0.25 100. 0.5
+       n_p:      15    8     11   11   8
+f_dr16-apo3:
+   param:
+       ndim: 5
+       nov: 5
+       indv: 1 2 3 4 5
+       labels:  ['[Fe/H]', '[a/Fe]', '[C/Fe]', 'Teff',  'logg']
+       llimits: -2.5 -0.75  -0.5 5500. 2.5
+       steps:   0.25  0.25   0.25 250. 0.5
+       n_p:      15    8      5   11   7
+f_dr16-apo4:
+   param:
+       ndim: 5
+       nov: 5
+       indv: 1 2 3 4 5
+       labels:  ['[Fe/H]', '[a/Fe]', '[C/Fe]', 'Teff',  'logg']
+       llimits: -2.5 -0.75  -0.5 3500. 2.5
+       steps:   0.25  0.25   0.25 250. 0.5
+       n_p:      15    8      5   11    7
+f_dr16-apo5:
+   param:
+       ndim: 5
+       nov: 5
+       indv: 1 2 3 4 5
+       labels:  ['[Fe/H]', '[a/Fe]', '[C/Fe]', 'Teff',  'logg']
+       llimits: -2.5 -0.75  -0.5 3000. 2.5
+       steps:   0.25  0.25   0.25 100. 0.5
+       n_p:      15    8      5   11   7
