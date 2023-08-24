@@ -32,11 +32,11 @@ import astropy.units as units
 import matplotlib.pyplot as plt
 #from mpl_toolkits.axes_grid.inset_locator import (inset_axes, InsetPosition,
 #                                                  mark_inset)
-from synple import head_synth,lambda_synth
+from synple import head_synth,lambda_synth,load_conf
 import subprocess
 import datetime, time
 import argparse
-import yaml
+#import yaml
 from multiprocessing import Pool,cpu_count
 
 version = '0.4'
@@ -927,19 +927,6 @@ def get_slurm_cores(proot):
 
   return(ncores)
   
-#gather config. info
-def load_conf(config='desi-n.yaml',confdir='.'):
-
-  try:
-    yfile=open(os.path.join(confdir,config),'r')
-  except:
-    print('ERROR in load_conf: cannot find the file ',config)
-    return(None)
-  #conf=yaml.full_load(yfile)
-  conf=yaml.load(yfile, Loader=yaml.SafeLoader)
-  yfile.close()
-
-  return(conf)
 
 #write piferre param. output
 def write_tab_fits(root, path=None, config='desi-n.yaml'):
