@@ -133,15 +133,41 @@ config='desi-n.yaml', cleanup=True):
     return None
 
 
-#identify all the *.slurm files in the path and merge them in groups of nmerge so that there are fewer/longer jobs. The scripts are named job-*.slurm and written to the current folder
 def mergeslurm(path='./',ext='slurm',nmerge=2,concurrent=False):
+  """identifies all the *.slurm files in the path and merge them 
+     in groups of nmerge so that there are fewer/longer jobs. 
+     The scripts are named job-*.slurm and written to the current folder
+
+  Parameters
+  ----------
+  path: str
+     path under which the slurm jobs are to be found
+     (default is './')
+  ext: str
+     extension of the slurm jobs to be found
+     (default is 'slurm')
+  nmerge: int
+     size of the groups to be created
+     (default is 2)
+  concurrent: bool
+     whether or not the grouped jobs are to be executed concurrently
+     (default is False, so the jobs in a group are to be executed serially)
+     
+  Returns
+  -------
+  None
+  
+  """
 
   slurms = glob.glob(os.path.join(path,'**','*'+ext), recursive=True)
 
   nfiles = len(slurms)
 
+  assert nfiles > 0, 'There are no input files ending in '+ext
+
   k = 0 
   wtime = -1
+  print('nfiles=',nfiles)
   for i in range(nfiles):
     f1 = open(slurms[i],'r')
     j = i % nmerge
