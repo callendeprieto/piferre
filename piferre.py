@@ -452,7 +452,7 @@ def read_truth(filename):
   return(feh,teff,logg,rmag,z)
 
 #read spectra
-def read_spec(filename,band=None):
+def read_desispec(filename,band=None):
 
   hdu=fits.open(filename)
 
@@ -2935,7 +2935,7 @@ libpath='.', sptype='spectra', rvtype='zbest', config='desi-n.yaml', only=[], cl
 
       #read DESI data, select targets, and resample 
 
-      (x,y,ivar,r,mm,hh)=read_spec(datafile,bands[j])
+      (x,y,ivar,r,mm,hh)=read_desispec(datafile,bands[j])
       ey=sqrt(divide(1.,ivar,where=(ivar > 0.)))
       ey[where(ivar == 0.)]=max(y)*1e3
 
